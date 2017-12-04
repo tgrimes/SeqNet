@@ -5,6 +5,15 @@
 library(edgeR)
 library(WGCNA)
 
+#' Wrapper for WGCNA method
+#' 
+#' Conducts co-expression analysis using WGCNA method.
+#' @param x The n by p matrix of counts
+#' @param threshold Cutoff for significant associations
+#' @param beta Tuning parameter for WGCNA
+#' @return A list containing `scores`, a p by p matrix of association scores, and 
+#' `adj_matrix`, a p by p adjacency matrix.
+#' @export
 run_wgcna <- function(x, threshold = 0, beta = 6) {
   #Normalize the data to account for 1) between-sample biases (TMM) and
   # 2) differeing library sizes (cpm).
