@@ -85,3 +85,22 @@ plot.network <- function(network, compare_graph = NULL,
   
   return(g)
 }
+
+#' Plot function for networks
+#' 
+#' This function creates a plot for a network object or adjacency matrix. 
+#' If the result of another plot is provided, this plot will be modified for 
+#' easier comparison.
+#' @param network Either a network object or adjacency matrix of the network.
+#' @param compare_graph The plot of another network to use for comparison.
+#' @param weighted Are the edges weighted? 
+#' @param as_subgraph If true, only nodes of positive degree will be shown.
+#' @param node_scale Used for scaling of nodes.
+#' @param edge_scale used for scaling of edges.
+#' @param coords Layout used for the network.
+#' @return Creates a plot of the network and returns a graph object. 
+#' The graph object can be passed back into a future call of plot.network() 
+#' through the `compare_edge` argument, which will setup the plot for easier 
+#' comparison between the old graph and the graph of `network`.
+#' @export
+plot_network <- plot.network
