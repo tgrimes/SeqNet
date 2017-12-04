@@ -76,16 +76,16 @@ run_cpls <- function(x, v = 3, threshold = NULL, parallel = TRUE) {
     #S2: compute the PLS coefficients and components.
     for(j in 1:v) {
       #The response variable IS standardized.
-      pls_coef[-i, j] <- crossprod(x_deflated, x[, i]) # t(x_deflated) %*% x[, i]
+      pls_coef[-i, j] <- Matrix::crossprod(x_deflated, x[, i]) # t(x_deflated) %*% x[, i]
       pls_coef[, j]  <- pls_coef[, j]  / sqrt(sum(pls_coef[, j]^2))
       pls_comp[, j] <- x_deflated %*% pls_coef[-i, j]
       
-      temp <- tryCatch(solve(crossprod(pls_comp[, j])), 
+      temp <- tryCatch(solve(Matrix::crossprod(pls_comp[, j])), 
                        error = function(e) { warning(e); return(NA) })
       #Check that solve() was successful.
       if(!is.na(temp)) {
         x_deflated <- x_deflated - 
-          pls_comp[, j] %*% temp %*% crossprod(pls_comp[, j], x_deflated)
+          pls_comp[, j] %*% temp %*% Matrix::crossprod(pls_comp[, j], x_deflated)
       } else {
         #Only stop if fewer than v components have been computed.
         if(j < v) {
@@ -107,7 +107,7 @@ run_cpls <- function(x, v = 3, threshold = NULL, parallel = TRUE) {
                                           collapse = "+")))
     
     beta <- tryCatch(
-      coef(gam(form, offset = log(total), family = nb(), data = temp_data))[-1],
+      coef(mgcv::gam(form, offset = log(total), family = actuar::nb(), data = temp_data))[-1],
       error = function(e) {
         print(paste(e, "- gene", i, "of", p, "- setting coefs to zero."))
         return(rep(0, v))
@@ -183,8 +183,8 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
   #S1-S5.
   n_cores <- detectCores()
   cat("Running cPLS on", n_cores, "cores.\n")
-  registerDoParallel(n_cores)
-  s_list <- foreach(i = 1:p) %dopar% {
+  doParallel::registerDoParallel(n_cores)
+  s_list <- foreach::foreach(i = 1:p) %dopar% {
     
     #The PLS coefficients and components.
     pls_coef <- array(0, dim = c(p, v)) 
@@ -197,16 +197,16 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
     #S2: compute the PLS coefficients and components.
     for(j in 1:v) {
       #The response variable IS standardized.
-      pls_coef[-i, j] <- crossprod(x_deflated, x[, i]) # t(x_deflated) %*% x[, i]
+      pls_coef[-i, j] <- Matrix::crossprod(x_deflated, x[, i]) # t(x_deflated) %*% x[, i]
       pls_coef[, j]  <- pls_coef[, j]  / sqrt(sum(pls_coef[, j]^2))
       pls_comp[, j] <- x_deflated %*% pls_coef[-i, j]
       
-      temp <- tryCatch(solve(crossprod(pls_comp[, j])), 
+      temp <- tryCatch(solve(Matrix::crossprod(pls_comp[, j])), 
                        error = function(e) { warning(e); return(NA) })
       #Check that solve() was successful.
       if(!is.na(temp)) {
         x_deflated <- x_deflated - 
-          pls_comp[, j] %*% temp %*% crossprod(pls_comp[, j], x_deflated)
+          pls_comp[, j] %*% temp %*% Matrix::crossprod(pls_comp[, j], x_deflated)
       } else {
         #Only stop if fewer than v components have been computed.
         if(j < v) {
@@ -228,7 +228,7 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
                                           collapse = "+")))
     
     beta <- tryCatch(
-      coef(gam(form, offset = log(total), family = nb(), data = temp_data))[-1],
+      coef(mgcv::gam(form, offset = log(total), family = actuar::nb(), data = temp_data))[-1],
       error = function(e) {
         print(paste(e, "- gene", i, "of", p, "- setting coefs to zero."))
         return(rep(0, v))
@@ -238,7 +238,7 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
     #    k from 1 to p.
     return(pls_coef %*% beta)
   }
-  stopImplicitCluster()
+  doParallel::stopImplicitCluster()
   s <- sapply(s_list, cbind)
   
   #S6: Set the diagonal of s to 1 and symmetrize s.
