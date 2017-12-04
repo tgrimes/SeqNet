@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{network}(network, compare_graph = NULL, weighted = NULL,
   as_subgraph = FALSE, node_scale = 5, edge_scale = 1,
-  coords = layout.fruchterman.reingold, main = "Untitled", ...)
+  coords = igraph::layout.fruchterman.reingold, main = "Untitled", ...)
 }
 \arguments{
 \item{network}{Either a network object or adjacency matrix of the network.}

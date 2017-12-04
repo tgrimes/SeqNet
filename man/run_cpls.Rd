@@ -4,7 +4,7 @@
 \alias{run_cpls}
 \title{Combined partial least squares with negative-binomial}
 \usage{
-run_cpls(x, v = 3, threshold = NULL, parallel = TRUE)
+run_cpls(x, v = 3, threshold = NULL, parallel = FALSE)
 }
 \arguments{
 \item{x}{The n by p matrix of raw count data. Rows should correspond to
