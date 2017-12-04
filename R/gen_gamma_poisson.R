@@ -81,6 +81,7 @@ gen_gamma_poisson <- function(n,
       }
     })
     val <- mu * exp(x)
+    val <- ifelse(val <= 2 * max_mean_count, val, 2 * max_mean_count)
     return(val)
   }
   
