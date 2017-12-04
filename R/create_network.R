@@ -25,6 +25,7 @@
 #      )
 #  with "fun" = "add_hub", "add_clique", etc.
 
+setClass(Class = "network")
 
 #' Create a network object.
 #' 
