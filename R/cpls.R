@@ -17,7 +17,7 @@
 #' @param parallel Should cpls be run in parallel? (Unix system required.)
 #' @return a matrix of raw association scores. 
 #' @export
-run_cpls <- function(x, v = 3, threshold = NULL, parallel = TRUE) {
+run_cpls <- function(x, v = 3, threshold = NULL, parallel = FALSE) {
   if(parallel) {
     if(.Platform$OS.type == "unix") {
       return(run_cpls_parallel(x = x, v = v, threshold = threshold))
@@ -181,7 +181,7 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
   s_list <- vector("list", p)
   
   #S1-S5.
-  n_cores <- doParallel::detectCores()
+  n_cores <- parallel::detectCores()
   cat("Running cPLS on", n_cores, "cores.\n")
   doParallel::registerDoParallel(n_cores)
   s_list <- foreach::foreach(i = 1:p) %dopar% {
