@@ -12,16 +12,14 @@ gen_gamma_poisson(n, network, mu, overdispersion = 1, intensity = 1,
 
 \item{network}{The underlying network (from create_network())}
 
+\item{mu}{Mean expression for each gene. If length of mu is not equal to the number of
+genes in the network, a random sample with replacement from mu will be used.}
+
 \item{overdispersion}{A value > 0. Adjusts the amount of overdispersion in the generated counts.}
 
 \item{intensity}{A value > 0. Used as the standard deviation of sampled edge weights.}
 
 \item{k}{A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.}
-}
-\value{
-A list containing the n by p matrix of samples, the underlying network,
-and an n by p matrix containing mean expression values for each gene on each sample
-after incorporating the underlying network.
 }
 \description{
 Generates count data based on the overdispered Poisson distribution.

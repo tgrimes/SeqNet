@@ -42,12 +42,12 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' Generates count data based on the overdispered Poisson distribution.
 #' @param n The number of samples to generate.
 #' @param network The underlying network (from create_network())
-#' @mu Mean expression for each gene. If length of mu is not equal to the number of
+#' @param mu Mean expression for each gene. If length of mu is not equal to the number of
 #' genes in the network, a random sample with replacement from mu will be used.
 #' @param overdispersion A value > 0. Adjusts the amount of overdispersion in the generated counts.
 #' @param intensity A value > 0. Used as the standard deviation of sampled edge weights.
 #' @param k A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.
-#' @return A list containing the n by p matrix of samples, the underlying network,
+#' @value A list containing the n by p matrix of samples, the underlying network,
 #' and an n by p matrix containing mean expression values for each gene on each sample
 #' after incorporating the underlying network.
 #' @export
@@ -95,7 +95,13 @@ gen_gamma_poisson <- function(n,
   }
   
   x <- t(x) # Turn into n by p matrix.
-  colnames(x) <- colnames(network$adj_matrix)
+  
+  # Add column names to simulated dataset.
+  if(is.null(network$node_names)) {
+    colnames(x) <- paste(1:p)
+  } else {
+    colnames(x) <- network$node_names
+  }
   
   if(any(is.na(x))) {
     warning(paste("NAs produced by `gen_gamma_poisson`: replacing",
