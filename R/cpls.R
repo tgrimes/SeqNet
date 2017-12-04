@@ -181,7 +181,7 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
   s_list <- vector("list", p)
   
   #S1-S5.
-  n_cores <- detectCores()
+  n_cores <- doParallel::detectCores()
   cat("Running cPLS on", n_cores, "cores.\n")
   doParallel::registerDoParallel(n_cores)
   s_list <- foreach::foreach(i = 1:p) %dopar% {
