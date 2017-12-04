@@ -23,6 +23,12 @@
 
 \item{coords}{Layout used for the network.}
 }
+\value{
+Creates a plot of the network and returns a graph object. 
+The graph object can be passed back into a future call of plot.network() 
+through the `compare_edge` argument, which will setup the plot for easier 
+comparison between the old graph and the graph of `network`.
+}
 \description{
 This function plots the given network. If the result of another plot is 
 provided, this plot will be modified for easier comparison.
