@@ -2,7 +2,6 @@
 # library(doParallel)
 # library(foreach)
 # library(mgcv) # gam() for fitting nb
-# library(actuar) # nb()
 # library(Matrix) # crossprod()
 
 #' Combined partial least squares with negative-binomial
@@ -107,7 +106,7 @@ run_cpls <- function(x, v = 3, threshold = NULL, parallel = FALSE) {
                                           collapse = "+")))
     
     beta <- tryCatch(
-      coef(mgcv::gam(form, offset = log(total), family = actuar::nb(), data = temp_data))[-1],
+      coef(mgcv::gam(form, offset = log(total), family = mgcv::nb(), data = temp_data))[-1],
       error = function(e) {
         print(paste(e, "- gene", i, "of", p, "- setting coefs to zero."))
         return(rep(0, v))
@@ -228,7 +227,7 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
                                           collapse = "+")))
     
     beta <- tryCatch(
-      coef(mgcv::gam(form, offset = log(total), family = actuar::nb(), data = temp_data))[-1],
+      coef(mgcv::gam(form, offset = log(total), family = mgcv::nb(), data = temp_data))[-1],
       error = function(e) {
         print(paste(e, "- gene", i, "of", p, "- setting coefs to zero."))
         return(rep(0, v))
