@@ -1,9 +1,9 @@
 
-library(doParallel)
-library(foreach)
-library(mgcv) # gam() for fitting nb
-library(actuar) # nb()
-library(Matrix) # crossprod()
+# library(doParallel)
+# library(foreach)
+# library(mgcv) # gam() for fitting nb
+# library(actuar) # nb()
+# library(Matrix) # crossprod()
 
 #' Combined partial least squares with negative-binomial
 #' 

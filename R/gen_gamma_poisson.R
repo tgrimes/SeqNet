@@ -2,7 +2,7 @@
 
 # Requires: 
 #   SimSeq - for default reference dataset
-library(SimSeq)
+# library(SimSeq)
 
 #' Obtain empirical distribution of mean RNA-seq counts
 #'
@@ -47,7 +47,7 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' @param overdispersion A value > 0. Adjusts the amount of overdispersion in the generated counts.
 #' @param intensity A value > 0. Used as the standard deviation of sampled edge weights.
 #' @param k A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.
-#' @value A list containing the n by p matrix of samples, the underlying network,
+#' @return A list containing the n by p matrix of samples, the underlying network,
 #' and an n by p matrix containing mean expression values for each gene on each sample
 #' after incorporating the underlying network.
 #' @export

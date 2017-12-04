@@ -2,8 +2,8 @@
 # Required:
 #   edgeR - for calcNormFactors() and cpm().
 #   WGCNA - for adjacency.fromSimilarity()
-library(edgeR)
-library(WGCNA)
+# library(edgeR)
+# library(WGCNA)
 
 #' Wrapper for WGCNA method
 #' 
