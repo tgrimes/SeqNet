@@ -16,6 +16,7 @@ library(Matrix) # crossprod()
 #'   network through empirical bayes fdr. If NULL, only scores are returned.
 #' @param parallel Should cpls be run in parallel? (Unix system required.)
 #' @return a matrix of raw association scores. 
+#' @export
 run_cpls <- function(x, v = 3, threshold = NULL, parallel = TRUE) {
   if(parallel) {
     if(.Platform$OS.type == "unix") {
@@ -142,6 +143,7 @@ run_cpls <- function(x, v = 3, threshold = NULL, parallel = TRUE) {
 #'   samples, and columns should correspond to genes.
 #' @param v the number of PLS components to compute.
 #' @return a matrix of association scores. 
+#' @export
 run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
   n <- nrow(x) #Number of observations.
   p <- ncol(x) #Number of genes.

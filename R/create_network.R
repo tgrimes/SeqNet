@@ -161,25 +161,22 @@ create_network <- function(p,
 #' @export
 get_adj_matrix_from_network <- function(network) {
   p <- network$p
-  cliques <- network$cliques
-  hubs <- network$hubs
-  modules <- network$modules
   
   adj_matrix <- matrix(0, nrow = p, ncol = p)
-  if(length(cliques) > 0) {
-    lapply(cliques, function(clique) {
+  if(length(network$cliques) > 0) {
+    lapply(network$cliques, function(clique) {
       adj_matrix[clique$nodes, clique$nodes] <<- 1
       diag(adj_matrix)[clique$nodes] <<- 0
     })
   }
-  if(length(hubs) > 0) {
-    lapply(hubs, function(hub) {
+  if(length(network$hubs) > 0) {
+    lapply(network$hubs, function(hub) {
       adj_matrix[hub$nodes[1], hub$nodes[-1]] <<- 1
       adj_matrix[hub$nodes[-1], hub$nodes[1]] <<- 1
     })
   }
-  if(length(modules) > 0) {
-    lapply(modules, function(module) {
+  if(length(network$modules) > 0) {
+    lapply(network$modules, function(module) {
       nodes <- module$nodes
       adj_matrix[nodes, nodes] <<- 1 * (module$struct | adj_matrix[nodes, nodes])
     })
@@ -228,11 +225,10 @@ add_sign_to_network <- function(network) {
 #' between genes varies from sample to sample. This function generates a random
 #' strength for each edge from a truncated Normal distribution. The 
 #' intensity parameter specifies the standard deviation of the Normal distribution.
-#' 
 #' @param network The network to modify.
 #' @param intensity a positive number; this determines the scale of the weights.
-#' 
 #' @return A network with a weighted adjacency matrix. 
+#' @export
 add_weight_to_network <- function(network, intensity = 1) {
   adj_matrix <- network$adj_matrix
   p <- network$p

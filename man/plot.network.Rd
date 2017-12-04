@@ -4,14 +4,14 @@
 \alias{plot.network}
 \title{Plot function for network class}
 \usage{
-\method{plot}{network}(network, compare_edges = NULL, weighted = NULL,
+\method{plot}{network}(network, compare_graph = NULL, weighted = NULL,
   as_subgraph = FALSE, node_scale = 5, edge_scale = 1,
   coords = layout.fruchterman.reingold, main = "Untitled", ...)
 }
 \arguments{
 \item{network}{Either a network object or adjacency matrix of the network.}
 
-\item{compare_edges}{The plot of another network to use for comparison.}
+\item{compare_graph}{The plot of another network to use for comparison.}
 
 \item{weighted}{Are the edges weighted?}
 

@@ -1,5 +1,8 @@
 # Example code and testing.
 
+#' Example of SeqNet package
+#' 
+#' @export
 run_example <- function() {
   set.seed(6720)
   p <- 100
