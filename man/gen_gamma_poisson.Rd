@@ -4,24 +4,24 @@
 \alias{gen_gamma_poisson}
 \title{Generate sample from overdispered Poisson}
 \usage{
-gen_gamma_poisson(n, network, mu, overdispersion_param = 1,
-  intensity_param = 1, k = 1)
+gen_gamma_poisson(n, network, mu, overdispersion = 1, intensity = 1,
+  k = 1.5)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
 
 \item{network}{The underlying network (from create_network())}
 
-\item{intensity_param}{The standard deviation of sampled edge weights.}
+\item{overdispersion}{A value > 0. Adjusts the amount of overdispersion in the generated counts.}
 
-\item{k}{Adjusts the tail behavior in the simulated expression distribution.}
+\item{intensity}{A value > 0. Used as the standard deviation of sampled edge weights.}
 
-\item{overdis_param}{The overdispersion parameters (shape, scale) used 
-in the Gamma distribution.}
+\item{k}{A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.}
 }
 \value{
-A list containing the n by p matrix of samples and the true
-  association matrix.
+A list containing the n by p matrix of samples, the underlying network,
+and an n by p matrix containing mean expression values for each gene on each sample
+after incorporating the underlying network.
 }
 \description{
 Generates count data based on the overdispered Poisson distribution.

@@ -42,18 +42,29 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' Generates count data based on the overdispered Poisson distribution.
 #' @param n The number of samples to generate.
 #' @param network The underlying network (from create_network())
-#' @param overdis_param The overdispersion parameters (shape, scale) used 
-#'   in the Gamma distribution.
-#' @param intensity_param The standard deviation of sampled edge weights.
-#' @param k Adjusts the tail behavior in the simulated expression distribution.
-#' @return A list containing the n by p matrix of samples and the true
-#'   association matrix.
+#' @mu Mean expression for each gene. If length of mu is not equal to the number of
+#' genes in the network, a random sample with replacement from mu will be used.
+#' @param overdispersion A value > 0. Adjusts the amount of overdispersion in the generated counts.
+#' @param intensity A value > 0. Used as the standard deviation of sampled edge weights.
+#' @param k A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.
+#' @return A list containing the n by p matrix of samples, the underlying network,
+#' and an n by p matrix containing mean expression values for each gene on each sample
+#' after incorporating the underlying network.
 #' @export
-gen_gamma_poisson <- function(n, network, mu,
-                              overdispersion_param = 1, 
-                              intensity_param = 1,
-                              k = 1) {
+gen_gamma_poisson <- function(n, 
+                              network, 
+                              mu,
+                              overdispersion = 1, 
+                              intensity = 1,
+                              k = 1.5) {
+  if(k > 2 | k < 1) stop("k should be in [1, 2].")
+  if(overdispersion <= 0) stop("overdispersion should be > 0")
+  if(intensity <= 0) stop ("intensity should be > 0")
+  
   p <- network$p
+  if(length(mu) != p) {
+    mu <- sample(mu, p, replace = TRUE)
+  }
   max_mean_count <- max(mu)
   
   #S6: generate a vector of read counts for each sample.
@@ -70,16 +81,15 @@ gen_gamma_poisson <- function(n, network, mu,
       }
     })
     val <- mu * exp(x)
-    val <- ifelse(val <= max_mean_count, val, 2 * mu)
     return(val)
   }
   
   for(i in 1:n) {
-    edges <- add_weight_to_network(network, intensity_param)$weight_matrix
+    edges <- add_weight_to_network(network, intensity)$weight_matrix
     mu[, i + 1] <- adjust(mu[, 1], edges)
     theta <- rgamma(p,
-                    shape = mu[, i + 1]^(2 - k) / overdispersion_param,
-                    scale = mu[, i + 1]^(k - 1) * overdispersion_param)
+                    shape = mu[, i + 1]^(2 - k) / overdispersion,
+                    scale = mu[, i + 1]^(k - 1) * overdispersion)
     x[, i] <- rpois(p, theta)
   }
   
