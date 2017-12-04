@@ -1,6 +1,6 @@
 # Requires: 
 #   igraph - for plotting networks.
-library(igraph)
+require(igraph)
 
 #' Plot function for network class
 #' 
