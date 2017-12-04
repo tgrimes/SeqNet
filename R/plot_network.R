@@ -23,6 +23,8 @@ plot.network <- function(network, compare_graph = NULL,
                          node_scale = 5, edge_scale = 1, 
                          coords =  igraph::layout.fruchterman.reingold,
                          main = "Untitled", ...) {
+  library(igraph)
+  
   if(class(network) == "network") {
     adj_matrix <- get_adj_matrix_from_network(network)
   } else {
