@@ -111,7 +111,7 @@ gen_gamma_poisson <- function(n,
   
   return(list(x = x, 
               network = network, 
-              mu = t(mu)))
+              mu = mu[, 1]))
 }
 
 attr(gen_gamma_poisson, "name") <- "gen_gamma_poisson"
