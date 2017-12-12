@@ -146,6 +146,9 @@ create_network <- function(p,
                   modules = modules, 
                   node_names = paste(1:p))
   
+  # By default, add random sign to each connection in the network.
+  network <- add_sign_to_network(network)
+  
   class(network) <- "network"
   
   return(network)
