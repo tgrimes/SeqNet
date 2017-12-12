@@ -11,15 +11,16 @@
 #' @param x The n by p matrix of raw count data. Rows should correspond to
 #'   samples, and columns should correspond to genes.
 #' @param v The number of PLS components to compute.
-#' @param threshold (optional) the signifiance threshold for inferring the 
-#'   network through empirical bayes fdr. If NULL, only scores are returned.
+#' @param fdr (optional) the fdr signifiance fdr for inferring the 
+#'   network through empirical bayes fdr. If NULL, all scores are returned. 
+#'   Otherwise, scores with fdr above this fdr are set to zero.
 #' @param parallel Should cpls be run in parallel? (Unix system required.)
 #' @return a matrix of raw association scores. 
 #' @export
-run_cpls <- function(x, v = 3, threshold = NULL, parallel = FALSE) {
+run_cpls <- function(x, v = 3, fdr = NULL, parallel = FALSE) {
   if(parallel) {
     if(.Platform$OS.type == "unix") {
-      return(run_cpls_parallel(x = x, v = v, threshold = threshold))
+      return(run_cpls_parallel(x = x, v = v, fdr = fdr))
     } else {
       cat("OS must be Unix to run in parallel. Running `cpls` sequentially.\n")
     }
@@ -120,30 +121,43 @@ run_cpls <- function(x, v = 3, threshold = NULL, parallel = FALSE) {
   #S6: Set the diagonal of s to 1 and symmetrize s.
   s <- (s + t(s)) * 0.5
   
-  results <- list(scores = s)
-  
-  #Add adjacency matrix to output if a threshold was given.
-  if(!is.null(threshold)) {
-    cat("Computing adjacency matrix using theshold", threshold, "\n")
-    likelihood <- fdr(results$scores)$likelihood
-    adj_matrix <- (likelihood <= threshold) * 1
-    #adj_matrix <- get_adjacency_matrix(s, threshold)
-    results <- c(results, list(adj_matrix = adj_matrix))
+  # If fdr is provided, set scores with fdr above this threshold to zero.
+  if(!is.null(fdr)) {
+    cat("Computing association matrix using fdr rate", fdr, "\n")
+    s[fdr(normalize_cpls_scores(s))$likelihood > fdr] <- 0
   }
+  
+  results <- list(scores = s, fdr = fdr)
   
   return(results)
 }
 
-
-#' @title Count data partial least squares
-#' @description Parallel version of run_cpls(). Reconstructs a full genomic 
-#'   association network from a set of next-generation sequencing count data.
-#' @param x the n by p matrix of raw count data. Rows should correspond to
-#'   samples, and columns should correspond to genes.
-#' @param v the number of PLS components to compute.
-#' @return a matrix of association scores. 
+#' Normalize the cPLS scores
+#' 
+#' Performs the transformation: sign(x) log(|x| + 1). This normalizes the
+#' cPLS scores; should be performed prior to using `fdr()`.
+#' @param scores The association scores from the cPLS algorithm.
 #' @export
-run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
+normalize_cpls_scores <- function(scores) {
+  sign(scores) * log(abs(scores) + 1)
+}
+
+
+
+#' Combined partial least squares with negative-binomial
+#' 
+#' Parallel version of run_cpls(). Reconstructs a full genomic association 
+#' network from a set of next-generation sequencing count data.
+#' @param x The n by p matrix of raw count data. Rows should correspond to
+#'   samples, and columns should correspond to genes.
+#' @param v The number of PLS components to compute.
+#' @param fdr (optional) the fdr signifiance fdr for inferring the 
+#'   network through empirical bayes fdr. If NULL, all scores are returned. 
+#'   Otherwise, scores with fdr above this fdr are set to zero.
+#' @param parallel Should cpls be run in parallel? (Unix system required.)
+#' @return a matrix of raw association scores. 
+#' @export
+run_cpls_parallel <- function(x, v = 3, fdr = NULL) {
   n <- nrow(x) #Number of observations.
   p <- ncol(x) #Number of genes.
   if(v >= n) {
@@ -243,16 +257,13 @@ run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
   #S6: Set the diagonal of s to 1 and symmetrize s.
   s <- (s + t(s)) * 0.5
   
-  results <- list(scores = s)
-  
-  #Add adjacency matrix to output if a threshold was given.
-  if(!is.null(threshold)) {
-    cat("Computing adjacency matrix using theshold", threshold, "\n")
-    likelihood <- fdr(results$scores)$likelihood
-    adj_matrix <- (likelihood <= threshold) * 1
-    #adj_matrix <- get_adjacency_matrix(s, threshold)
-    results <- c(results, list(adj_matrix = adj_matrix))
+  # If fdr is provided, set scores with fdr above this threshold to zero.
+  if(!is.null(fdr)) {
+    cat("Computing association matrix using fdr rate", fdr, "\n")
+    s[fdr(normalize_cpls_scores(s))$likelihood > fdr] <- 0
   }
+  
+  results <- list(scores = s, fdr = fdr)
   
   return(results)
 }

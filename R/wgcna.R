@@ -8,9 +8,11 @@
 #' Wrapper for WGCNA method
 #' 
 #' Conducts co-expression analysis using WGCNA method.
-#' @param x The n by p matrix of counts
-#' @param threshold Cutoff for significant associations
-#' @param beta Tuning parameter for WGCNA
+#' @param x The n by p matrix of counts.
+#' @param threshold Cutoff for significant associations. Scores are rounded to
+#' two decimal places. If threshold is provided, rounded scores at or below this 
+#' threshold are set to zero. Otherwise, all scores are returned.
+#' @param beta Tuning parameter for WGCNA.
 #' @return A list containing `scores`, a p by p matrix of association scores, and 
 #' `adj_matrix`, a p by p adjacency matrix.
 #' @export
@@ -28,9 +30,12 @@ run_wgcna <- function(x, threshold = 0, beta = 6) {
   x <- cor(x, method = "spearman")
   x[which(is.na(x))] <- 0
   
-  assoc_matrix <- WGCNA::adjacency.fromSimilarity(x, power = beta)
-  diag(assoc_matrix) <- 0
-  adj_matrix <- 1 * (round(assoc_matrix, 2) > threshold)
+  scores <- WGCNA::adjacency.fromSimilarity(x, power = beta)
+  diag(scores) <- 0
   
-  return(list(scores = assoc_matrix, adj_matrix = adj_matrix))
+  if(!is.null(threshold)) {
+    scores[round(assoc_matrix, 2) <= threshold] <- 0
+  }
+  
+  return(list(scores = scores, threshold = threshold))
 }
