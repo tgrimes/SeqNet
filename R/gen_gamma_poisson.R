@@ -15,7 +15,6 @@
 #' @param max_mean_count Average counts above this value will be excluded.
 #' @return A vector containing the average count for each gene.
 #' @export
-#' @examples get_reference_means()
 get_reference_count_means <- function(reference_dataset = NULL,
                                       min_mean_count = 30,
                                       max_mean_count = NULL) {
@@ -51,6 +50,14 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' and an n by p matrix containing mean expression values for each gene on each sample
 #' after incorporating the underlying network.
 #' @export
+#' @examples
+#' n <- 10
+#' network <- create_network(p = 100, modules = list(1:100)) # Create small-world network.
+#' mu <- get_reference_count_means()
+#' # Generate RNA-seq data using the network and reference means:
+#' x <- gen_gamma_poisson(n, network, mu)$x
+#' # Obtain co-expression network using cPLS algorithm with fdr rate of 0.05.
+#' run_cpls(x, fdr = 0.05)
 gen_gamma_poisson <- function(n, 
                               network, 
                               mu,
