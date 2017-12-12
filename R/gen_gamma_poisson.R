@@ -42,7 +42,8 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' @param n The number of samples to generate.
 #' @param network The underlying network (from create_network())
 #' @param mu Mean expression for each gene. If length of mu is not equal to the number of
-#' genes in the network, a random sample with replacement from mu will be used.
+#' genes in the network, a random sample with replacement from mu will be used. If NULL,
+#' reference means are obtained from `get_reference_count_means()`.
 #' @param overdispersion A value > 0. Adjusts the amount of overdispersion in the generated counts.
 #' @param intensity A value > 0. Used as the standard deviation of sampled edge weights.
 #' @param k A value in [1, 2]. Adjusts the tail behavior of the distribution of generated counts.
@@ -60,7 +61,7 @@ get_reference_count_means <- function(reference_dataset = NULL,
 #' run_cpls(x, fdr = 0.05)
 gen_gamma_poisson <- function(n, 
                               network, 
-                              mu,
+                              mu = NULL,
                               overdispersion = 1, 
                               intensity = 1,
                               k = 1.5) {
@@ -69,6 +70,9 @@ gen_gamma_poisson <- function(n,
   if(intensity <= 0) stop ("intensity should be > 0")
   
   p <- network$p
+  if(is.null(mu)) {
+    mu <- get_reference_count_means()
+  }
   if(length(mu) != p) {
     mu <- sample(mu, p, replace = TRUE)
   }

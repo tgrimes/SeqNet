@@ -4,8 +4,8 @@
 \alias{gen_gamma_poisson}
 \title{Generate sample from overdispered Poisson}
 \usage{
-gen_gamma_poisson(n, network, mu, overdispersion = 1, intensity = 1,
-  k = 1.5)
+gen_gamma_poisson(n, network, mu = NULL, overdispersion = 1,
+  intensity = 1, k = 1.5)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
@@ -13,7 +13,8 @@ gen_gamma_poisson(n, network, mu, overdispersion = 1, intensity = 1,
 \item{network}{The underlying network (from create_network())}
 
 \item{mu}{Mean expression for each gene. If length of mu is not equal to the number of
-genes in the network, a random sample with replacement from mu will be used.}
+genes in the network, a random sample with replacement from mu will be used. If NULL,
+reference means are obtained from `get_reference_count_means()`.}
 
 \item{overdispersion}{A value > 0. Adjusts the amount of overdispersion in the generated counts.}
 
