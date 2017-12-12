@@ -2,20 +2,26 @@
 % Please edit documentation in R/cpls.R
 \name{run_cpls_parallel}
 \alias{run_cpls_parallel}
-\title{Count data partial least squares}
+\title{Combined partial least squares with negative-binomial}
 \usage{
-run_cpls_parallel(x, v = 3, threshold = NULL)
+run_cpls_parallel(x, v = 3, fdr = NULL)
 }
 \arguments{
-\item{x}{the n by p matrix of raw count data. Rows should correspond to
+\item{x}{The n by p matrix of raw count data. Rows should correspond to
 samples, and columns should correspond to genes.}
 
-\item{v}{the number of PLS components to compute.}
+\item{v}{The number of PLS components to compute.}
+
+\item{fdr}{(optional) the fdr signifiance fdr for inferring the 
+network through empirical bayes fdr. If NULL, all scores are returned. 
+Otherwise, scores with fdr above this fdr are set to zero.}
+
+\item{parallel}{Should cpls be run in parallel? (Unix system required.)}
 }
 \value{
-a matrix of association scores.
+a matrix of raw association scores.
 }
 \description{
-Parallel version of run_cpls(). Reconstructs a full genomic 
-  association network from a set of next-generation sequencing count data.
+Parallel version of run_cpls(). Reconstructs a full genomic association 
+network from a set of next-generation sequencing count data.
 }

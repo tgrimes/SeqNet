@@ -23,6 +23,3 @@ The average expression level of each gene in a reference dataset are
 used as an empirical distribution. If no reference dataset is provided,
 the kidney data from the SimSeq package are used.
 }
-\examples{
-get_reference_means()
-}

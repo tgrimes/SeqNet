@@ -7,11 +7,13 @@
 run_wgcna(x, threshold = 0, beta = 6)
 }
 \arguments{
-\item{x}{The n by p matrix of counts}
+\item{x}{The n by p matrix of counts.}
 
-\item{threshold}{Cutoff for significant associations}
+\item{threshold}{Cutoff for significant associations. Scores are rounded to
+two decimal places. If threshold is provided, rounded scores at or below this 
+threshold are set to zero. Otherwise, all scores are returned.}
 
-\item{beta}{Tuning parameter for WGCNA}
+\item{beta}{Tuning parameter for WGCNA.}
 }
 \value{
 A list containing `scores`, a p by p matrix of association scores, and 

@@ -4,15 +4,33 @@
 \alias{fdr}
 \title{Determine which associations are significant}
 \usage{
-fdr(scores)
+fdr(scores, gene_names = NULL, robust = TRUE)
 }
 \arguments{
 \item{scores}{A symmetric p by p matrix of association scores.}
+
+\item{gene_names}{(optional) Vector of gene names.}
+
+\item{robust}{Should robust estimates of mean and variance be used?}
+
+\item{scores}{Either a vector or a symmetric matrix of association scores.
+If a vector, `scores` should be the lower.tri entries of the the association
+matrix.}
 }
 \value{
 A p by p matrix of likelihood.
+
+A list containing the p by p matrix of likelihood ratios (fdr rates),
+the estimate of mu for the null distribution, and the estimate of sigma
+for the null distribution.
 }
 \description{
+Determines which associations are significant using emperical 
+  bayes and false discovery rate adjustment.
+}
+\details{
+Determine which associations are significant
+
 Determines which associations are significant using emperical 
 bayes and false discovery rate adjustment.
 }

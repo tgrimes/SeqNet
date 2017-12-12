@@ -29,3 +29,12 @@ after incorporating the underlying network.
 \description{
 Generates count data based on the overdispered Poisson distribution.
 }
+\examples{
+n <- 10
+network <- create_network(p = 100, modules = list(1:100)) # Create small-world network.
+mu <- get_reference_count_means()
+# Generate RNA-seq data using the network and reference means:
+x <- gen_gamma_poisson(n, network, mu)$x
+# Obtain co-expression network using cPLS algorithm with fdr rate of 0.05.
+run_cpls(x, fdr = 0.05)
+}

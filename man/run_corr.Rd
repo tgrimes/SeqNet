@@ -9,11 +9,11 @@ run_corr(x, threshold = 0.9)
 \arguments{
 \item{x}{The n by p matrix of counts}
 
-\item{threshold}{Cutoff for significant associations}
+\item{threshold}{Cutoff for significant associations. If NULL, all correlations
+are returned. Otherwise, correlations at or below this threshold are set to zero.}
 }
 \value{
-A list containing `scores`, a p by p matrix of correlations, and 
-`adj_matrix`, a p by p adjacency matrix.
+A list containing `scores`, a p by p matrix of correlations.
 }
 \description{
 Conducts co-expression analysis using correlation for association measure.

@@ -7,7 +7,7 @@
 create_network(p, n_cliques = NULL, clique_size = NULL, cliques = NULL,
   n_hubs = NULL, hub_size = NULL, hubs = NULL, n_modules = NULL,
   module_size = NULL, modules = NULL, nonoverlapping = FALSE,
-  module_prob = 0.05)
+  module_neig = 2, module_prob = 0.05)
 }
 \arguments{
 \item{p}{The number of nodes in the graph}
@@ -27,6 +27,12 @@ set genes within a clique.}
 of hub genes; the first entry in the vector is the hub.}
 
 \item{nonoverlapping}{If true, cliques and hubs will not share any nodes.}
+
+\item{module_neig}{Used for generating small-world networks for modules; 
+specifies the initial degree of each node.}
+
+\item{module_prob}{Used for generating small-world networks for modules; 
+specifies the rewiring probability.}
 }
 \value{
 A network object.
@@ -36,5 +42,10 @@ Creates a graph with certain features. This network is then
 used with other sample generating methods to obtain count data.
 }
 \examples{
-create_network(p = 50, cliques = c(1:5, 6:10), hubs = c(11:15, 16:25))
+# Create a network with no connections:
+create_network(p = 100)
+# Create a small-world network using all verticies:
+create_network(p = 100, modules = list(1:100))
+# Create a network with cliques and hubs:
+create_network(p = 100, cliques = list(1:5, 6:10), hubs = list(11:15, 16:25))
 }
