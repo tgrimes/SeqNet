@@ -2,7 +2,6 @@
 
 #' Example of SeqNet package
 #' 
-#' @export
 run_example <- function() {
   set.seed(6720)
   p <- 100
@@ -30,20 +29,19 @@ run_example <- function() {
                                         c(27, 31:35), 
                                         c(28, 36:40),
                                         c(29, 41:45)),
-                            modules = list(56:90), 
-                            module_prob = 0.03)
+                            modules = list(56:90))
   plot(network)
   
   network <- add_sign_to_network(network)
   mu <- sample(get_reference_count_means(), p, replace = TRUE)
   
   n <- 50
-  overdispersion_param <- 1
-  intensity_param <- 1
+  overdispersion <- 1
+  intensity <- 1
   k <- 1.5
   df <- gen_gamma_poisson(n, network, mu, 
-                          overdispersion_param = overdispersion_param, 
-                          intensity_param = intensity_param,
+                          overdispersion = overdispersion, 
+                          intensity = intensity,
                           k = k)
   # Contents of the list returned from the generator:
   #   df$x - the generated sample as an n by p matrix. 
