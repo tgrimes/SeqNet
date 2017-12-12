@@ -41,15 +41,24 @@ setClass(Class = "network")
 #' @param hubs (optional) A list of vectors, with each vector specifying a set
 #'   of hub genes; the first entry in the vector is the hub.
 #' @param nonoverlapping If true, cliques and hubs will not share any nodes.
+#' @param module_neig Used for generating small-world networks for modules; 
+#' specifies the initial degree of each node.
+#' @param module_prob Used for generating small-world networks for modules; 
+#' specifies the rewiring probability.
 #' @return A network object.
 #' @export 
 #' @examples 
-#' create_network(p = 50, cliques = c(1:5, 6:10), hubs = c(11:15, 16:25))
+#' # Create a network with no connections:
+#' create_network(p = 100)
+#' # Create a small-world network using all verticies:
+#' create_network(p = 100, modules = list(1:100))
+#' # Create a network with cliques and hubs:
+#' create_network(p = 100, cliques = list(1:5, 6:10), hubs = list(11:15, 16:25))
 create_network <- function(p, 
                            n_cliques = NULL, clique_size = NULL, cliques = NULL,
                            n_hubs = NULL, hub_size = NULL, hubs = NULL,
                            n_modules = NULL, module_size = NULL, modules = NULL,
-                           nonoverlapping = FALSE, module_prob = 0.05) {
+                           nonoverlapping = FALSE, module_neig = 2, module_prob = 0.05) {
 
   if(p <= 0) stop("p should be positive.")
   
@@ -127,15 +136,9 @@ create_network <- function(p,
   modules <- lapply(modules, function(module) {
     p <- length(module)
     nodes <- module
-    # Create an adjacency matrix for the module.
-    struct <- matrix(0, p, p) 
-    # path <- sample(1:p) # Create a path through the module.
-    # sapply(1:(p - 1), function(i) { struct[path[i], path[i + 1]] <<- 1 })
-    
-    # Add random structures to the module.
-    struct <- struct + matrix(rbinom(length(nodes)^2, 1, module_prob), p, p)
-    struct <- 1 * ((struct + t(struct)) > 0) # Symmetrize.
-    diag(struct) <- 0
+    # Generate a small world graph for the module using the Watts-Strogatz model.
+    struct <- as.matrix(
+      igraph::get.adjacency(igraph::watts.strogatz.game(1, p, module_neig, module_prob))) 
     return(list(nodes = nodes,
                 struct = struct))
   })
