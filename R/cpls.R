@@ -119,6 +119,7 @@ run_cpls <- function(x, v = 3, fdr = NULL, parallel = FALSE) {
   }
   
   #S6: Set the diagonal of s to 1 and symmetrize s.
+  diag(s) <- 1
   s <- (s + t(s)) * 0.5
   
   # If fdr is provided, set scores with fdr above this threshold to zero.
@@ -255,6 +256,7 @@ normalize_cpls_scores <- function(scores) {
 #'   s <- sapply(s_list, cbind)
 #'   
 #'   #S6: Set the diagonal of s to 1 and symmetrize s.
+#'   diag(s) <- 1
 #'   s <- (s + t(s)) * 0.5
 #'   
 #'   # If fdr is provided, set scores with fdr above this threshold to zero.
