@@ -17,6 +17,9 @@
 #' the estimate of mu for the null distribution, and the estimate of sigma
 #' for the null distribution.
 #' @export
+#' @note For cPLS scores, first use `normalize_cpls_scores()` to normalize the
+#' scores.
+#' @note The robust estimators used are median and MAD.
 fdr <- function(scores, gene_names = NULL, robust = TRUE) {
   # First obtain number of genes, `p`, and a vector of scores `val`.
   # `scores` can be either a vector or matrix.

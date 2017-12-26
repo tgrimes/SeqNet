@@ -34,3 +34,9 @@ Determine which associations are significant
 Determines which associations are significant using emperical 
 bayes and false discovery rate adjustment.
 }
+\note{
+For cPLS scores, first use `normalize_cpls_scores()` to normalize the
+scores.
+
+The robust estimators used are median and MAD.
+}
