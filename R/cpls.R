@@ -125,7 +125,7 @@ run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
   # If threshold is provided, set scores with fdr above this threshold to zero.
   if(!is.null(threshold)) {
     cat("Computing association matrix using fdr rate", threshold, "\n")
-    s[threshold(normalize_cpls_scores(s))$likelihood > threshold] <- 0
+    s[fdr(normalize_cpls_scores(s))$likelihood > threshold] <- 0
   }
   
   results <- list(scores = s, threshold = threshold)
@@ -262,7 +262,7 @@ normalize_cpls_scores <- function(scores) {
 #'   # If threshold is provided, set scores with fdr above this threshold to zero.
 #'   if(!is.null(threshold)) {
 #'     cat("Computing association matrix using threshold rate", threshold, "\n")
-#'     s[threshold(normalize_cpls_scores(s))$likelihood > threshold] <- 0
+#'     s[fdr(normalize_cpls_scores(s))$likelihood > threshold] <- 0
 #'   }
 #'   
 #'   results <- list(scores = s, threshold = threshold)
