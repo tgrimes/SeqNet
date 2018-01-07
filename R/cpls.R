@@ -20,7 +20,7 @@
 run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
   if(parallel) {
     if(.Platform$OS.type == "unix") {
-      return(run_cpls_parallel(x = x, v = v, fdr = fdr))
+      return(run_cpls_parallel(x = x, v = v, threshold = threshold))
     } else {
       cat("OS must be Unix to run in parallel. Running `cpls` sequentially.\n")
     }
@@ -122,13 +122,13 @@ run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
   diag(s) <- 1
   s <- (s + t(s)) * 0.5
   
-  # If fdr is provided, set scores with fdr above this threshold to zero.
-  if(!is.null(fdr)) {
-    cat("Computing association matrix using fdr rate", fdr, "\n")
-    s[fdr(normalize_cpls_scores(s))$likelihood > fdr] <- 0
+  # If threshold is provided, set scores with fdr above this threshold to zero.
+  if(!is.null(threshold)) {
+    cat("Computing association matrix using fdr rate", threshold, "\n")
+    s[threshold(normalize_cpls_scores(s))$likelihood > threshold] <- 0
   }
   
-  results <- list(scores = s, fdr = fdr)
+  results <- list(scores = s, threshold = threshold)
   
   return(results)
 }
@@ -152,13 +152,13 @@ normalize_cpls_scores <- function(scores) {
 #' #' @param x The n by p matrix of raw count data. Rows should correspond to
 #' #'   samples, and columns should correspond to genes.
 #' #' @param v The number of PLS components to compute.
-#' #' @param fdr (optional) the fdr signifiance fdr for inferring the 
+#' #' @param threshold (optional) the fdr signifiance threshold for inferring the 
 #' #'   network through empirical bayes fdr. If NULL, all scores are returned. 
-#' #'   Otherwise, scores with fdr above this fdr are set to zero.
+#' #'   Otherwise, scores with fdr above this threshold are set to zero.
 #' #' @param parallel Should cpls be run in parallel? (Unix system required.)
 #' #' @return a matrix of raw association scores. 
 #' #' @export
-#' run_cpls_parallel <- function(x, v = 3, fdr = NULL) {
+#' run_cpls_parallel <- function(x, v = 3, threshold = NULL) {
 #'   n <- nrow(x) #Number of observations.
 #'   p <- ncol(x) #Number of genes.
 #'   if(v >= n) {
@@ -259,13 +259,13 @@ normalize_cpls_scores <- function(scores) {
 #'   diag(s) <- 1
 #'   s <- (s + t(s)) * 0.5
 #'   
-#'   # If fdr is provided, set scores with fdr above this threshold to zero.
-#'   if(!is.null(fdr)) {
-#'     cat("Computing association matrix using fdr rate", fdr, "\n")
-#'     s[fdr(normalize_cpls_scores(s))$likelihood > fdr] <- 0
+#'   # If threshold is provided, set scores with fdr above this threshold to zero.
+#'   if(!is.null(threshold)) {
+#'     cat("Computing association matrix using threshold rate", threshold, "\n")
+#'     s[threshold(normalize_cpls_scores(s))$likelihood > threshold] <- 0
 #'   }
 #'   
-#'   results <- list(scores = s, fdr = fdr)
+#'   results <- list(scores = s, threshold = threshold)
 #'   
 #'   return(results)
 #' }
