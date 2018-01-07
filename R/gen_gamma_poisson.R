@@ -62,8 +62,8 @@ get_reference_count_means <- function(reference_dataset = NULL,
 gen_gamma_poisson <- function(n, 
                               network, 
                               mu = NULL,
-                              overdispersion = 1, 
-                              intensity = 1,
+                              overdispersion = 50, 
+                              intensity = 1.5,
                               k = 1.5) {
   if(k > 2 | k < 1) stop("k should be in [1, 2].")
   if(overdispersion <= 0) stop("overdispersion should be > 0")

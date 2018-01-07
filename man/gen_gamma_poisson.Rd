@@ -4,8 +4,8 @@
 \alias{gen_gamma_poisson}
 \title{Generate sample from overdispered Poisson}
 \usage{
-gen_gamma_poisson(n, network, mu = NULL, overdispersion = 1,
-  intensity = 1, k = 1.5)
+gen_gamma_poisson(n, network, mu = NULL, overdispersion = 50,
+  intensity = 1.5, k = 1.5)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
