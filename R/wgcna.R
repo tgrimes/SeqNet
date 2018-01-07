@@ -34,7 +34,7 @@ run_wgcna <- function(x, threshold = 0, beta = 6) {
   diag(scores) <- 0
   
   if(!is.null(threshold)) {
-    scores[round(assoc_matrix, 2) <= threshold] <- 0
+    scores[round(scores, 2) <= threshold] <- 0
   }
   
   return(list(scores = scores, threshold = threshold))
