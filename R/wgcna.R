@@ -13,8 +13,8 @@
 #' two decimal places. If threshold is provided, rounded scores at or below this 
 #' threshold are set to zero. Otherwise, all scores are returned.
 #' @param beta Tuning parameter for WGCNA.
-#' @return A list containing `scores`, a p by p matrix of association scores, and 
-#' `adj_matrix`, a p by p adjacency matrix.
+#' @return A list containing the p by p matrix of association scores, and the 
+#' threshold used to determine significant associations.
 #' @export
 run_wgcna <- function(x, threshold = 0, beta = 6) {
   #Normalize the data to account for 1) between-sample biases (TMM) and

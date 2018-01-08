@@ -15,7 +15,8 @@
 #'   network through empirical bayes fdr. If NULL, all scores are returned. 
 #'   Otherwise, scores with fdr above this threshold are set to zero.
 #' @param parallel Should cpls be run in parallel? (Unix system required.)
-#' @return a matrix of raw association scores. 
+#' @return A list containing the p by p matrix of association scores, and the 
+#' threshold used to determine significant associations.
 #' @export
 run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
   if(parallel) {
@@ -128,9 +129,7 @@ run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
     s[fdr(normalize_cpls_scores(s))$likelihood > threshold] <- 0
   }
   
-  results <- list(scores = s, threshold = threshold)
-  
-  return(results)
+  return(list(scores = s, threshold = threshold))
 }
 
 #' Normalize the cPLS scores
