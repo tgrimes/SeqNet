@@ -19,9 +19,10 @@ Otherwise, scores with fdr above this threshold are set to zero.}
 \item{parallel}{Should cpls be run in parallel? (Unix system required.)}
 }
 \value{
-a matrix of raw association scores.
+A list containing the p by p matrix of association scores, and the 
+threshold used to determine significant associations.
 }
 \description{
 Reconstructs a full genomic association network from a set of 
-next-generation sequencing count data.
+next-generation sequencing count data. No preprocessing is performed on x.
 }

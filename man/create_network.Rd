@@ -7,7 +7,7 @@
 create_network(p, n_cliques = NULL, clique_size = NULL, cliques = NULL,
   n_hubs = NULL, hub_size = NULL, hubs = NULL, n_modules = NULL,
   module_size = NULL, modules = NULL, nonoverlapping = FALSE,
-  module_neig = 2, module_prob = 0.05)
+  module_neig = 2, module_prob = 0.2)
 }
 \arguments{
 \item{p}{The number of nodes in the graph}
@@ -16,15 +16,22 @@ create_network(p, n_cliques = NULL, clique_size = NULL, cliques = NULL,
 
 \item{clique_size}{A vector containing the size of each clique.}
 
-\item{cliques}{(optional) A list of vectors, with each vector specifying a
+\item{cliques}{A list of vectors, with each vector specifying a
 set genes within a clique.}
 
 \item{n_hubs}{The number of hub genes in the graph.}
 
 \item{hub_size}{A vector containing the size (hub degree + 1) of each hub.}
 
-\item{hubs}{(optional) A list of vectors, with each vector specifying a set
+\item{hubs}{A list of vectors, with each vector specifying a set
 of hub genes; the first entry in the vector is the hub.}
+
+\item{n_modules}{The number of modules in the graph.}
+
+\item{module_size}{A vector containing the size of each hub.}
+
+\item{modules}{A list of vectors, with each vector specifying a set of
+genes within each module.}
 
 \item{nonoverlapping}{If true, cliques and hubs will not share any nodes.}
 
@@ -32,14 +39,18 @@ of hub genes; the first entry in the vector is the hub.}
 specifies the initial degree of each node.}
 
 \item{module_prob}{Used for generating small-world networks for modules; 
-specifies the rewiring probability.}
+specifies the rewiring probability of each initial edges. At 0 the graph is
+a lattice ring, and at 1 it is a random graph.}
 }
 \value{
 A network object.
 }
 \description{
 Creates a graph with certain features. This network is then
-used with other sample generating methods to obtain count data.
+used with other sample generating methods to obtain count data. Note: the
+module structure is used to incorporate general pathways in the graph. These
+are randomly constructed by generating a small-world graph using the Watts-Strogatz
+method (implemented through igraph::watts.strogatz.game).
 }
 \examples{
 # Create a network with no connections:

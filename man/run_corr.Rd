@@ -4,17 +4,24 @@
 \alias{run_corr}
 \title{Wrapper for correlation co-expression}
 \usage{
-run_corr(x, threshold = 0.9)
+run_corr(x, threshold = 0.9, method = "spearman")
 }
 \arguments{
-\item{x}{The n by p matrix of counts}
+\item{x}{The n by p matrix of counts.}
 
 \item{threshold}{Cutoff for significant associations. If NULL, all correlations
 are returned. Otherwise, correlations at or below this threshold are set to zero.}
+
+\item{method}{The method used to compute correlations. Should be either "pearson"
+or "spearman". The default value is set to spearman, which provides 
+the more conservative estimation of associations.}
 }
 \value{
-A list containing `scores`, a p by p matrix of correlations.
+A list containing the p by p matrix of correlations,
+the threshold used to determine significant associations, and
+the method used to compute the correlations.
 }
 \description{
 Conducts co-expression analysis using correlation for association measure.
+No preprocessing is done to x prior to computing the correlations.
 }

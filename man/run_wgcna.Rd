@@ -16,9 +16,12 @@ threshold are set to zero. Otherwise, all scores are returned.}
 \item{beta}{Tuning parameter for WGCNA.}
 }
 \value{
-A list containing `scores`, a p by p matrix of association scores, and 
-`adj_matrix`, a p by p adjacency matrix.
+A list containing the p by p matrix of association scores, and the 
+threshold used to determine significant associations.
 }
 \description{
-Conducts co-expression analysis using WGCNA method.
+Conducts co-expression analysis using WGCNA method. Preprocessing is performed
+on x: the trimmed mean of M-values (TMM) normalization, which accounts 
+for between-sample biases, and counts per million (CPM) scaling, which 
+addresses any difference in library sizes.
 }
