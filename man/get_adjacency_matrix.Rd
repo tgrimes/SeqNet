@@ -4,16 +4,19 @@
 \alias{get_adjacency_matrix}
 \title{Infer adjacency matrix from scores}
 \usage{
-get_adjacency_matrix(scores, significance = 0.1, method = 1)
+get_adjacency_matrix(scores, significance = 0.05, method = "fdr")
 }
 \arguments{
 \item{scores}{A symmetric p by p matrix of association scores.}
 
-\item{significance}{False discovery rate to use.}
+\item{significance}{Must be specified if method = "fdr". 
+Specifies the false discovery rate threshold to use.}
+
+\item{method}{Character string specifing which method to use. Currently only
+"fdr" is implemented.}
 }
 \value{
-A list containing the p by p adjacency matrix and all significant 
-  scores.
+The p by p adjacency matrix containing only 1's and 0's.
 }
 \description{
 Determines which associations are significant using emperical 

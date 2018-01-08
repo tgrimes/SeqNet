@@ -21,8 +21,9 @@
 #' scores.
 #' @note The robust estimators used are median and MAD.
 fdr <- function(scores, gene_names = NULL, robust = TRUE) {
+  
   # First obtain number of genes, `p`, and a vector of scores `val`.
-  # `scores` can be either a vector or matrix.
+  # Note: `scores` can be either a vector or matrix.
   if(length(dim(scores)) == 0) {
     # Vector of scores is provided.
     p <- sqrt(1 + 8*length(scores))/2 + 1/2 # Number of genes in network.
@@ -70,39 +71,27 @@ fdr <- function(scores, gene_names = NULL, robust = TRUE) {
 #' Determines which associations are significant using emperical 
 #' Bayes for false discovery rate adjustment.
 #' @param scores A symmetric p by p matrix of association scores.
-#' @param significance False discovery rate to use.
-#' @return A list containing the p by p adjacency matrix and all significant 
-#'   scores.
+#' @param significance Must be specified if method = "fdr". 
+#' Specifies the false discovery rate threshold to use.
+#' @param method Character string specifing which method to use. Currently only
+#' "fdr" is implemented.
+#' @return The p by p adjacency matrix containing only 1's and 0's.
 #' @export
-get_adjacency_matrix <- function(scores, significance = 0.1, method = 1) {
+get_adjacency_matrix <- function(scores, significance = 0.05, method = "fdr") {
   if(length(dim(scores)) != 2) {
     stop("scores should be a 2 dimensional matrix or data frame.")
   }
+  if(is.null(method)) {
+    stop("method must be specified.")
+  }
   
-  p <- nrow(scores) #Number of genes.
-  vals <- scores[lower.tri(scores)] #Vector of scores between each gene.
-  
-  mu.f0 <- mean(vals)
-  sigma.f0 <- sd(vals)
-  
-  ordered_vals <- order(vals)
-  n_vals <- length(vals)
-  
-  #Emperical Bayes FDR.
-  numerator <- dnorm(vals, mu.f0, sigma.f0)
-  denominator <- approx(density(vals), xout = vals)$y
-  plot(vals[ordered_vals], numerator[ordered_vals], col = "blue", type = "l",
-       main = "Empirical Bayes fdr")
-  lines(vals[ordered_vals], denominator[ordered_vals], col = "orange")
-  lines(vals[ordered_vals], numerator[ordered_vals] / significance, col = "red")
-  likelihood <- numerator / denominator
-  
-  if(method == 1) significant_scores <- likelihood < significance
-  
-  #Find significant edges.
-  adj_matrix <- matrix(0, nrow = p, ncol = p)
-  adj_matrix[lower.tri(adj_matrix)] <- 1 * significant_scores
-  adj_matrix <- adj_matrix + t(adj_matrix)
+  if(method == "fdr") {
+    likelihood <- fdr(scores)$likelihood
+    adj_matrix <- 1 * (likelihood < significance)
+  }
+  else {
+    error("method must be one of: `fdr`.")
+  }
   
   return(adj_matrix)
 }
