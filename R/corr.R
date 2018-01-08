@@ -2,7 +2,8 @@
 #' Wrapper for correlation co-expression
 #' 
 #' Conducts co-expression analysis using correlation for association measure.
-#' @param x The n by p matrix of counts
+#' No preprocessing is done to x prior to computing the correlations.
+#' @param x The n by p matrix of counts.
 #' @param threshold Cutoff for significant associations. If NULL, all correlations
 #' are returned. Otherwise, correlations at or below this threshold are set to zero.
 #' @return A list containing the p by p matrix of correlations,

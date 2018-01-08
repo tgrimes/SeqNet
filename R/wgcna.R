@@ -7,7 +7,10 @@
 
 #' Wrapper for WGCNA method
 #' 
-#' Conducts co-expression analysis using WGCNA method.
+#' Conducts co-expression analysis using WGCNA method. Preprocessing is performed
+#' on x: the trimmed mean of M-values (TMM) normalization, which accounts 
+#' for between-sample biases, and counts per million (CPM) scaling, which 
+#' addresses any difference in library sizes.
 #' @param x The n by p matrix of counts.
 #' @param threshold Cutoff for significant associations. Scores are rounded to
 #' two decimal places. If threshold is provided, rounded scores at or below this 

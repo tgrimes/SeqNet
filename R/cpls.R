@@ -7,7 +7,7 @@
 #' Combined partial least squares with negative-binomial
 #' 
 #' Reconstructs a full genomic association network from a set of 
-#' next-generation sequencing count data.
+#' next-generation sequencing count data. No preprocessing is performed on x. 
 #' @param x The n by p matrix of raw count data. Rows should correspond to
 #'   samples, and columns should correspond to genes.
 #' @param v The number of PLS components to compute.
