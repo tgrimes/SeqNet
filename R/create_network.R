@@ -30,21 +30,29 @@ setClass(Class = "network")
 #' Create a network object.
 #' 
 #' Creates a graph with certain features. This network is then
-#' used with other sample generating methods to obtain count data. 
+#' used with other sample generating methods to obtain count data. Note: the
+#' module structure is used to incorporate general pathways in the graph. These
+#' are randomly constructed by generating a small-world graph using the Watts-Strogatz
+#' method (implemented through igraph::watts.strogatz.game). 
 #' @param p The number of nodes in the graph
 #' @param n_cliques The number of cliques in the graph.
 #' @param clique_size A vector containing the size of each clique.
+#' @param cliques A list of vectors, with each vector specifying a
+#'   set genes within a clique.
 #' @param n_hubs The number of hub genes in the graph.
 #' @param hub_size A vector containing the size (hub degree + 1) of each hub.
-#' @param cliques (optional) A list of vectors, with each vector specifying a
-#'   set genes within a clique.
-#' @param hubs (optional) A list of vectors, with each vector specifying a set
+#' @param hubs A list of vectors, with each vector specifying a set
 #'   of hub genes; the first entry in the vector is the hub.
+#' @param n_modules The number of modules in the graph.
+#' @param module_size A vector containing the size of each hub.
+#' @param modules A list of vectors, with each vector specifying a set of
+#'   genes within each module.
 #' @param nonoverlapping If true, cliques and hubs will not share any nodes.
 #' @param module_neig Used for generating small-world networks for modules; 
 #' specifies the initial degree of each node.
 #' @param module_prob Used for generating small-world networks for modules; 
-#' specifies the rewiring probability.
+#' specifies the rewiring probability of each initial edges. At 0 the graph is
+#' a lattice ring, and at 1 it is a random graph. 
 #' @return A network object.
 #' @export 
 #' @examples 
@@ -58,7 +66,7 @@ create_network <- function(p,
                            n_cliques = NULL, clique_size = NULL, cliques = NULL,
                            n_hubs = NULL, hub_size = NULL, hubs = NULL,
                            n_modules = NULL, module_size = NULL, modules = NULL,
-                           nonoverlapping = FALSE, module_neig = 2, module_prob = 0.05) {
+                           nonoverlapping = FALSE, module_neig = 2, module_prob = 0.20) {
 
   if(p <= 0) stop("p should be positive.")
   
