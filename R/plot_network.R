@@ -27,8 +27,13 @@ plot.network <- function(network, compare_graph = NULL,
   
   if(class(network) == "network") {
     adj_matrix <- get_adj_matrix_from_network(network)
-  } else {
+  } else if(is.matrix(network)){
+    if(!all(network %in% c(0, 1))) {
+      network[network != 0] <- 1 # Set any nonzero values to 1.
+    }
     adj_matrix <- network
+  } else {
+    stop("network should be either a matrix or a network class object.")
   }
   
   if(is.null(colnames(adj_matrix))) {
@@ -43,9 +48,10 @@ plot.network <- function(network, compare_graph = NULL,
   igraph::V(g)$frame.color <- "white"
   
   if(sum(adj_matrix) == 0 & !is.null(compare_graph)) {
+    # The given network has no edges; plot the reference network with no edges.
     plot(compare_graph, vertex.color = "white", vertex.label.font = 2,
          vertex.label.color = "blue", vertex.label.cex = 0.7,
-         edge.color = "white", main = main, ...)
+         edge.color = "wheat", main = main, ...)
   } else {
     igraph::E(g)$width <- edge_scale
     if(as_subgraph) {
