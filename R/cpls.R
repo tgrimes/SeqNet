@@ -120,7 +120,7 @@ run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
   }
   
   #S6: Set the diagonal of s to 1 and symmetrize s.
-  diag(s) <- 1
+  diag(s) <- 0
   s <- (s + t(s)) * 0.5
   
   # If threshold is provided, set scores with fdr above this threshold to zero.
