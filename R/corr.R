@@ -8,13 +8,13 @@
 #' are returned. Otherwise, correlations of magnitude at or below this threshold are 
 #' set to zero.
 #' @param method The method used to compute correlations. Should be either "pearson"
-#'  or "spearman". The default value is set to spearman, which provides 
+#'  or "spearman". The default is Spearman, which provides 
 #'  the more conservative estimation of associations.
 #' @return A list containing the p by p matrix of correlations,
 #' the threshold used to determine significant associations, and
 #' the method used to compute the correlations.
 #' @export
-run_corr <- function(x, threshold = 0.9, method = "spearman") {
+run_corr <- function(x, threshold = NULL, method = "spearman") {
   if(!(method %in% c("pearson", "spearman"))) {
     stop('method should be one of c("pearson", "spearman").')
   }

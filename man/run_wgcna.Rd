@@ -4,16 +4,17 @@
 \alias{run_wgcna}
 \title{Wrapper for WGCNA method}
 \usage{
-run_wgcna(x, threshold = 0, beta = 6)
+run_wgcna(x, threshold = NULL, method = "pearson")
 }
 \arguments{
 \item{x}{The n by p matrix of counts.}
 
-\item{threshold}{Cutoff for significant associations. Scores are rounded to
-two decimal places. If threshold is provided, rounded scores at or below this 
-threshold are set to zero. Otherwise, all scores are returned.}
+\item{threshold}{Cutoff for significant associations. If NULL, all scores
+are returned. Otherwise, scores at or below this threshold are set to zero.}
 
-\item{beta}{Tuning parameter for WGCNA.}
+\item{method}{The method used to compute correlations. Should be either "pearson"
+or "spearman". The default is Spearman, which provides 
+the more conservative estimation of associations.}
 }
 \value{
 A list containing the p by p matrix of association scores, and the 

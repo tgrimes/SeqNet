@@ -4,17 +4,17 @@
 \alias{run_cpls}
 \title{Combined partial least squares with negative-binomial}
 \usage{
-run_cpls(x, v = 3, threshold = 0.05, parallel = FALSE)
+run_cpls(x, threshold = NULL, v = 3, parallel = FALSE)
 }
 \arguments{
 \item{x}{The n by p matrix of raw count data. Rows should correspond to
 samples, and columns should correspond to genes.}
 
-\item{v}{The number of PLS components to compute.}
-
 \item{threshold}{(optional) the fdr signifiance threshold for inferring the 
 network through empirical bayes fdr. If NULL, all scores are returned. 
 Otherwise, scores with fdr above this threshold are set to zero.}
+
+\item{v}{The number of PLS components to compute.}
 
 \item{parallel}{Should cpls be run in parallel? (Unix system required.)}
 }

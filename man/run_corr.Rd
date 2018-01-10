@@ -4,7 +4,7 @@
 \alias{run_corr}
 \title{Wrapper for correlation co-expression}
 \usage{
-run_corr(x, threshold = 0.9, method = "spearman")
+run_corr(x, threshold = NULL, method = "spearman")
 }
 \arguments{
 \item{x}{The n by p matrix of counts.}
@@ -14,7 +14,7 @@ are returned. Otherwise, correlations of magnitude at or below this threshold ar
 set to zero.}
 
 \item{method}{The method used to compute correlations. Should be either "pearson"
-or "spearman". The default value is set to spearman, which provides 
+or "spearman". The default is Spearman, which provides 
 the more conservative estimation of associations.}
 }
 \value{

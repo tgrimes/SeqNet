@@ -18,7 +18,7 @@
 #' @return A list containing the p by p matrix of association scores, and the 
 #' threshold used to determine significant associations.
 #' @export
-run_cpls <- function(x, v = 3, threshold = 0.05, parallel = FALSE) {
+run_cpls <- function(x, threshold = NULL, v = 3, parallel = FALSE) {
   if(parallel) {
     if(.Platform$OS.type == "unix") {
       return(run_cpls_parallel(x = x, v = v, threshold = threshold))
