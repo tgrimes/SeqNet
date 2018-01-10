@@ -5,7 +5,8 @@
 #' No preprocessing is done to x prior to computing the correlations.
 #' @param x The n by p matrix of counts.
 #' @param threshold Cutoff for significant associations. If NULL, all correlations
-#' are returned. Otherwise, correlations at or below this threshold are set to zero.
+#' are returned. Otherwise, correlations of magnitude at or below this threshold are 
+#' set to zero.
 #' @param method The method used to compute correlations. Should be either "pearson"
 #'  or "spearman". The default value is set to spearman, which provides 
 #'  the more conservative estimation of associations.
@@ -25,7 +26,7 @@ run_corr <- function(x, threshold = 0.9, method = "spearman") {
   diag(scores) <- 0
   
   if(!is.null(threshold)) {
-    scores[scores <= threshold] <- 0
+    scores[abs(scores) <= threshold] <- 0
   }
 
   return(list(scores = scores, threshold = threshold, method = method))

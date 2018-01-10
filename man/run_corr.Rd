@@ -10,7 +10,8 @@ run_corr(x, threshold = 0.9, method = "spearman")
 \item{x}{The n by p matrix of counts.}
 
 \item{threshold}{Cutoff for significant associations. If NULL, all correlations
-are returned. Otherwise, correlations at or below this threshold are set to zero.}
+are returned. Otherwise, correlations of magnitude at or below this threshold are 
+set to zero.}
 
 \item{method}{The method used to compute correlations. Should be either "pearson"
 or "spearman". The default value is set to spearman, which provides 
