@@ -36,7 +36,6 @@ fdr <- function(scores,
   
   # Determine whether scores is a vector or matrix.
   if(is.matrix(scores)) {
-    if(length(dim(scores)) != 2) stop("scores is not a 2 dimensional matrix.")
     if(!all(scores == t(scores))) stop("scores is not symmetric.")
     score_names <- colnames(scores)     # Keep column names for scores.
     scores <- scores[lower.tri(scores)] # Turn scores into vector.
