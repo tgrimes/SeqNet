@@ -125,8 +125,10 @@ run_cpls <- function(x, threshold = NULL, v = 3, parallel = FALSE) {
   
   # If threshold is provided, set scores with fdr above this threshold to zero.
   if(!is.null(threshold)) {
-    cat("Computing association matrix using fdr rate", threshold, "\n")
-    s[fdr(normalize_cpls_scores(s))$likelihood > threshold] <- 0
+    cat("Setting non-significant scores to zero using fdr rate", threshold, "\n")
+    s <- fdr(s, 
+             threshold = threshold, 
+             transformation = normalize_cpls_scores)
   }
   
   return(list(scores = s, threshold = threshold))
