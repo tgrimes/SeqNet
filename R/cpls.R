@@ -128,7 +128,7 @@ run_cpls <- function(x, threshold = NULL, v = 3, parallel = FALSE) {
     cat("Setting non-significant scores to zero using fdr rate", threshold, "\n")
     s <- fdr(s, 
              threshold = threshold, 
-             transformation = normalize_cpls_scores)
+             transformation = normalize_cpls_scores)$scores
   }
   
   return(list(scores = s, threshold = threshold))
