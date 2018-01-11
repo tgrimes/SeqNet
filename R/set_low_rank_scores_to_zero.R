@@ -20,8 +20,8 @@ set_low_rank_scores_to_zero <- function(scores, rank = 100, verbose = FALSE) {
   # Note 1: The value is used, rather than the index itself, so that ties can
   #         be handled appropriately.
   # Note 2: Since scores is symmetric, each value is duplicated, so twice of 
-  #         rank_threshold is used.
-  threshold <- abs(scores[index_top[2 * rank_threshold]])
+  #         rank is used.
+  threshold <- abs(scores[index_top[2 * rank]])
   
   # Determine which scores are below the threshold.
   index_low_scores <- which(abs(scores) < threshold)
