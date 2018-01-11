@@ -4,25 +4,36 @@
 \alias{fdr}
 \title{Determine which associations are significant}
 \usage{
-fdr(scores, gene_names = NULL, robust = TRUE)
+fdr(scores, threshold = 0.05, transformation = NULL, robust = TRUE,
+  include_likelihood = FALSE)
 }
 \arguments{
 \item{scores}{A symmetric p by p matrix of association scores.}
 
-\item{gene_names}{(optional) Vector of gene names.}
+\item{threshold}{The threshold for false discovery rate, used to determine 
+significance; scores with ikelihood ratios above this threshold are
+set to zero. If NULL, all scores are preserved.}
+
+\item{transformation}{(option) Function applied to scores before
+estimating the null distribution. If provided, the function should take 
+a vector as input and return a vector for output.}
 
 \item{robust}{Should robust estimates of mean and variance be used?}
 
-\item{scores}{Either a vector or a symmetric matrix of association scores.
-If a vector, `scores` should be the lower.tri entries of the the association
-matrix.}
+\item{include_likelihood}{Should the matrix of likelihood ratios be provided
+in the output?}
+
+\item{scores}{Either a vector or a symmetric matrix of association scores.}
+
+\item{gene_names}{(optional) Vector of gene names.}
 }
 \value{
 A p by p matrix of likelihood.
 
-A list containing the p by p matrix of likelihood ratios (fdr rates),
-the estimate of mu for the null distribution, and the estimate of sigma
-for the null distribution.
+A list containing the scores with non-significant values set to zero,
+the estimate of mu for the null distribution, the estimate of sigma
+for the null distribution, the empirical density estimate, and 
+(optional) likelihood ratios (fdr rates) for each score.
 }
 \description{
 Determines which associations are significant using emperical 
@@ -35,8 +46,8 @@ Determines which associations are significant using emperical
 bayes and false discovery rate adjustment.
 }
 \note{
-For cPLS scores, first use `normalize_cpls_scores()` to normalize the
-scores.
+For cPLS scores, it is recommended to use `normalize_cpls_scores()`
+as the transformation.
 
 The robust estimators used are median and MAD.
 }
