@@ -30,10 +30,11 @@ in the output?}
 \value{
 A p by p matrix of likelihood.
 
-A list containing the scores with non-significant values set to zero,
-the estimate of mu for the null distribution, the estimate of sigma
-for the null distribution, the empirical density estimate, and 
-(optional) likelihood ratios (fdr rates) for each score.
+A list containing: `scores`, the scores with non-significant values 
+set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
+the estimate of sigma for the null distribution; `f`, the empirical density
+estimate; and `likelihood`, (optional) the likelihood ratios (fdr rates)
+for each score.
 }
 \description{
 Determines which associations are significant using emperical 

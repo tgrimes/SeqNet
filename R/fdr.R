@@ -19,10 +19,11 @@
 #' @param gene_names (optional) Vector of gene names.
 #' @param include_likelihood Should the matrix of likelihood ratios be provided
 #' in the output?
-#' @return A list containing the scores with non-significant values set to zero,
-#' the estimate of mu for the null distribution, the estimate of sigma
-#' for the null distribution, the empirical density estimate, and 
-#' (optional) likelihood ratios (fdr rates) for each score.
+#' @return A list containing: `scores`, the scores with non-significant values 
+#' set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
+#' the estimate of sigma for the null distribution; `f`, the empirical density
+#' estimate; and `likelihood`, (optional) the likelihood ratios (fdr rates)
+#' for each score.
 #' @export
 #' @note For cPLS scores, it is recommended to use `normalize_cpls_scores()`
 #' as the transformation.
@@ -54,16 +55,16 @@ fdr <- function(scores,
   
   # Estimate paramters of null distribution (assumed to be Gaussian).
   if(robust) {
-    mu.f0 <- median(scores) # Use median to account for any skewness.
-    sigma.f0 <- 1.4826 * median(abs(scores - median(scores))) # Use 1.4826 * MAD.
+    mu_f0 <- median(scores) # Use median to account for any skewness.
+    sigma_f0 <- 1.4826 * median(abs(scores - median(scores))) # Use 1.4826 * MAD.
   } else {
-    mu.f0 <- mean(scores) 
-    sigma.f0 <- sd(scores) 
+    mu_f0 <- mean(scores) 
+    sigma_f0 <- sd(scores) 
   }
   
   # Emperical Bayes FDR. Save likelihood ratios.
   f <- density(scores)
-  likelihood <- dnorm(scores, mu.f0, sigma.f0) / approx(f, xout = scores)$y
+  likelihood <- dnorm(scores, mu_f0, sigma_f0) / approx(f, xout = scores)$y
   
   # Apply thresholding if provided.
   if(!is.null(threshold)) {
@@ -87,8 +88,8 @@ fdr <- function(scores,
   }
   
   fdr_return_list <- list(scores = scores, 
-                          mu.f0 = mu.f0, 
-                          sigma.f0 = sigma.f0,
+                          mu_f0 = mu_f0, 
+                          sigma_f0 = sigma_f0,
                           f = f)
   if(include_likelihood) {
     fdr_return_list <- c(fdr_return_list, 
