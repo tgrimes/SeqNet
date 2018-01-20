@@ -62,12 +62,16 @@ fdr <- function(scores,
   }
   
   # Emperical Bayes FDR. Save likelihood ratios.
-  f <- density(scores)
+  f <- density(scores, 
+               kernel = "gaussian")
   likelihood <- dnorm(scores, mu_f0, sigma_f0) / approx(f, xout = scores)$y
   
   # Apply thresholding if provided.
   if(!is.null(threshold)) {
     scores[likelihood > threshold] <- 0
+  } else {
+    # If no threshold is provided, return likelihood ratios.
+    include_likelihood <- TRUE
   }
   
   if(matrix_provided) {
