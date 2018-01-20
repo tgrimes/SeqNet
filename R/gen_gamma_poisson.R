@@ -84,11 +84,12 @@ gen_gamma_poisson <- function(n,
   mu <- matrix(mu, nrow = p, ncol = n + 1)
   adjust <- function(mu, edges) {
     x <- apply(edges, 2, function(edge) {
+      # Only consider non-zero values when averaging.
       index <- which(edge != 0)
       if(length(index) > 0) {
-        return(mean(edge[index]))
+        return(mean(edge[index])) # Average edge weights.
       } else {
-        return(0)
+        return(0) # There are no edges for this node.
       }
     })
     val <- mu * exp(x)
