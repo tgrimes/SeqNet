@@ -49,8 +49,10 @@ plot.network <- function(network, compare_graph = NULL,
   
   if(sum(adj_matrix) == 0 & !is.null(compare_graph)) {
     # The given network has no edges; plot the reference network with no edges.
+    vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
+    
     plot(compare_graph, vertex.color = "white", vertex.label.font = 2,
-         vertex.label.color = "blue", vertex.label.cex = 0.7,
+         vertex.label.color = vertex.label.color, vertex.label.cex = 0.7,
          edge.color = "wheat", main = main, ...)
   } else {
     igraph::E(g)$width <- edge_scale
@@ -64,6 +66,7 @@ plot.network <- function(network, compare_graph = NULL,
     }
     
     edge.color <- "black"
+    vertex.label.color = "blue"
     if(!is.null(compare_graph)) {
       h <- compare_graph %u% g
       edge.color <- rep("red", length(igraph::E(h))) # Default color for edge in compared network is red.
@@ -74,17 +77,17 @@ plot.network <- function(network, compare_graph = NULL,
                rep("wheat", length(igraph::E(compare_graph))))
       g <- h
       
+      vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
+      
       igraph::V(g)$size <- log(apply(adj_matrix, 2, sum) + 1) 
       igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
       igraph::V(g)$frame.color <- "white"
       
-      if(!is.null(compare_graph)) {
-        coords <- igraph::layout.fruchterman.reingold(compare_graph)
-      }
+      coords <- igraph::layout.fruchterman.reingold(compare_graph)
     }
     
     plot(g, vertex.color = "orange", vertex.label.font = 2,
-         vertex.label.color = "blue", vertex.label.cex = 0.7,
+         vertex.label.color = vertex.label.color, vertex.label.cex = 0.7,
          edge.color = edge.color, layout = coords,
          main = main, ...)
   }
