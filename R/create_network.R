@@ -125,7 +125,7 @@ create_network <- function(p,
   cliques <- setup_structure(cliques, n_cliques, clique_size)
   cliques <- lapply(cliques, function(clique) {
     nodes <- clique
-    struct <- rep(1, length(nodes))
+    struct <- rep(1L, length(nodes))
     return(list(nodes = nodes,
                 struct = struct))
   })
@@ -134,7 +134,7 @@ create_network <- function(p,
   hubs <- setup_structure(hubs, n_hubs, hub_size)
   hubs <- lapply(hubs, function(hub) {
     nodes <- hub
-    struct <- rep(1, length(nodes))
+    struct <- rep(1L, length(nodes))
     return(list(nodes = nodes,
                 struct = struct))
   })
@@ -146,7 +146,9 @@ create_network <- function(p,
     nodes <- module
     # Generate a small world graph for the module using the Watts-Strogatz model.
     struct <- as.matrix(
-      igraph::get.adjacency(igraph::watts.strogatz.game(1, p, module_neig, module_prob))) 
+               igraph::get.adjacency(
+                igraph::watts.strogatz.game(1, p, 
+                                            module_neig, module_prob)))
     return(list(nodes = nodes,
                 struct = struct))
   })
@@ -211,7 +213,7 @@ get_adj_matrix_from_network <- function(network) {
 add_sign_to_network <- function(network) {
   network$hubs <- lapply(network$hubs, function(hub) {
     k <- length(hub$nodes) - 1
-    hub$signs <- c(1, sample(c(-1, 1), k, replace = TRUE))
+    hub$signs <- c(1L, sample(c(-1, 1), k, replace = TRUE))
     return(hub)
   })
   
@@ -253,6 +255,7 @@ add_weight_to_network <- function(network, intensity = 1) {
     signs <- hub$signs[-1] # Determines pos. or neg. association with hub node.
     k <- length(nodes) - 1
     weights <- rnorm(k, 0, intensity) # Different weights for each edge.
+    # weights <- rbeta(k, 5, 3) * intensity # New weight for each edge.
     weight_matrix[nodes[1], nodes[-1]] <<- 
       weights * signs + weight_matrix[nodes[1], nodes[-1]]
     weight_matrix[nodes[-1], nodes[1]] <<- 
@@ -264,8 +267,9 @@ add_weight_to_network <- function(network, intensity = 1) {
     signs <- clique$signs # Determines pos. or neg. association with latent factor.
     k <- length(nodes)
     weight <- matrix(rnorm(1, 0, intensity / sqrt(k)), k, k) # Same weight for all edges.
+    # weights <- matrix(rbeta(1, 5, 3), k, k) * intensity / k # New weight for each edge.
     weight_matrix[nodes, nodes] <<- 
-      weight %*% diag(signs) + weight_matrix[nodes, nodes]
+      weights %*% diag(signs) + weight_matrix[nodes, nodes]
   })
   
   lapply(network$modules, function(module) {
@@ -274,10 +278,11 @@ add_weight_to_network <- function(network, intensity = 1) {
     signs <- module$struct
     k <- length(nodes)
     weight <- matrix(rnorm(k^2, 0, intensity / sqrt(2)), k, k) # New weight for each edge.
-    weight <- weight + t(weight) # Symmetrize weights.
-    weight <- weight * struct # Impose structure of the module.
+    # weights <- matrix(rbeta(k^2, 5, 3), k, k) * intensity / 2 # New weight for each edge.
+    weights <- weights + t(weights) # Symmetrize weights.
+    weights <- weights * struct # Impose structure of the module.
     weight_matrix[nodes, nodes] <<- 
-      weight * signs + weight_matrix[nodes, nodes]
+      weights * signs + weight_matrix[nodes, nodes]
   })
   
   network$weight_matrix <- weight_matrix
@@ -285,4 +290,82 @@ add_weight_to_network <- function(network, intensity = 1) {
   return(network)
 }
 
+remove_node_from_hub <- function(network, hub_index, node_index) {
+  if(node_index == 1) {
+    # Node is hub gene itself; remove entire hub.
+    network$hubs[hub_index] <- NULL
+    return(network)
+  }
+  
+  network$hubs[[hub_index]]$nodes <- 
+    network$hubs[[hub_index]]$nodes[-node_index]
+  network$hubs[[hub_index]]$struct <- 
+    network$hubs[[hub_index]]$struct[-node_index]
+  network$hubs[[hub_index]]$signs <- 
+    network$hubs[[hub_index]]$signs[-node_index]
+  return(network)
+}
 
+remove_node_from_module <- function(network, module_index, node_index) {
+  network$modules[[module_index]]$nodes <- 
+    network$modules[[module_index]]$nodes[-node_index]
+  network$modules[[module_index]]$struct <- 
+    network$modules[[module_index]]$struct[-node_index, -node_index]
+  network$modules[[module_index]]$signs <- 
+    network$modules[[module_index]]$signs[-node_index, -node_index]
+  return(network)
+}
+
+remove_node_from_clique <- function(network, clique_index, node_index) {
+  network$cliques[[clique_index]]$nodes <- 
+    network$cliques[[clique_index]]$nodes[-node_index]
+  network$cliques[[clique_index]]$struct <- 
+    network$cliques[[clique_index]]$struct[-node_index]
+  network$cliques[[clique_index]]$signs <- 
+    network$cliques[[clique_index]]$signs[-node_index]
+  return(network)
+}
+
+remove_connections_to_node <- function(node, network) {
+  if(is.character(node)) {
+    node <- which(network$node_names == node)
+    if(length(node) == 0) {
+      warning("Node not found amoung node names. Returning network unchanged.")
+      return(network)
+    }
+  }
+  
+  if(length(network$hubs) > 0) {
+    hubs_removed <- 0
+    for(i in 1:length(network$hubs)) {
+      hub_index <- i - hubs_removed
+      node_index <- which(node == network$hubs[[hub_index]]$nodes)
+      if(length(node_index) == 1) {
+        if(node_index == 1) hubs_removed <- hubs_removed + 1
+        
+        network <- remove_node_from_hub(network, hub_index, node_index)
+      }
+    }
+  }
+  
+  if(length(network$modules) > 0) {
+    for(i in 1:length(network$modules)) {
+      node_index <- which(node == network$modules[[i]]$nodes)
+      if(length(node_index) == 1) {
+        network <- remove_node_from_module(network, i, node_index)
+      }
+    }
+  }
+  
+  
+  if(length(network$clique) > 0) {
+    for(i in 1:length(network$clique)) {
+      node_index <- which(node == network$clique[[i]]$nodes)
+      if(length(node_index) == 1) {
+        network <- remove_node_from_clique(network, i, node_index)
+      }
+    }
+  }
+  
+  return(network)
+}
