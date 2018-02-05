@@ -266,7 +266,7 @@ add_weight_to_network <- function(network, intensity = 1) {
     nodes <- clique$nodes
     signs <- clique$signs # Determines pos. or neg. association with latent factor.
     k <- length(nodes)
-    weight <- matrix(rnorm(1, 0, intensity / sqrt(k)), k, k) # Same weight for all edges.
+    weights <- matrix(rnorm(1, 0, intensity / sqrt(k)), k, k) # Same weight for all edges.
     # weights <- matrix(rbeta(1, 5, 3), k, k) * intensity / k # New weight for each edge.
     weight_matrix[nodes, nodes] <<- 
       weights %*% diag(signs) + weight_matrix[nodes, nodes]
@@ -277,7 +277,7 @@ add_weight_to_network <- function(network, intensity = 1) {
     struct <- module$struct
     signs <- module$struct
     k <- length(nodes)
-    weight <- matrix(rnorm(k^2, 0, intensity / sqrt(2)), k, k) # New weight for each edge.
+    weights <- matrix(rnorm(k^2, 0, intensity / sqrt(2)), k, k) # New weight for each edge.
     # weights <- matrix(rbeta(k^2, 5, 3), k, k) * intensity / 2 # New weight for each edge.
     weights <- weights + t(weights) # Symmetrize weights.
     weights <- weights * struct # Impose structure of the module.
