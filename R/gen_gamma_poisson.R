@@ -98,7 +98,13 @@ gen_gamma_poisson <- function(n,
   }
   
   for(i in 1:n) {
-    edges <- add_weight_to_network(network, intensity)$weight_matrix
+    # If the network has fixed connection weights, use those.
+    if(!is.null(network$weight_matrix)) {
+      edges <- network$weight_matrix
+    } else {
+      # Otherwise, generate random connection weights.
+      edges <- add_weight_to_network(network, intensity)$weight_matrix
+    }
     mu[, i + 1] <- adjust(mu[, 1], edges)
     theta <- rgamma(p,
                     shape = mu[, i + 1]^(2 - k) / overdispersion,
