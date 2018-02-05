@@ -20,9 +20,9 @@ get_reference_count_means <- function(reference_dataset = NULL,
                                       max_mean_count = NULL) {
   if(is.null(reference_dataset)) {
     data(kidney)
-    reference_data <- kidney$counts
+    reference_dataset <- t(kidney$counts)
   }
-  avg_counts <- apply(reference_data, 1, mean)
+  avg_counts <- apply(reference_dataset, 2, mean)
   
   if(!is.null(min_mean_count)) {
     avg_counts <- avg_counts[avg_counts >= min_mean_count]
