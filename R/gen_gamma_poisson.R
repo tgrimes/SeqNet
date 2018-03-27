@@ -62,7 +62,7 @@ get_reference_count_means <- function(reference_dataset = NULL,
 gen_gamma_poisson <- function(n, 
                               network, 
                               mu = NULL,
-                              overdispersion = 50, 
+                              overdispersion = 1, 
                               intensity = 1.5,
                               k = 1.5) {
   if(k > 2 | k < 1) stop("k should be in [1, 2].")
@@ -93,7 +93,7 @@ gen_gamma_poisson <- function(n,
       }
     })
     val <- mu * exp(x)
-    val <- ifelse(val <= 2 * max_mean_count, val, 2 * max_mean_count)
+    val <- ifelse(val <= 10 * max_mean_count, val, 10 * max_mean_count)
     return(val)
   }
   
