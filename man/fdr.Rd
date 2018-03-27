@@ -5,7 +5,7 @@
 \title{Determine which associations are significant}
 \usage{
 fdr(scores, threshold = 0.05, transformation = NULL, robust = TRUE,
-  include_likelihood = FALSE)
+  include_likelihood = FALSE, show_plot = TRUE)
 }
 \arguments{
 \item{scores}{A symmetric p by p matrix of association scores.}
@@ -22,6 +22,9 @@ a vector as input and return a vector for output.}
 
 \item{include_likelihood}{Should the matrix of likelihood ratios be provided
 in the output?}
+
+\item{show_plot}{If TRUE, a histogram of scores with estimated density
+and null distribution is plotted.}
 
 \item{scores}{Either a vector or a symmetric matrix of association scores.}
 
@@ -50,5 +53,7 @@ bayes and false discovery rate adjustment.
 For cPLS scores, it is recommended to use `normalize_cpls_scores()`
 as the transformation.
 
-The robust estimators used are median and MAD.
+The robust estimators used are median and MAD. If the majority of scores
+are zero, the robust estimate for sigma might be zero; in this case the 
+usual estimator is used instead.
 }
