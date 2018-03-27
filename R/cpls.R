@@ -29,6 +29,8 @@ run_cpls <- function(x, threshold = NULL, v = 1, parallel = TRUE) {
   
   n <- nrow(x) #Number of observations.
   p <- ncol(x) #Number of genes.
+  gene_names <- colnames(x)
+  
   if(v >= n) {
     stop("v must be less than n (the number of rows in X)")
   }
@@ -126,6 +128,8 @@ run_cpls <- function(x, threshold = NULL, v = 1, parallel = TRUE) {
              transformation = normalize_cpls_scores)$scores
   }
   
+  colnames(s) <- gene_names
+  
   return(list(scores = s, threshold = threshold))
 }
 
@@ -161,13 +165,15 @@ run_cpls_parallel <- function(x, threshold = NULL, v = 1, parallel = FALSE) {
     stop("v must be less than n (the number of rows in X)")
   }
   
+  gene_names <- colnames(x)
+  
   if(is.data.frame(x)) {
     x <- as.matrix(x)
   }
   if(any(!is.numeric(x))) {
     stop("x contains non-numeric value(s).")
   }
-
+  
   #Total read counts in each sample.
   num_reads_by_sample <- apply(x, 1, sum)
 
@@ -257,6 +263,8 @@ run_cpls_parallel <- function(x, threshold = NULL, v = 1, parallel = FALSE) {
              threshold = threshold, 
              transformation = normalize_cpls_scores)$scores
   }
+  
+  colnames(s) <- gene_names
   
   return(list(scores = s, threshold = threshold))
 }

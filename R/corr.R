@@ -29,5 +29,7 @@ run_corr <- function(x, threshold = NULL, method = "spearman") {
     scores[abs(scores) <= threshold] <- 0
   }
 
+  colnames(scores) <- colnames(x)
+  
   return(list(scores = scores, threshold = threshold, method = method))
 }
