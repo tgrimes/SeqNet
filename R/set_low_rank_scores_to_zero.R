@@ -12,6 +12,10 @@
 #' number of edges may exceed rank.
 #' @export
 set_low_rank_scores_to_zero <- function(scores, rank = 100, verbose = FALSE) {
+  if(any(diag(scores) > 0)) {
+    warning("some diagonal scores are nonzero. Setting to zero.")
+    diag(scores) <- 0
+  }
   
   # Find descending order (in absolute value).
   index_top <- order(abs(scores), decreasing = TRUE)
