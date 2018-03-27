@@ -66,7 +66,7 @@ create_network <- function(p,
                            n_cliques = NULL, clique_size = NULL, cliques = NULL,
                            n_hubs = NULL, hub_size = NULL, hubs = NULL,
                            n_modules = NULL, module_size = NULL, modules = NULL,
-                           nonoverlapping = FALSE, module_neig = 2, module_prob = 0.20) {
+                           nonoverlapping = FALSE, module_neig = 2, module_prob = 0.90) {
 
   if(p <= 0) stop("p should be positive.")
   
@@ -146,9 +146,9 @@ create_network <- function(p,
     nodes <- module
     # Generate a small world graph for the module using the Watts-Strogatz model.
     struct <- as.matrix(
-               igraph::get.adjacency(
-                igraph::watts.strogatz.game(1, p, 
-                                            module_neig, module_prob)))
+                igraph::get.adjacency(
+                  igraph::watts.strogatz.game(1, p, 
+                                              module_neig, module_prob)))
     return(list(nodes = nodes,
                 struct = struct))
   })
@@ -165,6 +165,121 @@ create_network <- function(p,
   class(network) <- "network"
   
   return(network)
+}
+
+create_network_scale_free <- function(p) {
+  max_iter <- 500
+  iter <- 1
+  
+  min_n_hubs <- max(5, floor(sqrt(p) / 4))
+  min_n_modules <- max(1, floor(sqrt(p) / 4))
+  max_n_hubs <- ceiling(sqrt(p) * 3)
+  max_n_modules <- ceiling(sqrt(p) * 3)
+  min_mu_hubs <- 2
+  max_mu_hubs <- max(2, p * 0.25)
+  min_mu_modules <- 2
+  max_mu_modules <- max(2, p * 0.5)
+  
+  n_hubs <- rep(0, max_iter)
+  n_modules <- rep(0, max_iter)
+  mu_hubs <- rep(0, max_iter)
+  mu_modules <- rep(0, max_iter)
+  
+  n_hubs[1] <- sample(min_n_hubs:max_n_hubs, 1) #rep(ceiling(sqrt(p) / 2), max_iter)
+  n_modules[1] <- sample(min_n_modules:max_n_modules, 1) #rep(ceiling(sqrt(p) / 3), max_iter)
+  mu_hubs[1] <- (min_mu_hubs + max_mu_hubs) / 2 #rep(sqrt(p), max_iter)
+  mu_modules[1] <- (min_mu_modules + max_mu_modules) / 2 #rep(sqrt(p) * 4, max_iter)
+  
+  d_mu_hubs <- 0
+  d_n_hubs <- 0
+  d_n_modules <- 0
+  
+  r_sq <- rep(0, max_iter)
+  par(mfrow = c(1, 3))
+  while(iter < max_iter) {
+    network <- create_network(p = p,
+                             hubs = lapply(rnbinom(ceiling(n_hubs[iter]), 2, 
+                                                   mu = mu_hubs[iter]), function(x) {
+                               x <- max(min(x, p), 2) # Make sure x is in [2, p].
+                               sample(1:p, x)
+                             }),
+                             modules = lapply(rnbinom(ceiling(n_modules[iter]), 2, 
+                                                      mu = mu_modules[iter]), function(x) {
+                               x <- max(min(x, p), 2) # Make sure x is in [2, p].
+                               sample(1:p, x)
+                             }),
+                             module_neig = 3,
+                             module_prob = 0.9)
+    
+    # Compute r_sq for scale-free distribution of degree.
+    degree <- apply(get_adj_matrix_from_network(network), 2, sum)
+    #par(mfrow = c(1, 3))
+    #r_sq <- WGCNA::scaleFreePlot(degree)$scaleFreeRsquared
+    #hist(degree + 1)
+    #hist(log(degree + 1))
+    r_sq[iter] <- summary(lm(log(approx(density(degree + 1), xout = degree + 1)$y) ~ log(degree + 1)))$r.squared
+    
+    # Plot progress.
+    
+    
+    # Walk in parameter space.
+    # Make step size proportional to 1 - r_sq.
+    step <- floor(10 * (1 - r_sq[iter]))
+    # If r_sq improved, bias direction towards current direction.
+    if((iter == 1) || (r_sq[iter - 1] <= r_sq[iter])) {
+      direction <- 1
+    } else {
+      direction <- -1
+    }
+    d_n_hubs <- direction * ceiling(d_n_hubs * (1 - iter / max_iter)) + 
+      sample(seq(-step, step), 1)
+    d_n_modules <- direction * ceiling(d_n_modules * (1 - iter / max_iter)) + 
+      sample(seq(-step, step), 1)
+    d_mu_hubs <- direction * d_mu_hubs * (1 - iter / max_iter) + 
+      rnorm(1, 0, mu_hubs[1] * 0.2) * (1 - r_sq[iter])
+    d_mu_modules <- direction * d_mu_modules * (1 - iter / max_iter) +
+      rnorm(1, 0, mu_modules[1] * 0.2) * (1 - r_sq[iter])
+    # } else {
+    #   d_n_hubs <- sample(seq(-step, step), 1)
+    #   d_n_modules <- sample(seq(-step, step), 1)
+    #   d_mu_hubs <- rnorm(1, 0, mu_hubs[1] * 0.2) * (1 - r_sq[iter])
+    #   d_mu_modules <- rnorm(1, 0, mu_modules[1] * 0.2) * (1 - r_sq[iter])
+    # }
+    
+    # cat("(", d_n_hubs, ", ", d_n_modules, ")\n", sep = "")
+    
+    # Update parameters.
+    n_hubs[iter + 1] <-     min(max(min_n_hubs, n_hubs[iter] + d_n_hubs),
+                                max_n_hubs)
+    n_modules[iter + 1] <-  min(max(min_n_modules, n_modules[iter] + d_n_modules), 
+                                max_n_modules)
+    mu_hubs[iter + 1] <-    min(max(min_mu_hubs, mu_hubs[iter] + d_mu_hubs), 
+                                max_mu_hubs)
+    mu_modules[iter + 1] <- min(max(min_mu_modules, mu_modules[iter] + d_mu_modules), 
+                                max_mu_modules)
+    
+    
+    if(iter > 100 && r_sq[iter] > 0.9) {
+      if((max(r_sq[(iter - 20):iter]) - min(r_sq[(iter - 20):iter])) < 0.1) {
+        break
+      }
+    }
+    
+    iter <- iter + 1
+  }
+  plot(1:iter, r_sq[1:iter], type = "l", 
+       xlab = "iter", xlim = c(1, max_iter), 
+       ylab = "r_sq", ylim = c(0, 1))
+  plot(n_hubs[1:iter], n_modules[1:iter], type = "l",
+       xlab = "Number of hubs", xlim = c(min_n_hubs, max_n_hubs),
+       ylab = "Number of modules", ylim = c(min_n_modules, max_n_modules))
+  plot(mu_hubs[1:iter], mu_modules[1:iter], type = "l",
+       xlab = "Average hub size", xlim = c(min_mu_hubs, max_mu_hubs),
+       ylab = "Average modules size", ylim = c(min_mu_modules, max_mu_modules))
+  mu_hubs <- mu_hubs[1:iter]
+  mu_modules <- mu_modules[1:iter]
+  n_hubs <- n_hubs[1:iter]
+  n_modules <- n_modules[1:iter]
 }
 
 #' Get adjacency matrix of a network
@@ -290,6 +405,14 @@ add_weight_to_network <- function(network, intensity = 1) {
   return(network)
 }
 
+#' Remove node from a hub in the network
+#' 
+#' @param network The network to modify.
+#' @param hub_index The index of the hub in the network to modify.
+#' @param node_index The index of the node in the hub to remove. If the index
+#' is 1, which is the hub node, the entire hub is removed from the network.
+#' @return The modified network.
+#' @export
 remove_node_from_hub <- function(network, hub_index, node_index) {
   if(node_index == 1) {
     # Node is hub gene itself; remove entire hub.
@@ -306,6 +429,13 @@ remove_node_from_hub <- function(network, hub_index, node_index) {
   return(network)
 }
 
+#' Remove node from a module in the network
+#' 
+#' @param network The network to modify.
+#' @param module_index The index of the module in the network to modify.
+#' @param node_index The index of the node in the hub to remove.
+#' @return The modified network.
+#' @export
 remove_node_from_module <- function(network, module_index, node_index) {
   network$modules[[module_index]]$nodes <- 
     network$modules[[module_index]]$nodes[-node_index]
@@ -316,6 +446,13 @@ remove_node_from_module <- function(network, module_index, node_index) {
   return(network)
 }
 
+#' Remove node from a clique in the network
+#' 
+#' @param network The network to modify.
+#' @param clique_index The index of the clique in the network to modify.
+#' @param node_index The index of the node in the hub to remove.
+#' @return The modified network.
+#' @export
 remove_node_from_clique <- function(network, clique_index, node_index) {
   network$cliques[[clique_index]]$nodes <- 
     network$cliques[[clique_index]]$nodes[-node_index]
@@ -326,7 +463,14 @@ remove_node_from_clique <- function(network, clique_index, node_index) {
   return(network)
 }
 
-remove_connections_to_node <- function(node, network) {
+#' Remove node from the network
+#' 
+#' @param network The network to modify.
+#' @param node The node to remove. Can be a character string if the nodes
+#' are labeled, or a integer value from 1 to p.
+#' @return The modified network.
+#' @export
+remove_connections_to_node <- function(network, node) {
   if(is.character(node)) {
     node <- which(network$node_names == node)
     if(length(node) == 0) {
@@ -357,7 +501,6 @@ remove_connections_to_node <- function(node, network) {
     }
   }
   
-  
   if(length(network$clique) > 0) {
     for(i in 1:length(network$clique)) {
       node_index <- which(node == network$clique[[i]]$nodes)
@@ -368,4 +511,152 @@ remove_connections_to_node <- function(node, network) {
   }
   
   return(network)
+}
+
+#' Get summary for a node in the network.
+#' 
+#' @param network A network object.
+#' @param node The node to summarize. Can be a character string if the nodes
+#' are labeled, or a integer value from 1 to p.
+#' @return A list containing summary, a list of strings detailing each 
+#' structure the node belongs to; struct_count, the number of structures
+#' the node belongs to; and degree, the total number of connections to the 
+#' node (summed over all structures).
+#' @export
+get_summary_for_node <- function(network, node) {
+  if(is.character(node)) {
+    node <- which(network$node_names == node)
+    if(length(node) == 0) {
+      warning("Node not found amoung node names. Returning NULL.")
+      return(NULL)
+    }
+  }
+  
+  degree <- 0
+  struct_list <- vector("list", 0)
+  struct_count <- 0
+  add_struct <- function(string, struct_type = NULL) {
+    struct_list[struct_count + 1] <<- string
+    if(!is.null(struct_type)) {
+      names(struct_list)[struct_count + 1] <<- struct_type
+    }
+    struct_count <<- struct_count + 1
+  }
+  
+  if(length(network$hubs) > 0) {
+    for(i in 1:length(network$hubs)) {
+      hub_nodes <- network$hubs[[i]]$nodes
+      node_index <- which(node == hub_nodes)
+      if(length(node_index) == 1) {
+        if(node_index[1] == 1) {
+          n_connections <- length(hub_nodes)
+          add_struct(paste0("Hub gene for hub ", i, ": ", 
+                            n_connections, " connections"), 
+                     "Hub")
+          degree <- degree + n_connections
+        } else {
+          add_struct(paste0("Leaf gene in hub ", i), 
+                     "Hub")
+          degree <- degree + 1
+        }
+      }
+    }
+  }
+  
+  if(length(network$modules) > 0) {
+    for(i in 1:length(network$modules)) {
+      module_struct <- network$modules[[i]]$struct
+      node_index <- which(node == network$modules[[i]]$nodes)
+      if(length(node_index) == 1) {
+        n_connections <- sum(module_struct[, node_index])
+        add_struct(paste0("Gene in module ", i, ": ",
+                          n_connections, " connections"), 
+                   "Module")
+        degree <- degree + n_connections
+      }
+    }
+  }
+  
+  
+  if(length(network$clique) > 0) {
+    for(i in 1:length(network$clique)) {
+      clique_nodes <- network$clique[[i]]$nodes
+      node_index <- which(node == clique_nodes)
+      if(length(node_index) == 1) {
+        n_connections <- length(clique_nodes) - 1
+        add_struct(paste0("Gene in clique ", i, ": ",
+                          n_connections, " connections"), 
+                   "Clique")
+        degree <- degree + n_connections
+      }
+    }
+  }
+  
+  return(list(summary = struct_list, 
+              struct_count = struct_count, 
+              degree = degree))
+}
+
+#' Get the degree distribution for a network.
+#' 
+#' Counts the connections to each node within each structure. Note, this
+#' is not the same as the degree distribution from the adjacency matrix
+#' obtained from the network, which collapses the individual structures into
+#' one graph.
+#' @param network A network object.
+#' @return A vector of length p, containing the degree for each node in the 
+#' network.
+#' @export
+get_degree_distribution <- function(network) {
+  degree <- vector("numeric", network$p)
+  for(i in 1:network$p) {
+    degree[i] <- get_summary_for_node(i, network)$degree
+  }
+  return(degree)
+}
+
+#' Get the clustering of nodes in the network
+#' 
+#' Structure is synonnymous with cluster or group. The structures in the 
+#' network may overlap, meaning a node can be a member of multiple clusters. 
+#' This function identifies which of the nodes belong to each structure.
+#' @param network A network object.
+#' @return A p by g matrix, M, where g is the number of structures in the network
+#' and p is the number of nodes. M_ij = 1 indicates that node i is a member
+#' of structure j. M_ij = 0 indicates non-membership.
+#' @export
+get_membership_matrix <- function(network) {
+  n_hubs <- length(network$hubs)
+  n_modules <- length(network$modules)
+  n_cliques <- length(network$cliques)
+  
+  n_structures <- n_hubs + n_modules + n_cliques
+  G <- matrix(0, nrow = network$p, ncol = n_structures)
+  colnames(G) <- 1:n_structures
+
+  if(n_hubs > 0) {
+    for(i in 1:n_hubs) {
+      G[network$hubs[[i]]$nodes, i] <- 1
+      colnames(G)[i] <- paste0("hub_", i)
+    }
+  }
+  
+  if(n_modules > 0) {
+    for(i in 1:n_modules) {
+      if(any(apply(network$modules[[i]]$struct, 2, sum) == 0)) {
+        warning("node in module but has no connections")
+      }
+      G[network$modules[[i]]$nodes, n_hubs + i] <- 1
+      colnames(G)[n_hubs + i] <- paste0("module_", i)
+    }
+  }
+  
+  if(n_cliques > 0) {
+    for(i in 1:n_cliques) {
+      G[network$cliques[[i]]$nodes, n_hubs + n_modules + i] <- 1
+      colnames(G)[n_hubs + n_modules + i] <- paste0("clique_", i)
+    }
+  }
+  
+  return(G)
 }
