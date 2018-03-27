@@ -1,0 +1,79 @@
+---
+title: "Distribution of generated gene expression profiles"
+author: "Tyler Grimes"
+date: "2/5/2018"
+output: pdf_document
+---
+
+Gene expression counts, $X$, for a fixed gene, $g$, are modeled using a negative binomial.
+$$
+P(X = x) = \left(\begin{matrix} x + r - 1 \\ r \end{matrix}\right) (1 - p)^r p^x,
+$$
+where $r > 0$ and $p \in (0, 1)$. To generate data from this distribution, the gamma-poisson mixture is used.
+
+\begin{align*}
+\theta &\sim Gamma(r, \beta) \\
+X &\sim Poisson(\theta)
+\end{align*}
+
+In this setup, $p$ in the negative binomial is related to $\beta$ by 
+$$p = \beta / (1 + \beta)$$
+$r$ and $\beta$ are reparameterized using
+\begin{align*}
+\mu > 0 &: \text{The desired mean of } X \\
+\gamma > 0 &: \text{The over-dispersion parameter} \\
+k \in [1, 2] &: \text{The tail-behavior parameter}
+\end{align*}
+
+Let $\mathcal{C}$ denote the set of connections in the network involving gene $g$. The connection strengths are assumed to vary naturally over time. This means each time a sample is taken, different pathways and connections in the regulator network will be expressed with different strength. We model the connection weight, $w_i$, for the $i$th connection, $i \in \mathcal{C}$, by
+$$w_i \sim N(0, \sigma)$$
+Each gene will be given a baseline mean expression, $\mu$. This baseline mean is sampled from an empirical distribution of expression means in a reference RNA-seq dataset.
+
+$$
+\mu \sim \text{Empirical distribution of means from reference dataset}
+$$
+
+The gamma-poisson mixture is reparameterized by
+\begin{align*}
+m &= \mu\exp\left\{\frac{1}{|\mathcal{C}|}\sum_i w_i\right\} \\
+r &= m^{2 - \kappa}/\gamma \\
+\beta &= m^{\kappa - 1}\gamma,
+\end{align*}
+
+## Marginal distribution of X
+
+The conditional distribution of $X$ on $m$ is negative binomial. 
+
+\begin{align*}
+P(X = x|m) &= NB(X = x | m) \\
+&= \left(\begin{matrix} x + r - 1 \\ r\end{matrix}\right) (1-p)^r p^x \\
+&= \frac{\Gamma(x + r - 1)}{\Gamma(r)\Gamma(x - 1)} \left(\frac{1}{1 + \beta}\right)^r\left(\frac{\beta}{1 + \beta}\right)^x,
+\end{align*}
+
+where $r = m^{2 - \kappa}/\gamma \\$ and $\beta = m^{\kappa - 1}\gamma$. The distribution of $m = \mu \exp\left\{\frac{1}{|\mathcal{C}|}\sum_i w_i\right\}$ is derived from the distribution of the independent weights $w_i \sim N(0, \sigma)$. 
+
+$$
+p(m) = \phi\left(\log(m/\mu)\left(\frac{\sigma^2}{|\mathcal{C}|}\right)^{-1/2}\right)\frac{1}{m}
+$$
+
+The marginal distribution of $X$ is,
+\begin{align*}
+P(X = x) &= \int P(X = x|m)P(m) dm \\
+&= \int 
+\frac{\Gamma(x + r - 1)}{\Gamma(r)\Gamma(x - 1)} \left(\frac{1}{1 + \beta}\right)^r\left(\frac{\beta}{1 + \beta}\right)^x
+\phi\left(\log(m/\mu)\left(\frac{\sigma^2}{|\mathcal{C}|}\right)^{-1/2}\right)\frac{1}{m}
+dm \\
+&= \ ...
+\end{align*}
+
+Main problem is that $m$ shows up everywhere ($r$ and $\beta$ are both functions of $m$, unless $\kappa = 1$ or $2$). Considered simplifying by setting $\gamma = 1$ and $\kappa = 1.5$.
+
+
+# Simulation 
+
+## Comparing generated to reference expression profiles
+
+```{r}
+setwd("../")
+source("R/validate_generated_profiles.R")
+```
