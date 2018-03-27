@@ -46,5 +46,7 @@ run_wgcna <- function(x, threshold = NULL, method = "pearson") {
     scores[scores <= threshold] <- 0
   }
   
+  colnames(scores) <- colnames(x)
+  
   return(list(scores = scores, threshold = threshold))
 }
