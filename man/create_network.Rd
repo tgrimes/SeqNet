@@ -7,7 +7,7 @@
 create_network(p, n_cliques = NULL, clique_size = NULL, cliques = NULL,
   n_hubs = NULL, hub_size = NULL, hubs = NULL, n_modules = NULL,
   module_size = NULL, modules = NULL, nonoverlapping = FALSE,
-  module_neig = 2, module_prob = 0.2)
+  module_neig = 2, module_prob = 0.9)
 }
 \arguments{
 \item{p}{The number of nodes in the graph}
