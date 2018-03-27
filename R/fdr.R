@@ -19,6 +19,8 @@
 #' @param gene_names (optional) Vector of gene names.
 #' @param include_likelihood Should the matrix of likelihood ratios be provided
 #' in the output?
+#' @param show_plot If TRUE, a histogram of scores with estimated density
+#' and null distribution is plotted.
 #' @return A list containing: `scores`, the scores with non-significant values 
 #' set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
 #' the estimate of sigma for the null distribution; `f`, the empirical density
@@ -27,16 +29,19 @@
 #' @export
 #' @note For cPLS scores, it is recommended to use `normalize_cpls_scores()`
 #' as the transformation.
-#' @note The robust estimators used are median and MAD.
+#' @note The robust estimators used are median and MAD. If the majority of scores
+#' are zero, the robust estimate for sigma might be zero; in this case the 
+#' usual estimator is used instead.
 fdr <- function(scores, 
                 threshold = 0.05,
                 transformation = NULL, 
                 robust = TRUE,
-                include_likelihood = FALSE) {
+                include_likelihood = FALSE,
+                show_plot = TRUE) {
   
   # Determine whether scores is a vector or matrix.
   if(is.matrix(scores)) {
-    if(!all(scores == t(scores))) stop("scores is not symmetric.")
+    if(!isSymmetric(unname(scores), tol = 10^-10)) stop("scores is not symmetric.")
     score_names <- colnames(scores)     # Keep column names for scores.
     scores <- scores[lower.tri(scores)] # Turn scores into vector.
     matrix_provided <- TRUE
@@ -56,7 +61,8 @@ fdr <- function(scores,
   if(robust) {
     mu_f0 <- median(scores) # Use median to account for any skewness.
     sigma_f0 <- 1.4826 * median(abs(scores - median(scores))) # Use 1.4826 * MAD.
-  } else {
+  }
+  if(!robust || (robust && sigma_f0 == 0)){
     mu_f0 <- mean(scores) 
     sigma_f0 <- sd(scores) 
   }
@@ -65,6 +71,20 @@ fdr <- function(scores,
   f <- density(scores, 
                kernel = "gaussian")
   likelihood <- dnorm(scores, mu_f0, sigma_f0) / approx(f, xout = scores)$y
+  
+  # Generate plot of requested.
+  if(show_plot) {
+    hist(scores, freq = FALSE)
+    par(xpd = FALSE) # Keep lines within plot
+    curve(approx(f, xout = x)$y, col = "blue", add = TRUE)
+    curve(dnorm(x, mu_f0, sigma_f0), col = "orange", add = TRUE)
+    if(!is.null(threshold)) {
+      lower <- scores[(likelihood < threshold) & (scores < mu_f0)]
+      if(length(lower) > 0) abline(v = max(lower), col = "red")
+      upper <- scores[(likelihood < threshold) & (scores > mu_f0)]
+      if(length(upper) > 0) abline(v = min(upper), col = "red")
+    }
+  }
   
   # Apply thresholding if provided.
   if(!is.null(threshold)) {
@@ -93,7 +113,8 @@ fdr <- function(scores,
   fdr_return_list <- list(scores = scores, 
                           mu_f0 = mu_f0, 
                           sigma_f0 = sigma_f0,
-                          f = f)
+                          f = f,
+                          transformation = transformation)
   if(include_likelihood) {
     fdr_return_list <- c(fdr_return_list, 
                          list(likelihood = likelihood))
