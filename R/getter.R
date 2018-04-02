@@ -142,6 +142,23 @@ get_degree_distribution <- function(network) {
   return(degree)
 }
 
+#' Get the change in degree for each node between two networks.
+#' 
+#' Counts the connections to each node within each structure. Note, this
+#' is not the same as the change in degree between the two adjacency matricies
+#' of each network, which collapses individual structures.
+#' @param network1 A network object for the first network.
+#' @param network2 A network object for the second network.
+#' @return A vector of length p, containing the degree change for each node in 
+#' the two networks.
+#' @export
+get_degree_change <- function(network1, network2) {
+  A1 <- get_adj_matrix_from_network(network1, weighted = TRUE)
+  A2 <- get_adj_matrix_from_network(network2, weighted = TRUE)
+  delta <- apply(A1 - A2, 2, sum) # Degree change.
+  return(delta)
+}
+
 #' Get the clustering of nodes in the network
 #' 
 #' Structure is synonnymous with cluster or group. The structures in the 
