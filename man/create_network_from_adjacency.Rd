@@ -9,6 +9,9 @@ create_network_from_adjacency(adj_matrix, p = ncol(adj_matrix))
 \arguments{
 \item{adj_matrix}{The adjacency matrix for the network. This is converted
 to a single module structure.}
+
+\item{p}{The number of nodes in the network. Taken to be the number of nodes in
+adjacency matrix by default.}
 }
 \value{
 A network object.
