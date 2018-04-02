@@ -9,10 +9,10 @@
 #' @export
 #' @examples
 #' n <- 10
-#' network <- create_network(p = 100, modules = list(1:100)) # Create small-world network.
-#' mu <- get_reference_count_means()
-#' # Generate RNA-seq data using the network and reference means:
-#' x <- gen_gaussian(n, network, mu)$x
+#' # Create a simple small-world network.
+#' network <- create_network(p = 100, modules = list(1:100)) 
+#' # Generate "normalized" expression data from the network:
+#' x <- gen_gaussian(n, network)$x
 gen_gaussian <- function(n, 
                          network) {
   library(mvtnorm) #rmvnorm
@@ -38,18 +38,16 @@ gen_gaussian <- function(n,
   x[connected, ] <- t(rmvnorm(n, sigma = sigma))
   x[!connected, ] <- rnorm(sum(!connected) * n)
   
-  # x <- matrix(0, nrow = p, ncol = n) # Store samples in columns at first.
-  # A <- graph[connected, connected]
-  # n_A <- sum(lower.tri(A))
-  # A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
-  # #A[lower.tri(A)] <- A[lower.tri(A)] * 0.75
-  # A[upper.tri(A)] <- 0
-  # A <- A + t(A)
-  # precision <- A + diag((1 + abs(min(eigen(A)$values))), nrow(A))
-  # eigen(precision)$values
-  # sigma <- solve(precision)
-  # 
   # for(i in 1:n) {
+  #   x <- matrix(0, nrow = p, ncol = n) # Store samples in columns at first.
+  #   A <- graph[connected, connected]
+  #   n_A <- sum(lower.tri(A))
+  #   A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
+  #   A[upper.tri(A)] <- 0
+  #   A <- A + t(A)
+  #   precision <- A + diag((1 + abs(min(eigen(A)$values))), nrow(A))
+  #   eigen(precision)$values
+  #   sigma <- solve(precision)
   #   x[connected, i] <- rmvnorm(1, sigma = sigma)
   #   x[!connected, i] <- rnorm(sum(!connected))
   # }
