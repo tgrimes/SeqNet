@@ -21,8 +21,8 @@ Generates count data based on the overdispered Poisson distribution.
 }
 \examples{
 n <- 10
-network <- create_network(p = 100, modules = list(1:100)) # Create small-world network.
-mu <- get_reference_count_means()
-# Generate RNA-seq data using the network and reference means:
-x <- gen_gaussian(n, network, mu)$x
+# Create a simple small-world network.
+network <- create_network(p = 100, modules = list(1:100)) 
+# Generate "normalized" expression data from the network:
+x <- gen_gaussian(n, network)$x
 }
