@@ -4,10 +4,13 @@
 \alias{get_adj_matrix_from_network}
 \title{Get adjacency matrix of a network}
 \usage{
-get_adj_matrix_from_network(network)
+get_adj_matrix_from_network(network, weighted = FALSE)
 }
 \arguments{
 \item{network}{The network to get adjacency matrix for.}
+
+\item{weighted}{If true, the ij'th entry will be the total number of 
+connections between nodes i and j.}
 }
 \value{
 A p by p adjacency matrix with entry ij = 1 if node i and j are 

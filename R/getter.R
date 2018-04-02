@@ -3,35 +3,41 @@
 #' The adjacency matrix is constructed from all the structures in the network
 #' and summarizes which nodes are connected. 
 #' @param network The network to get adjacency matrix for.
+#' @param weighted If true, the ij'th entry will be the total number of 
+#' connections between nodes i and j.
 #' @return A p by p adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise.
 #' @export
-get_adj_matrix_from_network <- function(network) {
+get_adj_matrix_from_network <- function(network, weighted = FALSE) {
   p <- network$p
   
-  adj_matrix <- matrix(0, nrow = p, ncol = p)
+  A <- matrix(0, nrow = p, ncol = p) # Adjacency matrix.
   if(length(network$cliques) > 0) {
     lapply(network$cliques, function(clique) {
-      adj_matrix[clique$nodes, clique$nodes] <<- 1
-      diag(adj_matrix)[clique$nodes] <<- 0
+      A[clique$nodes, clique$nodes] <<- A[clique$nodes, clique$nodes] + 1
+      diag(A)[clique$nodes] <<- 0
     })
   }
   if(length(network$hubs) > 0) {
     lapply(network$hubs, function(hub) {
-      adj_matrix[hub$nodes[1], hub$nodes[-1]] <<- 1
-      adj_matrix[hub$nodes[-1], hub$nodes[1]] <<- 1
+      A[hub$nodes[1], hub$nodes[-1]] <<- A[hub$nodes[1], hub$nodes[-1]] + 1
+      A[hub$nodes[-1], hub$nodes[1]] <<- A[hub$nodes[-1], hub$nodes[1]] + 1
     })
   }
   if(length(network$modules) > 0) {
     lapply(network$modules, function(module) {
       nodes <- module$nodes
-      adj_matrix[nodes, nodes] <<- 1 * (module$struct | adj_matrix[nodes, nodes])
+      A[nodes, nodes] <<- A[nodes, nodes] + module$struct
     })
   }
   
-  colnames(adj_matrix) <- network$node_names
+  if(!weighted) {
+    A <- 1 * (A > 0) # Reduce counts to 1 or 0.
+  }
   
-  return(adj_matrix)
+  colnames(A) <- network$node_names
+  
+  return(A)
 }
 
 #' Get summary for a node in the network.
