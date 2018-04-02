@@ -172,7 +172,7 @@ create_network <- function(p,
 #' 
 #' @param adj_matrix The adjacency matrix for the network. This is converted
 #' to a single module structure.
-#' @p The number of nodes in the network. Taken to be the number of nodes in
+#' @param p The number of nodes in the network. Taken to be the number of nodes in
 #' adjacency matrix by default.
 #' @return A network object.
 #' @export 
