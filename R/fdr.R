@@ -204,7 +204,7 @@ vector_to_matrix <- function(x, diag_val = 0) {
 #' "fdr" is implemented.
 #' @return The p by p adjacency matrix containing only 1's and 0's.
 #' @export
-get_adjacency_matrix <- function(scores, significance = 0.05, method = "fdr") {
+scores_to_adjacency_matrix <- function(scores, significance = 0.05, method = "fdr") {
   if(length(dim(scores)) != 2) {
     stop("scores should be a 2 dimensional matrix or data frame.")
   }
