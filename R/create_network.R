@@ -521,3 +521,42 @@ remove_connections_to_node <- function(network, node) {
   
   return(network)
 }
+
+
+#' Rewire node in the network.
+#' 
+#' Within each module the node is a member of, all connections are reset. 
+#' New connections are made with a specified probablility.
+#' @param network The network to modify.
+#' @param node The node to rewire. Can be a character string if the nodes
+#' are labeled, or a integer value from 1 to p.
+#' @param p The probabiliy of an edge to be created.
+#' @return The modified network.
+#' @export
+rewire_connections_to_node <- function(network, node, p = 0.2) {
+  if(p > 1 || p < 0) stop("p should be between 0 and 1.")
+  if(is.character(node)) {
+    node <- which(network$node_names == node)
+    if(length(node) == 0) {
+      warning("Node not found amoung node names. Returning network unchanged.")
+      return(network)
+    }
+  }
+  
+  
+  if(length(network$modules) > 0) {
+    for(i in 1:length(network$modules)) {
+      node_index <- which(node == network$modules[[i]]$nodes)
+      if(length(node_index) == 1) {
+        m <- length(network$modules[[i]]$nodes)
+        connections <- rbinom(m, 1, p)
+        network$modules[[i]]$struct[node_index, ] <- connections
+        network$modules[[i]]$struct[, node_index] <- connections
+        network$modules[[i]]$signs[node_index, ] <- connections * (-1)^rbinom(m, 1, 0.5)
+        network$modules[[i]]$signs[, node_index] <- connections * (-1)^rbinom(m, 1, 0.5)
+      }
+    }
+  }
+  
+  return(network)
+}
