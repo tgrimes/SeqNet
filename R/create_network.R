@@ -550,6 +550,7 @@ rewire_connections_to_node <- function(network, node, p = 0.2) {
       if(length(node_index) == 1) {
         m <- length(network$modules[[i]]$nodes)
         connections <- rbinom(m, 1, p)
+        connections[node_index] <- 0
         network$modules[[i]]$struct[node_index, ] <- connections
         network$modules[[i]]$struct[, node_index] <- connections
         network$modules[[i]]$signs[node_index, ] <- connections * (-1)^rbinom(m, 1, 0.5)
