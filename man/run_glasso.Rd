@@ -24,5 +24,5 @@ A list containing the p by p matrix of association scores, the
 estimation method used, and the selection criterion used.
 }
 \description{
-Conducts co-expression analysis using glasso method. P
+Conducts co-expression analysis using glasso.
 }

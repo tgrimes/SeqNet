@@ -7,7 +7,7 @@
 
 #' Wrapper for glasso method
 #' 
-#' Conducts co-expression analysis using glasso method. P
+#' Conducts co-expression analysis using glasso.
 #' @param x The n by p matrix of counts.
 #' @param method Graph estimation method. Should be either "mb", "glasso", or "ct".
 #' Default is "glasso".
