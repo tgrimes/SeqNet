@@ -9,16 +9,17 @@
 #' 
 #' Conducts co-expression analysis using glasso method. P
 #' @param x The n by p matrix of counts.
-#' @param threshold Cutoff for significant associations. If NULL, all scores
-#' are returned. Otherwise, scores at or below this threshold are set to zero. 
-#' @param method The method used to compute correlations. Should be either "pearson"
-#'  or "spearman". The default is Spearman, which provides 
-#'  the more conservative estimation of associations.
-#' @return A list containing the p by p matrix of association scores, and the 
-#' threshold used to determine significant associations.
+#' @param method Graph estimation method. Should be either "mb", "glasso", or "ct".
+#' Default is "glasso".
+#' @param criterion Model selection criterion. Should be either "ric" or "stars".
+#' Default is "ric".
+#' @param verbose boolean indicating whether trace information during estimation 
+#' and selection should be printed. Default is FALSE.
+#' @return A list containing the p by p matrix of association scores, the 
+#' estimation method used, and the selection criterion used.
 #' @export
 run_glasso <- function(x, 
-                       method = c("mb", "glasso", "ct"), 
+                       method = c("glasso", "mb", "ct"), 
                        criterion = c("ric", "stars"), 
                        verbose = FALSE, ...) {
   method <- tolower(method[1])
@@ -45,7 +46,9 @@ run_glasso <- function(x,
   
   colnames(scores) <- colnames(x)
   
-  return(list(scores = scores))
+  return(list(scores = scores,
+              method = method,
+              criterion = criterion))
 }
 
 

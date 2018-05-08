@@ -4,22 +4,24 @@
 \alias{run_glasso}
 \title{Wrapper for glasso method}
 \usage{
-run_glasso(x, method = c("mb", "glasso", "ct"), criterion = c("ric",
+run_glasso(x, method = c("glasso", "mb", "ct"), criterion = c("ric",
   "stars"), verbose = FALSE, ...)
 }
 \arguments{
 \item{x}{The n by p matrix of counts.}
 
-\item{method}{The method used to compute correlations. Should be either "pearson"
-or "spearman". The default is Spearman, which provides 
-the more conservative estimation of associations.}
+\item{method}{Graph estimation method. Should be either "mb", "glasso", or "ct".
+Default is "glasso".}
 
-\item{threshold}{Cutoff for significant associations. If NULL, all scores
-are returned. Otherwise, scores at or below this threshold are set to zero.}
+\item{criterion}{Model selection criterion. Should be either "ric" or "stars".
+Default is "ric".}
+
+\item{verbose}{boolean indicating whether trace information during estimation 
+and selection should be printed. Default is FALSE.}
 }
 \value{
-A list containing the p by p matrix of association scores, and the 
-threshold used to determine significant associations.
+A list containing the p by p matrix of association scores, the 
+estimation method used, and the selection criterion used.
 }
 \description{
 Conducts co-expression analysis using glasso method. P

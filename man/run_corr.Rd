@@ -24,5 +24,4 @@ the method used to compute the correlations.
 }
 \description{
 Conducts co-expression analysis using correlation for association measure.
-No preprocessing is done to x prior to computing the correlations.
 }
