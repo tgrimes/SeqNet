@@ -14,7 +14,8 @@ Imports: igraph,
          WGCNA,
          mgcv,
          actuar,
-         Matrix
+         Matrix,
+         huge
 Suggests: edgeR
 License: What license is it under?
 Encoding: UTF-8
