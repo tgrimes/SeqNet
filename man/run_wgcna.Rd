@@ -21,8 +21,5 @@ A list containing the p by p matrix of association scores, and the
 threshold used to determine significant associations.
 }
 \description{
-Conducts co-expression analysis using WGCNA method. Preprocessing is performed
-on x: the trimmed mean of M-values (TMM) normalization, which accounts 
-for between-sample biases, and counts per million (CPM) scaling, which 
-addresses any difference in library sizes.
+Conducts co-expression analysis using WGCNA method.
 }

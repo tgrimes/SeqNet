@@ -7,10 +7,7 @@
 
 #' Wrapper for WGCNA method
 #' 
-#' Conducts co-expression analysis using WGCNA method. Preprocessing is performed
-#' on x: the trimmed mean of M-values (TMM) normalization, which accounts 
-#' for between-sample biases, and counts per million (CPM) scaling, which 
-#' addresses any difference in library sizes.
+#' Conducts co-expression analysis using WGCNA method. 
 #' @param x The n by p matrix of counts.
 #' @param threshold Cutoff for significant associations. If NULL, all scores
 #' are returned. Otherwise, scores at or below this threshold are set to zero. 
@@ -24,15 +21,6 @@ run_wgcna <- function(x, threshold = NULL, method = "pearson") {
   if(!(method %in% c("pearson", "spearman"))) {
     stop('method should be one of c("pearson", "spearman").')
   }
-  
-  #Normalize the data to account for 1) between-sample biases (TMM) and
-  # 2) differeing library sizes (cpm).
-  x <- t(t(x) * edgeR::calcNormFactors(x, method = "TMM"))
-  x <- edgeR::cpm(x)
-  
-  # To prevent highly expressed outliers from dominating the between-gene
-  # correlations, we perform a log(x + 1) transformation.
-  x <- log(x + 1)
   
   # Use unsigned to treat positive and negative associations equally.
   scores <- WGCNA::adjacency(x, 
