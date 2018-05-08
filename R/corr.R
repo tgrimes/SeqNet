@@ -2,7 +2,6 @@
 #' Wrapper for correlation co-expression
 #' 
 #' Conducts co-expression analysis using correlation for association measure.
-#' No preprocessing is done to x prior to computing the correlations.
 #' @param x The n by p matrix of counts.
 #' @param threshold Cutoff for significant associations. If NULL, all correlations
 #' are returned. Otherwise, correlations of magnitude at or below this threshold are 
@@ -23,6 +22,7 @@ run_corr <- function(x, threshold = NULL, method = "spearman") {
     x <- x + 0.0
   }
   scores <- cor(x, method = method)
+  scores[is.na(scores) | is.nan(scores)] <- 0
   diag(scores) <- 0
   
   if(!is.null(threshold)) {
