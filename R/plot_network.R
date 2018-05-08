@@ -22,7 +22,7 @@ plot.network <- function(network, compare_graph = NULL,
                          weighted = NULL, as_subgraph = FALSE,
                          node_scale = 5, edge_scale = 1, 
                          coords =  igraph::layout.fruchterman.reingold,
-                         main = "Untitled", ...) {
+                         main = "Untitled", include_vertex_labels = TRUE, ...) {
   library(igraph)
   
   if(class(network) == "network") {
@@ -47,6 +47,12 @@ plot.network <- function(network, compare_graph = NULL,
   igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
   igraph::V(g)$frame.color <- "white"
   
+  if(include_vertex_labels) {
+    vertex.label.color <- rgb(0.1, 0.1, 0.1, 0.8)
+  } else {
+    vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
+  }
+  
   if(sum(adj_matrix) == 0 & !is.null(compare_graph)) {
     # The given network has no edges; plot the reference network with no edges.
     vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
@@ -66,7 +72,6 @@ plot.network <- function(network, compare_graph = NULL,
     }
     
     edge.color <- "black"
-    vertex.label.color = "blue"
     if(!is.null(compare_graph)) {
       h <- compare_graph %u% g
       edge.color <- rep("red", length(igraph::E(h))) # Default color for edge in compared network is red.
@@ -76,8 +81,6 @@ plot.network <- function(network, compare_graph = NULL,
                rep("black", length(igraph::E(compare_graph))),
                rep("wheat", length(igraph::E(compare_graph))))
       g <- h
-      
-      vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
       
       igraph::V(g)$size <- log(apply(adj_matrix, 2, sum) + 1) 
       igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
@@ -144,7 +147,7 @@ plot_network <- plot.network
 plot_network_diff <- function(network_1, network_2, weighted = NULL,
                               as_subgraph = TRUE, node_scale = 5, edge_scale = 1,
                               coords =  igraph::layout.fruchterman.reingold,
-                              main = "Untitled", ...) {
+                              main = "Untitled", include_vertex_labels = FALSE, ...) {
   library(igraph)
   
   if(class(network_1) == "network") {
@@ -201,7 +204,11 @@ plot_network_diff <- function(network_1, network_2, weighted = NULL,
                                      mode = "undirected", 
                                      weighted = weighted)
   
-  vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
+  if(include_vertex_labels) {
+    vertex.label.color <- rgb(0.1, 0.1, 0.1, 0.8)
+  } else {
+    vertex.label.color <- rgb(0, 0, 0, 0) # Make labels transparent.
+  }
   edge.color <- vector("character", length(igraph::E(g)))
   
   # Set of edges in network 1.

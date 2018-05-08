@@ -6,7 +6,8 @@
 \usage{
 plot_network_diff(network_1, network_2, weighted = NULL, as_subgraph = TRUE,
   node_scale = 5, edge_scale = 1,
-  coords = igraph::layout.fruchterman.reingold, main = "Untitled", ...)
+  coords = igraph::layout.fruchterman.reingold, main = "Untitled",
+  include_vertex_labels = FALSE, ...)
 }
 \arguments{
 \item{weighted}{Are the edges weighted?}
