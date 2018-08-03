@@ -15,7 +15,9 @@ Imports: igraph,
          mgcv,
          actuar,
          Matrix,
-         huge
+         huge,
+         corpcor,
+         mvtnorm
 Suggests: edgeR
 License: What license is it under?
 Encoding: UTF-8
