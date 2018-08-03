@@ -2,12 +2,6 @@
 #' 
 #' Determines which associations are significant using emperical 
 #' bayes and false discovery rate adjustment.
-#' @param scores A symmetric p by p matrix of association scores.
-#' @return A p by p matrix of likelihood.
-#' @export
-#' @title Determine which associations are significant
-#' @description Determines which associations are significant using emperical 
-#'   bayes and false discovery rate adjustment.
 #' @param scores Either a vector or a symmetric matrix of association scores.
 #' @param threshold The threshold for false discovery rate, used to determine 
 #' significance; scores with ikelihood ratios above this threshold are
@@ -19,9 +13,9 @@
 #' @param gene_names (optional) Vector of gene names.
 #' @param include_likelihood Should the matrix of likelihood ratios be provided
 #' in the output?
-#' @param show_plot If TRUE, a histogram of scores with estimated density
+#' @param show_plot If true, a histogram of scores with estimated density
 #' and null distribution is plotted.
-#' @param ignore_zeroes If TRUE, zeroes in scores input will be ignored.
+#' @param ignore_zeroes If true, zeroes in scores input will be ignored.
 #' @return A list containing: `scores`, the scores with non-significant values 
 #' set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
 #' the estimate of sigma for the null distribution; `f`, the empirical density
@@ -203,8 +197,8 @@ vector_to_matrix <- function(x, diag_val = 0) {
 
 #' Infer adjacency matrix from scores
 #' 
-#' Determines which associations are significant using emperical 
-#' Bayes for false discovery rate adjustment.
+#' Determines which associations are significant based on an emperical 
+#' Bayes false discovery rate.
 #' @param scores A symmetric p by p matrix of association scores.
 #' @param significance Must be specified if method = "fdr". 
 #' Specifies the false discovery rate threshold to use.
