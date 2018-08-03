@@ -8,23 +8,20 @@
 #' provided, this plot will be modified for easier comparison.
 #' @param network Either a network object or adjacency matrix of the network.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param weighted Are the edges weighted? 
 #' @param as_subgraph If true, only nodes of positive degree will be shown.
 #' @param node_scale Used for scaling of nodes.
-#' @param edge_scale used for scaling of edges.
+#' @param edge_scale Used for scaling of edges.
 #' @param coords Layout used for the network.
+#' @param main A string containing the title for the graph.
+#' @param include_vertex_labels If true, the verticies will be labeled.
 #' @return Creates a plot of the network and returns a graph object. 
 #' The graph object can be passed back into a future call of plot.network() 
 #' through the `compare_edge` argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of `network`.
 #' @export
-plot.network <- function(network, compare_graph = NULL,
-                         weighted = NULL, as_subgraph = FALSE,
-                         node_scale = 5, edge_scale = 1, 
-                         coords =  NULL,
+plot.network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
+                         node_scale = 5, edge_scale = 1, coords =  NULL,
                          main = "Untitled", include_vertex_labels = TRUE, ...) {
-  library(igraph)
-  
   if(class(network) == "network") {
     adj_matrix <- get_adj_matrix_from_network(network)
   } else if(is.matrix(network)){
@@ -47,7 +44,7 @@ plot.network <- function(network, compare_graph = NULL,
   
   g <- igraph::graph_from_adjacency_matrix(adj_matrix,
                                            mode = "undirected",
-                                           weighted = weighted)
+                                           weighted = NULL)
   igraph::V(g)$size <- log(apply(adj_matrix, 2, sum) + 1) 
   igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
   igraph::V(g)$frame.color <- "white"
@@ -105,18 +102,18 @@ plot.network <- function(network, compare_graph = NULL,
   return(g)
 }
 
-#' Plot function for networks
+#' Plot function for network class
 #' 
-#' This function creates a plot for a network object or adjacency matrix. 
-#' If the result of another plot is provided, this plot will be modified for 
-#' easier comparison.
+#' This function plots the given network. If the result of another plot is 
+#' provided, this plot will be modified for easier comparison.
 #' @param network Either a network object or adjacency matrix of the network.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param weighted Are the edges weighted? 
 #' @param as_subgraph If true, only nodes of positive degree will be shown.
 #' @param node_scale Used for scaling of nodes.
-#' @param edge_scale used for scaling of edges.
+#' @param edge_scale Used for scaling of edges.
 #' @param coords Layout used for the network.
+#' @param main A string containing the title for the graph.
+#' @param include_vertex_labels If true, the verticies will be labeled.
 #' @return Creates a plot of the network and returns a graph object. 
 #' The graph object can be passed back into a future call of plot.network() 
 #' through the `compare_edge` argument, which will setup the plot for easier 
@@ -135,28 +132,27 @@ plot_network <- plot.network
 
 
 
-#' Plot function for network class
+#' Plotting to compare two networks
 #' 
-#' This function plots the given network. If the result of another plot is 
-#' provided, this plot will be modified for easier comparison.
-#' @param network Either a network object or adjacency matrix of the network.
-#' @param compare_graph The plot of another network to use for comparison.
-#' @param weighted Are the edges weighted? 
+#' This function plots the overlap of two networks. Black edges are shared by
+#' both networks, tan edges are in network_1 but not network_2, and red edges
+#' are in network_2 but not network_1.
+#' @param network_1 Either a network object or adjacency matrix of the network.
+#' @param network_2 Either a network object or adjacency matrix of the network.
 #' @param as_subgraph If true, only nodes of positive degree will be shown.
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale used for scaling of edges.
 #' @param coords Layout used for the network.
+#' @param main A string containing the title for the graph.
+#' @param include_vertex_labels If true, the verticies will be labeled.
 #' @return Creates a plot of the network and returns a graph object. 
 #' The graph object can be passed back into a future call of plot.network() 
 #' through the `compare_edge` argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of `network`.
 #' @export
-plot_network_diff <- function(network_1, network_2, weighted = NULL,
-                              as_subgraph = TRUE, node_scale = 5, edge_scale = 1,
-                              coords =  NULL,
+plot_network_diff <- function(network_1, network_2, as_subgraph = TRUE, 
+                              node_scale = 5, edge_scale = 1, coords =  NULL,
                               main = "Untitled", include_vertex_labels = FALSE, ...) {
-  library(igraph)
-  
   if(class(network_1) == "network") {
     adj_matrix_1 <- get_adj_matrix_from_network(network_1)
   } else if(is.matrix(network_1)){
@@ -202,7 +198,7 @@ plot_network_diff <- function(network_1, network_2, weighted = NULL,
   
   g <- igraph::graph_from_adjacency_matrix(adj_matrix_both,
                                            mode = "undirected",
-                                           weighted = weighted)
+                                           weighted = NULL)
   # Scale nodes by change in degree.
   igraph::V(g)$size <- log(apply(abs(adj_matrix_1 - adj_matrix_2), 2, sum) + 1) + 1
   igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
@@ -212,10 +208,10 @@ plot_network_diff <- function(network_1, network_2, weighted = NULL,
   
   g_1 <- graph_from_adjacency_matrix(adj_matrix_1, 
                                      mode = "undirected", 
-                                     weighted = weighted)
+                                     weighted = NULL)
   g_2 <- graph_from_adjacency_matrix(adj_matrix_2, 
                                      mode = "undirected", 
-                                     weighted = weighted)
+                                     weighted = NULL)
   
   if(include_vertex_labels) {
     vertex.label.color <- rgb(0.1, 0.1, 0.1, 0.8)
