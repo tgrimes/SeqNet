@@ -206,12 +206,12 @@ plot_network_diff <- function(network_1, network_2, as_subgraph = TRUE,
   
   igraph::E(g)$width <- edge_scale
   
-  g_1 <- graph_from_adjacency_matrix(adj_matrix_1, 
-                                     mode = "undirected", 
-                                     weighted = NULL)
-  g_2 <- graph_from_adjacency_matrix(adj_matrix_2, 
-                                     mode = "undirected", 
-                                     weighted = NULL)
+  g_1 <- igraph::graph_from_adjacency_matrix(adj_matrix_1, 
+                                             mode = "undirected", 
+                                             weighted = NULL)
+  g_2 <- igraph::graph_from_adjacency_matrix(adj_matrix_2, 
+                                             mode = "undirected", 
+                                             weighted = NULL)
   
   if(include_vertex_labels) {
     vertex.label.color <- rgb(0.1, 0.1, 0.1, 0.8)
