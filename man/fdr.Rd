@@ -5,10 +5,10 @@
 \title{Determine which associations are significant}
 \usage{
 fdr(scores, threshold = 0.05, transformation = NULL, robust = TRUE,
-  include_likelihood = FALSE, show_plot = TRUE)
+  include_likelihood = FALSE, show_plot = TRUE, ignore_zeroes = TRUE)
 }
 \arguments{
-\item{scores}{A symmetric p by p matrix of association scores.}
+\item{scores}{Either a vector or a symmetric matrix of association scores.}
 
 \item{threshold}{The threshold for false discovery rate, used to determine 
 significance; scores with ikelihood ratios above this threshold are
@@ -23,16 +23,14 @@ a vector as input and return a vector for output.}
 \item{include_likelihood}{Should the matrix of likelihood ratios be provided
 in the output?}
 
-\item{show_plot}{If TRUE, a histogram of scores with estimated density
+\item{show_plot}{If true, a histogram of scores with estimated density
 and null distribution is plotted.}
 
-\item{scores}{Either a vector or a symmetric matrix of association scores.}
+\item{ignore_zeroes}{If true, zeroes in scores input will be ignored.}
 
 \item{gene_names}{(optional) Vector of gene names.}
 }
 \value{
-A p by p matrix of likelihood.
-
 A list containing: `scores`, the scores with non-significant values 
 set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
 the estimate of sigma for the null distribution; `f`, the empirical density
@@ -40,12 +38,6 @@ estimate; and `likelihood`, (optional) the likelihood ratios (fdr rates)
 for each score.
 }
 \description{
-Determines which associations are significant using emperical 
-  bayes and false discovery rate adjustment.
-}
-\details{
-Determine which associations are significant
-
 Determines which associations are significant using emperical 
 bayes and false discovery rate adjustment.
 }

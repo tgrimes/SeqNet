@@ -21,5 +21,5 @@ A list containing the p by p matrix of association scores, and the
 threshold used to determine significant associations.
 }
 \description{
-Conducts co-expression analysis using WGCNA method.
+Conducts co-expression analysis using WGCNA.
 }

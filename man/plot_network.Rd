@@ -2,11 +2,10 @@
 % Please edit documentation in R/plot_network.R
 \name{plot_network}
 \alias{plot_network}
-\title{Plot function for networks}
+\title{Plot function for network class}
 \usage{
-plot_network(network, compare_graph = NULL, weighted = NULL,
-  as_subgraph = FALSE, node_scale = 5, edge_scale = 1,
-  coords = igraph::layout.fruchterman.reingold, main = "Untitled",
+plot_network(network, compare_graph = NULL, as_subgraph = FALSE,
+  node_scale = 5, edge_scale = 1, coords = NULL, main = "Untitled",
   include_vertex_labels = TRUE, ...)
 }
 \arguments{
@@ -14,15 +13,17 @@ plot_network(network, compare_graph = NULL, weighted = NULL,
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
-\item{weighted}{Are the edges weighted?}
-
 \item{as_subgraph}{If true, only nodes of positive degree will be shown.}
 
 \item{node_scale}{Used for scaling of nodes.}
 
-\item{edge_scale}{used for scaling of edges.}
+\item{edge_scale}{Used for scaling of edges.}
 
 \item{coords}{Layout used for the network.}
+
+\item{main}{A string containing the title for the graph.}
+
+\item{include_vertex_labels}{If true, the verticies will be labeled.}
 }
 \value{
 Creates a plot of the network and returns a graph object. 
@@ -31,7 +32,6 @@ through the `compare_edge` argument, which will setup the plot for easier
 comparison between the old graph and the graph of `network`.
 }
 \description{
-This function creates a plot for a network object or adjacency matrix. 
-If the result of another plot is provided, this plot will be modified for 
-easier comparison.
+This function plots the given network. If the result of another plot is 
+provided, this plot will be modified for easier comparison.
 }

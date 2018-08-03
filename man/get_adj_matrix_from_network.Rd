@@ -13,7 +13,7 @@ get_adj_matrix_from_network(network, weighted = FALSE)
 connections between nodes i and j.}
 }
 \value{
-A p by p adjacency matrix with entry ij = 1 if node i and j are 
+A p by p adjacency matrix with entry ij >= 1 if node i and j are 
 connected, and 0 otherwise.
 }
 \description{

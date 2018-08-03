@@ -4,7 +4,7 @@
 \alias{get_degree_change}
 \title{Get the change in degree for each node between two networks.}
 \usage{
-get_degree_change(network1, network2)
+get_degree_change(network_1, network_2)
 }
 \arguments{
 \item{network1}{A network object for the first network.}

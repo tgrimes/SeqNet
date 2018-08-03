@@ -2,27 +2,25 @@
 % Please edit documentation in R/icorr.R
 \name{run_icorr}
 \alias{run_icorr}
-\title{Wrapper for inverse correlation matrix}
+\title{Wrapper for inverse covariance matrix}
 \usage{
-run_icorr(x, threshold = NULL, method = "pearson")
+run_icorr(x, threshold = NULL, k = 1)
 }
 \arguments{
-\item{x}{The n by p matrix of counts.}
+\item{x}{The n by p matrix of observations.}
 
 \item{threshold}{Cutoff for significant associations. If NULL, all correlations
 are returned. Otherwise, correlations of magnitude at or below this threshold are 
 set to zero.}
 
-\item{method}{The method used to compute correlations. Should be either "pearson"
-or "spearman". The default is Spearman, which provides 
-the more conservative estimation of associations.}
+\item{k}{An integer that ensures the matrix inverse is numerically stable. 
+k = 1 is default; higher values will give less stable results.}
 }
 \value{
-A list containing the p by p matrix of partial correlations,
-the threshold used to determine significant associations, and
-the method used to compute the correlations.
+A list containing the p by p matrix of partial correlations and
+the threshold used to determine significant associations.
 }
 \description{
-Conducts co-expression analysis using partial correlations for association 
-measure, computed by inverting the correlation matrix.
+Conducts co-expression analysis using full partial correlations; these are
+computed by inverting the sample correlation matrix of the observations.
 }

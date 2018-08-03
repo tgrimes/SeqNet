@@ -19,6 +19,6 @@ Specifies the false discovery rate threshold to use.}
 The p by p adjacency matrix containing only 1's and 0's.
 }
 \description{
-Determines which associations are significant using emperical 
-Bayes for false discovery rate adjustment.
+Determines which associations are significant based on an emperical 
+Bayes false discovery rate.
 }

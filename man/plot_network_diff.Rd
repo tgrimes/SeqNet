@@ -2,15 +2,16 @@
 % Please edit documentation in R/plot_network.R
 \name{plot_network_diff}
 \alias{plot_network_diff}
-\title{Plot function for network class}
+\title{Plotting to compare two networks}
 \usage{
-plot_network_diff(network_1, network_2, weighted = NULL, as_subgraph = TRUE,
-  node_scale = 5, edge_scale = 1,
-  coords = igraph::layout.fruchterman.reingold, main = "Untitled",
+plot_network_diff(network_1, network_2, as_subgraph = TRUE, node_scale = 5,
+  edge_scale = 1, coords = NULL, main = "Untitled",
   include_vertex_labels = FALSE, ...)
 }
 \arguments{
-\item{weighted}{Are the edges weighted?}
+\item{network_1}{Either a network object or adjacency matrix of the network.}
+
+\item{network_2}{Either a network object or adjacency matrix of the network.}
 
 \item{as_subgraph}{If true, only nodes of positive degree will be shown.}
 
@@ -20,9 +21,9 @@ plot_network_diff(network_1, network_2, weighted = NULL, as_subgraph = TRUE,
 
 \item{coords}{Layout used for the network.}
 
-\item{network}{Either a network object or adjacency matrix of the network.}
+\item{main}{A string containing the title for the graph.}
 
-\item{compare_graph}{The plot of another network to use for comparison.}
+\item{include_vertex_labels}{If true, the verticies will be labeled.}
 }
 \value{
 Creates a plot of the network and returns a graph object. 
@@ -31,6 +32,7 @@ through the `compare_edge` argument, which will setup the plot for easier
 comparison between the old graph and the graph of `network`.
 }
 \description{
-This function plots the given network. If the result of another plot is 
-provided, this plot will be modified for easier comparison.
+This function plots the overlap of two networks. Black edges are shared by
+both networks, tan edges are in network_1 but not network_2, and red edges
+are in network_2 but not network_1.
 }

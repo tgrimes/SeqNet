@@ -2,22 +2,25 @@
 % Please edit documentation in R/gen_gaussian.R
 \name{gen_gaussian}
 \alias{gen_gaussian}
-\title{Generate sample from overdispered Poisson}
+\title{Generate sample from a Gaussian graphical model.}
 \usage{
-gen_gaussian(n, network)
+gen_gaussian(n, network = NULL, sigma = NULL)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
 
-\item{network}{The underlying network (from create_network())}
+\item{network}{The underlying network (from create_network()).}
+
+\item{sigma}{The covariance matrix to use. If network$sigma or network$precision 
+is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
+a matrix is generated for sigma.}
 }
 \value{
 A list containing the n by p matrix of samples, the underlying network,
-and an n by p matrix containing mean expression values for each gene on each sample
-after incorporating the underlying network.
+and the p by p covariance matrix.
 }
 \description{
-Generates count data based on the overdispered Poisson distribution.
+Generates count data based on the multivariate normal distribution.
 }
 \examples{
 n <- 10
