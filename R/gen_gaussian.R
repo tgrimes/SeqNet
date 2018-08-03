@@ -1,12 +1,13 @@
-#' Generate sample from overdispered Poisson
+#' Generate sample from a Gaussian graphical model.
 #' 
-#' Generates count data based on the overdispered Poisson distribution.
+#' Generates count data based on the multivariate normal distribution.
 #' @param n The number of samples to generate.
-#' @param network The underlying network (from create_network()).
-#' @param sigma The covariance matrix to use.
+#' @param network The underlying network (from create_network()). 
+#' @param sigma The covariance matrix to use. If network$sigma or network$precision 
+#' is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
+#' a matrix is generated for sigma.
 #' @return A list containing the n by p matrix of samples, the underlying network,
-#' and an n by p matrix containing mean expression values for each gene on each sample
-#' after incorporating the underlying network.
+#' and the p by p covariance matrix.
 #' @export
 #' @examples
 #' n <- 10
@@ -20,13 +21,11 @@ gen_gaussian <- function(n, network = NULL, sigma = NULL) {
   if(n <= 0) 
     stop("n must be positive.")
   
-  library(mvtnorm) #rmvnorm
-  
   # If network is provided, create covariance matrix sigma.
   if(!is.null(network)) {
-    if("sigma" %in% names(network)) {
+    if(("sigma" %in% names(network)) & !is.null(network$sigma)) {
       sigma <- network$sigma
-    } else if("precision" %in% names(network)) {
+    } else if(("precision" %in% names(network)) & !is.null(network$precision)) {
       precision <- network$precision
       sigma <- get_sigma_from_precision(precision)
     } else {
@@ -43,7 +42,7 @@ gen_gaussian <- function(n, network = NULL, sigma = NULL) {
   }
   
   # Generate samples.
-  x <- rmvnorm(n, sigma = sigma)
+  x <- mvtnorm::rmvnorm(n, sigma = sigma)
   
   # Add column names to simulated dataset.
   if(is.null(gene_names)) {
@@ -66,7 +65,13 @@ gen_gaussian <- function(n, network = NULL, sigma = NULL) {
 attr(gen_gaussian, "name") <- "gen_gaussian"
 
 
-
+#' Generate a precision matrix from a network
+#' 
+#' A random precision matrix (i.e. an inverse covariance matrix) is generated
+#' based on the structure from a given network.
+#' @param network The underlying network (from create_network()). 
+#' @return A p by p precision matrix.
+#' @export
 random_precision_from_network <- function(network) {
   library(Matrix)
   # Obtain an adjacency matrix representation of the network.
@@ -93,6 +98,15 @@ random_precision_from_network <- function(network) {
   return(precision)
 }
 
+#' Compute the covariance matrix from a precision matrix
+#' 
+#' If the precision matrix is singular, it is made invertible by adding a 
+#' diagonal matrix.
+#' @param precision The precision matrix.
+#' @param k An integer that ensures the matrix inverse is numerically stable. 
+#' k = 1 is default; higher values will give less stable results.
+#' @return A p by p covariance matrix.
+#' @export
 get_sigma_from_precision <- function(precision, k = 1) {
   # If a network is given, check if "precision" matrix is provided.
   if(is.list(precision)) {
@@ -106,6 +120,7 @@ get_sigma_from_precision <- function(precision, k = 1) {
   
   # Add values to diagonal to ensure positive definiteness and 
   # numerical stablility of taking the inverse.
+  p <- nrow(precision)
   eigen_val <- eigen(precision)$values
   precision <- precision + diag((max(eigen_val) * 10^-k - min(eigen_val)), p) * 
     (min(eigen_val) < max(eigen_val) * 10^-k)
