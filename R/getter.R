@@ -5,7 +5,7 @@
 #' @param network The network to get adjacency matrix for.
 #' @param weighted If true, the ij'th entry will be the total number of 
 #' connections between nodes i and j.
-#' @return A p by p adjacency matrix with entry ij = 1 if node i and j are 
+#' @return A p by p adjacency matrix with entry ij >= 1 if node i and j are 
 #' connected, and 0 otherwise.
 #' @export
 get_adj_matrix_from_network <- function(network, weighted = FALSE) {
@@ -152,9 +152,9 @@ get_degree_distribution <- function(network) {
 #' @return A vector of length p, containing the degree change for each node in 
 #' the two networks.
 #' @export
-get_degree_change <- function(network1, network2) {
-  A1 <- get_adj_matrix_from_network(network1, weighted = TRUE)
-  A2 <- get_adj_matrix_from_network(network2, weighted = TRUE)
+get_degree_change <- function(network_1, network_2) {
+  A1 <- get_adj_matrix_from_network(network_1, weighted = TRUE)
+  A2 <- get_adj_matrix_from_network(network_2, weighted = TRUE)
   delta <- apply(A1 - A2, 2, sum) # Degree change.
   return(delta)
 }
@@ -206,15 +206,15 @@ get_membership_matrix <- function(network) {
 }
 
 
-#' Get the clustering of nodes in the network
+#' Get a list of pathways in the network
 #' 
-#' Structure is synonnymous with cluster or group. The structures in the 
-#' network may overlap, meaning a node can be a member of multiple clusters. 
-#' This function identifies which of the nodes belong to each structure.
+#' Pathways refer to hubs, modules, and cliques. The pathways in the 
+#' network may overlap, meaning a node can be a member of multiple pathways. 
+#' This function identifies which of the nodes belong to each pathway.
 #' @param network A network object.
-#' @return A list of g vectors of integers, where g is the number of structures 
+#' @return A list of g vectors of integers, where g is the number of pathways 
 #' in the network and each vector contains the indicies of the nodes contained
-#' in the structure.
+#' in the pathway.
 #' @export
 get_membership_list <- function(network) {
   n_hubs <- length(network$hubs)
