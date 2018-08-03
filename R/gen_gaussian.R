@@ -2,7 +2,8 @@
 #' 
 #' Generates count data based on the overdispered Poisson distribution.
 #' @param n The number of samples to generate.
-#' @param network The underlying network (from create_network())
+#' @param network The underlying network (from create_network()).
+#' @param sigma The covariance matrix to use.
 #' @return A list containing the n by p matrix of samples, the underlying network,
 #' and an n by p matrix containing mean expression values for each gene on each sample
 #' after incorporating the underlying network.
@@ -13,53 +14,42 @@
 #' network <- create_network(p = 100, modules = list(1:100)) 
 #' # Generate "normalized" expression data from the network:
 #' x <- gen_gaussian(n, network)$x
-gen_gaussian <- function(n, 
-                         network) {
+gen_gaussian <- function(n, network = NULL, sigma = NULL) {
+  if(is.null(network) & is.null(sigma))
+    stop("Either network or sigma must be provided.")
+  if(n <= 0) 
+    stop("n must be positive.")
+  
   library(mvtnorm) #rmvnorm
-  library(MCMCpack) #diwish() and riwish()
   
-  if(n <= 0) stop("n must be positive.")
-  p <- network$p
-
-  graph <- get_adj_matrix_from_network(network)
-  connected <- apply(graph, 2, function(x) sum(x != 0) > 0)
+  # If network is provided, create covariance matrix sigma.
+  if(!is.null(network)) {
+    if("sigma" %in% names(network)) {
+      sigma <- network$sigma
+    } else if("precision" %in% names(network)) {
+      precision <- network$precision
+      sigma <- get_sigma_from_precision(precision)
+    } else {
+      precision <- random_precision_from_network(network)
+      sigma <- get_sigma_from_precision(precision)
+    }
+    gene_names <- network$node_names
+  } else {
+    if(ncol(sigma) != nrow(sigma))
+      stop("sigma is not a square matrix.")
+    if(any(diag(sigma) < 0))
+      stop("sigma contains negative values along its diagonal.")
+    gene_names <- colnames(sigma)
+  }
   
-
-  x <- matrix(0, nrow = p, ncol = n) # Store samples in columns at first.
-  A <- graph[connected, connected]
-  n_A <- sum(lower.tri(A))
-  A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
-  #A[lower.tri(A)] <- A[lower.tri(A)] * 0.75
-  A[upper.tri(A)] <- 0
-  A <- A + t(A)
-  precision <- A + diag((1 + abs(min(eigen(A)$values))), nrow(A))
-  eigen(precision)$values
-  sigma <- solve(precision)
-  x[connected, ] <- t(rmvnorm(n, sigma = sigma))
-  x[!connected, ] <- rnorm(sum(!connected) * n)
-  
-  # for(i in 1:n) {
-  #   x <- matrix(0, nrow = p, ncol = n) # Store samples in columns at first.
-  #   A <- graph[connected, connected]
-  #   n_A <- sum(lower.tri(A))
-  #   A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
-  #   A[upper.tri(A)] <- 0
-  #   A <- A + t(A)
-  #   precision <- A + diag((1 + abs(min(eigen(A)$values))), nrow(A))
-  #   eigen(precision)$values
-  #   sigma <- solve(precision)
-  #   x[connected, i] <- rmvnorm(1, sigma = sigma)
-  #   x[!connected, i] <- rnorm(sum(!connected))
-  # }
-  
-  x <- t(x) # Turn into n by p matrix.
-  
+  # Generate samples.
+  x <- rmvnorm(n, sigma = sigma)
   
   # Add column names to simulated dataset.
-  if(is.null(network$node_names)) {
-    colnames(x) <- paste(1:p)
+  if(is.null(gene_names)) {
+    colnames(x) <- paste(1:ncol(x))
   } else {
-    colnames(x) <- network$node_names
+    colnames(x) <- gene_names
   }
   
   if(any(is.na(x))) {
@@ -69,27 +59,59 @@ gen_gaussian <- function(n,
   }
   
   return(list(x = x, 
+              sigma = sigma,
               network = network))
 }
 
 attr(gen_gaussian, "name") <- "gen_gaussian"
 
 
-# # Check input for sigma.
-# if(length(sigma) == 1) {
-#   sigma <- rep(sigma, p)
-# }
-# if(length(sigma) != p) stop("sigma should be a vector of length 1 or p.")
-# 
-# # Check input for rho.
-# if(length(rho) == 1) {
-#   rho <- matrix(rho, p, p)
-# }
-# if(length(rho) != p^2) stop("rho should be a value or p by p matrix")
-# diag(rho) <- 0
 
-# @param sigma A nonegative value or vector of length p. Specifies the standard
-# deviation in expression for each gene.
-# @param rho A value or p by p matrix with entries between -1 and 1. Specifies
-# the correlation between each gene. If two genes are not connected in the network,
-# the correlation for that pair is ignored.
+random_precision_from_network <- function(network) {
+  library(Matrix)
+  # Obtain an adjacency matrix representation of the network.
+  graph <- get_adj_matrix_from_network(network)
+  p <- ncol(graph)
+  
+  # Find nodes with edges in the graph.
+  connected <- apply(graph, 2, function(x) sum(x != 0) > 0)
+  n_connected <- sum(connected)
+  
+  # Each edge corresponds to a nonzero partial correlation.
+  # Generate random value for each partial correlation.
+  A <- graph[connected, connected] # Subset graph on nodes with edges.
+  n_A <- n_connected * (n_connected - 1) / 2 # Number of possible edges in the graph.
+  A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.75, 1)
+  A[upper.tri(A)] <- 0
+  A <- A + t(A)
+  
+  # Create p by p precision matrix with partial correlations.
+  precision <- matrix(0, p, p)
+  precision[connected, connected] <- A
+  diag(precision) <- 1
+  
+  return(precision)
+}
+
+get_sigma_from_precision <- function(precision, k = 1) {
+  # If a network is given, check if "precision" matrix is provided.
+  if(is.list(precision)) {
+    if(!("precision" %in% names(precision)))
+      stop("precision matrix not found.")
+    precision <- precision$precision
+  }
+  
+  if(!is.matrix(precision)) stop("precision is not a matrix.")
+  if(!isSymmetric(precision)) stop("precision matrix is not symmetric.")
+  
+  # Add values to diagonal to ensure positive definiteness and 
+  # numerical stablility of taking the inverse.
+  eigen_val <- eigen(precision)$values
+  precision <- precision + diag((max(eigen_val) * 10^-k - min(eigen_val)), p) * 
+    (min(eigen_val) < max(eigen_val) * 10^-k)
+  
+  # Invert precision matrix to obtain covariance matrix.
+  sigma <- solve(precision)
+  
+  return(sigma)
+}
