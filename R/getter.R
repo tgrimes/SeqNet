@@ -159,52 +159,6 @@ get_degree_change <- function(network_1, network_2) {
   return(delta)
 }
 
-#' Get the clustering of nodes in the network
-#' 
-#' Structure is synonnymous with cluster or group. The structures in the 
-#' network may overlap, meaning a node can be a member of multiple clusters. 
-#' This function identifies which of the nodes belong to each structure.
-#' @param network A network object.
-#' @return A p by g matrix, M, where g is the number of structures in the network
-#' and p is the number of nodes. M_ij = 1 indicates that node i is a member
-#' of structure j. M_ij = 0 indicates non-membership.
-#' @export
-get_membership_matrix <- function(network) {
-  n_hubs <- length(network$hubs)
-  n_modules <- length(network$modules)
-  n_cliques <- length(network$cliques)
-  
-  n_structures <- n_hubs + n_modules + n_cliques
-  G <- matrix(0, nrow = network$p, ncol = n_structures)
-  colnames(G) <- 1:n_structures
-  
-  if(n_hubs > 0) {
-    for(i in 1:n_hubs) {
-      G[network$hubs[[i]]$nodes, i] <- 1
-      colnames(G)[i] <- paste0("hub_", i)
-    }
-  }
-  
-  if(n_modules > 0) {
-    for(i in 1:n_modules) {
-      if(any(apply(network$modules[[i]]$struct, 2, sum) == 0)) {
-        warning("node in module but has no connections")
-      }
-      G[network$modules[[i]]$nodes, n_hubs + i] <- 1
-      colnames(G)[n_hubs + i] <- paste0("module_", i)
-    }
-  }
-  
-  if(n_cliques > 0) {
-    for(i in 1:n_cliques) {
-      G[network$cliques[[i]]$nodes, n_hubs + n_modules + i] <- 1
-      colnames(G)[n_hubs + n_modules + i] <- paste0("clique_", i)
-    }
-  }
-  
-  return(G)
-}
-
 
 #' Get a list of pathways in the network
 #' 
