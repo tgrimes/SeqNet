@@ -571,3 +571,16 @@ rewire_connections_to_node <- function(network, node, p = 0.2) {
   
   return(network)
 }
+
+remove_small_components_from_module <- function(network, module) {
+  g <- igraph::graph_from_adjacency_matrix(network$modules[[module]]$struct,
+                                           mode = "undirected")
+  comp <- igraph::components(g)
+  if(comp$no > 1) {
+    index <- which(comp$csize == max(comp$csize))[1]
+    remove_nodes <- which(comp$membership != index)
+    network <- remove_node_from_module(network, module, remove_nodes)
+  }
+  
+  return(network)
+}
