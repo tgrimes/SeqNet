@@ -7,7 +7,7 @@
 random_precision_from_network(network)
 }
 \arguments{
-\item{network}{The underlying network (from create_network()).}
+\item{network}{The underlying network (from [create_network()]).}
 }
 \value{
 A p by p precision matrix.
