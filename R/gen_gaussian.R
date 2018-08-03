@@ -85,7 +85,7 @@ random_precision_from_network <- function(network) {
   # Generate random value for each partial correlation.
   A <- graph[connected, connected] # Subset graph on nodes with edges.
   n_A <- n_connected * (n_connected - 1) / 2 # Number of possible edges in the graph.
-  A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.75, 1)
+  A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
   A[upper.tri(A)] <- 0
   A <- A + t(A)
   
