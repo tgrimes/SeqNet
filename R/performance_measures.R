@@ -13,6 +13,8 @@
 #' connected, tndr is set to NA.
 #' @export
 get_network_inference_performance <- function(pred, true) {
+  warning("depreciated: use get_confusion_matrix() instead.")
+  
   if(class(true) == "network") {
     true <- get_adj_matrix_from_network(true)
   } else if((!is.matrix(true))) {
@@ -75,6 +77,108 @@ get_network_inference_performance <- function(pred, true) {
               f1_score = f1_score, tdr = tdr, tndr = tndr))
 }
 
+
+#' Get performance measures for network inference
+#' 
+#' Computes the confusion matrix for an inferred network based on the true 
+#' network.
+#' @param true a network object or an adjacency matrix indicating the 
+#' true underlying connections in the graph.
+#' @param pred a matrix indicating the predicted connections
+#' between the genes. Can be adjacency matrix or sparse association matrix 
+#' (i.e. with non-significant associations removed); all non-zero entries are
+#' changed to 1. 
+#' @return The confusion matrix.
+#' @export
+get_confusion_matrix <- function(true, pred) {
+  if(class(true) == "network") {
+    true <- get_adj_matrix_from_network(true)
+  } else if((!is.matrix(true))) {
+    stop("true should be a network or matrix.")
+  }
+  if(!is.matrix(pred)) {
+    stop("pred is not a matrix.")
+  }
+  if(dim(pred)[1] != dim(pred)[2]) {
+    stop("pred is not a square matrix.")
+  }
+  if(dim(true)[1] != dim(true)[2]) {
+    stop("true is not a square matrix.")
+  }
+  if(dim(pred)[1] != dim(true)[1]) {
+    stop("true and pred are not of equal dimension.")
+  }
+  if(!isSymmetric(unname(true))) {
+    stop("true is not symmetric.")
+  }
+  if(!isSymmetric(unname(pred))) {
+    stop("pred is not symmetric.")
+  }
+  
+  # Change any non-zero entries in pred to 1. 
+  pred[pred != 0] <- 1
+  
+  # Take values in lower triangle.
+  true <- true[lower.tri(true)]
+  pred <- pred[lower.tri(pred)]
+  
+  # Setup:
+  #           pred
+  #           1  0
+  #           ----
+  # true  1 | A  B
+  #       0 | C  D
+  #
+  # sensitivity = A / (A + B)
+  # specificity = D / (C + D)
+  # f1-score = harmonic mean of sensitivity and specificity
+  # tdr = A / (A + C)
+  # tndr = D / (B + D)
+  
+  pred_1 <- pred == 1 
+  true_1 <- true == 1
+  
+  A <- sum(pred_1 & true_1)
+  B <- sum(!pred_1 & true_1)
+  C <- sum(pred_1 & !true_1)
+  D <- sum(!pred_1 & !true_1)
+  
+  confusion <- matrix(c(A, B, C, D), 2, 2, byrow = TRUE)
+  colnames(confusion) <- c("1", "0")
+  rownames(confusion) <- c("1", "0")
+  dimnames(confusion) <- list(true = c("1", "0"), 
+                              pred = c("1", "0"))
+  
+  return(confusion)
+}
+
+#' Provides summary measures for confusion matrix
+#' 
+#' @param confusion The confusion matrix.
+#' @return A list containing the sensitivity (i.e. true positive rate; recall), 
+#' specificity (i.e. true negative rate), true discovery rate (i.e. positive 
+#' predictive value; precision), true non-discovery rate (i.e. negative 
+#' predictive value), and f1-score (geometric mean of tdr and sensitivity).
+#' @export
+summarize_confusion <- function(confusion) {
+  A <- confusion[1, 1]
+  B <- confusion[1, 2]
+  C <- confusion[2, 1]
+  D <- confusion[2, 2]
+  
+  sensitivity <- A / (A + B) # True positive rate (TPR); Recall.
+  specificity <- D / (C + D) # True negative rate (TNR).
+  tdr <- ifelse((A + C) == 0, NA, A / (A + C)) # Positive predictive value (PPV); Precision.
+  tndr <- ifelse((B + D) == 0, NA, D / (B + D)) # Negative predictive value (NPV).
+  f1_score <-  2 / (1 / tdr + 1 / sensitivity)
+  
+  return(list(sensitivity = sensitivity,
+              specificity = specificity,
+              tdr = tdr,
+              tndr = tndr,
+              f1_score = f1_score))
+}
+
 #Performs tests to determine if get_performance_measures() is working properly.
 test_network_measures <- function() {
   PASS <- TRUE
@@ -124,14 +228,5 @@ test_network_measures <- function() {
   
   if(PASS) {
     print("All tests were passed.")
-  }
-}
-
-
-diff_connectivity_performance <- function(diff_score, diff_true) {
-  if(is.list(diff_score)) {
-    for(score in diff_score) {
-      
-    }
   }
 }
