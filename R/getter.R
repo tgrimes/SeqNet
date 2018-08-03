@@ -204,3 +204,49 @@ get_membership_matrix <- function(network) {
   
   return(G)
 }
+
+
+#' Get the clustering of nodes in the network
+#' 
+#' Structure is synonnymous with cluster or group. The structures in the 
+#' network may overlap, meaning a node can be a member of multiple clusters. 
+#' This function identifies which of the nodes belong to each structure.
+#' @param network A network object.
+#' @return A list of g vectors of integers, where g is the number of structures 
+#' in the network and each vector contains the indicies of the nodes contained
+#' in the structure.
+#' @export
+get_membership_list <- function(network) {
+  n_hubs <- length(network$hubs)
+  n_modules <- length(network$modules)
+  n_cliques <- length(network$cliques)
+  
+  n_structures <- n_hubs + n_modules + n_cliques
+  G <- vector("list", n_structures)
+
+  if(n_hubs > 0) {
+    for(i in 1:n_hubs) {
+      G[[i]] <- network$hubs[[i]]$nodes
+      names(G)[i] <- paste0("hub_", i)
+    }
+  }
+  
+  if(n_modules > 0) {
+    for(i in 1:n_modules) {
+      if(any(apply(network$modules[[i]]$struct, 2, sum) == 0)) {
+        warning("node in module but has no connections")
+      }
+      G[[n_hubs + i]] <- network$modules[[i]]$nodes
+      names(G)[n_hubs + i] <- paste0("module_", i)
+    }
+  }
+  
+  if(n_cliques > 0) {
+    for(i in 1:n_cliques) {
+      G[[n_hubs + n_modules + i]] <- network$cliques[[i]]$nodes
+      names(G)[n_hubs + n_modules + i] <- paste0("clique_", i)
+    }
+  }
+  
+  return(G)
+}
