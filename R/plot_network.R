@@ -21,7 +21,7 @@
 plot.network <- function(network, compare_graph = NULL,
                          weighted = NULL, as_subgraph = FALSE,
                          node_scale = 5, edge_scale = 1, 
-                         coords =  igraph::layout.fruchterman.reingold,
+                         coords =  NULL,
                          main = "Untitled", include_vertex_labels = TRUE, ...) {
   library(igraph)
   
@@ -36,6 +36,11 @@ plot.network <- function(network, compare_graph = NULL,
     stop("network should be either a matrix or a network class object.")
   }
   
+  if(all(adj_matrix == 0)) {
+    plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '',
+              main = main)
+    return(NULL)
+  }
   if(is.null(colnames(adj_matrix))) {
     colnames(adj_matrix) <- 1:ncol(adj_matrix)
   }
@@ -86,7 +91,9 @@ plot.network <- function(network, compare_graph = NULL,
       igraph::V(g)$size <- igraph::V(g)$size / max(igraph::V(g)$size) * node_scale
       igraph::V(g)$frame.color <- "white"
       
-      coords <- igraph::layout.fruchterman.reingold(compare_graph)
+      if(is.null(coords)) {
+        coords <- igraph::layout.fruchterman.reingold(compare_graph)
+      }
     }
     
     plot(g, vertex.color = "orange", vertex.label.font = 2,
@@ -146,7 +153,7 @@ plot_network <- plot.network
 #' @export
 plot_network_diff <- function(network_1, network_2, weighted = NULL,
                               as_subgraph = TRUE, node_scale = 5, edge_scale = 1,
-                              coords =  igraph::layout.fruchterman.reingold,
+                              coords =  NULL,
                               main = "Untitled", include_vertex_labels = FALSE, ...) {
   library(igraph)
   
@@ -177,6 +184,12 @@ plot_network_diff <- function(network_1, network_2, weighted = NULL,
   }
   if(is.null(colnames(adj_matrix_2))) {
     colnames(adj_matrix_2) <- 1:ncol(adj_matrix_2)
+  }
+  
+  if(all(adj_matrix_1 == 0) && all(adj_matrix_2 == 0)) {
+    plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '',
+         main = main)
+    return(NULL)
   }
   
   adj_matrix_both <- (adj_matrix_1 | adj_matrix_2) * 1
@@ -220,7 +233,9 @@ plot_network_diff <- function(network_1, network_2, weighted = NULL,
   
   edge.color[intersect(subset_1, subset_2)] <- "black"
 
-  coords <- igraph::layout.fruchterman.reingold(g)
+  if(is.null(coords)) {
+    coords <- igraph::layout.fruchterman.reingold(g_1)
+  }
   
   plot(g, vertex.color = adjustcolor("orange", 0.5), vertex.label.font = 2,
        vertex.label.color = vertex.label.color, vertex.label.cex = 0.7,
