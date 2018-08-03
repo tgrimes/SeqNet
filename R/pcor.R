@@ -27,3 +27,16 @@ run_pcor <- function(x, threshold = NULL, verbose = FALSE) {
   return(list(scores = scores, 
               threshold = threshold))
 }
+
+
+#' Test if a shrinkage object is symmetric.
+#' 
+#' @param x An object of class 'shrinkage'.
+#' @param ... Further argumnts passed to [isSymmetric()].
+#' @return Logical indicated if x is symmetric or not.
+#' @export
+isSymmetric.shrinkage <- function(x, ...) {
+  class(x) <- "matrix"
+  return(isSymmetric(x, ...))
+}
+
