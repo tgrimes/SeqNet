@@ -69,11 +69,10 @@ attr(gen_gaussian, "name") <- "gen_gaussian"
 #' 
 #' A random precision matrix (i.e. an inverse covariance matrix) is generated
 #' based on the structure from a given network.
-#' @param network The underlying network (from create_network()). 
+#' @param network The underlying network (from [create_network()]). 
 #' @return A p by p precision matrix.
 #' @export
 random_precision_from_network <- function(network) {
-  library(Matrix)
   # Obtain an adjacency matrix representation of the network.
   graph <- get_adj_matrix_from_network(network)
   p <- ncol(graph)
