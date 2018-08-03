@@ -216,7 +216,7 @@ get_membership_matrix <- function(network) {
 #' in the network and each vector contains the indicies of the nodes contained
 #' in the pathway.
 #' @export
-get_membership_list <- function(network) {
+get_pathway_list <- function(network) {
   n_hubs <- length(network$hubs)
   n_modules <- length(network$modules)
   n_cliques <- length(network$cliques)
