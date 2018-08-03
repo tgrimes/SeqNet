@@ -239,20 +239,19 @@ create_network_scale_free <- function(p) {
   r_sq <- rep(0, max_iter)
   par(mfrow = c(1, 3))
   while(iter < max_iter) {
-    network <- 
-      create_network(p = p,
-                     hubs = lapply(rnbinom(ceiling(n_hubs[iter]), 2, 
-                                           mu = mu_hubs[iter]), function(x) {
-                       x <- max(min(x, p), 2) # Make sure x is in [2, p].
-                       sample(1:p, x)
-                     }),
-                     modules = lapply(rnbinom(ceiling(n_modules[iter]), 2, 
-                                              mu = mu_modules[iter]), function(x) {
-                       x <- max(min(x, p), 2) # Make sure x is in [2, p].
-                       sample(1:p, x)
-                     }),
-                     module_neig = 3,
-                     module_prob = 0.9)
+    network <- create_network(p = p,
+                             hubs = lapply(rnbinom(ceiling(n_hubs[iter]), 2, 
+                                                   mu = mu_hubs[iter]), function(x) {
+                               x <- max(min(x, p), 2) # Make sure x is in [2, p].
+                               sample(1:p, x)
+                             }),
+                             modules = lapply(rnbinom(ceiling(n_modules[iter]), 2, 
+                                                      mu = mu_modules[iter]), function(x) {
+                               x <- max(min(x, p), 2) # Make sure x is in [2, p].
+                               sample(1:p, x)
+                             }),
+                             module_neig = 3,
+                             module_prob = 0.9)
     
     # Compute r_sq for scale-free distribution of degree.
     degree <- apply(get_adj_matrix_from_network(network), 2, sum)
@@ -324,7 +323,6 @@ create_network_scale_free <- function(p) {
   mu_modules <- mu_modules[1:iter]
   n_hubs <- n_hubs[1:iter]
   n_modules <- n_modules[1:iter]
-  return(network)
 }
 
 
@@ -493,15 +491,12 @@ remove_connections_to_node <- function(network, node) {
   if(length(network$hubs) > 0) {
     hubs_removed <- 0
     for(i in 1:length(network$hubs)) {
+      hub_index <- i - hubs_removed
       node_index <- which(node == network$hubs[[hub_index]]$nodes)
       if(length(node_index) == 1) {
-        p <- length(network$hubs[[i]]$struct)
-        if(node_index == 1) {
-          network$hubs[[i]]$struct <- rep(0, p)
-          network$hubs[[i]]$signs <- rep(0, p)
-        }
-        network$hubs[[i]]$struct[node_index] <- 0
-        network$hubs[[i]]$signs[node_index] <- 0 
+        if(node_index == 1) hubs_removed <- hubs_removed + 1
+        
+        network <- remove_node_from_hub(network, hub_index, node_index)
       }
     }
   }
@@ -510,11 +505,7 @@ remove_connections_to_node <- function(network, node) {
     for(i in 1:length(network$modules)) {
       node_index <- which(node == network$modules[[i]]$nodes)
       if(length(node_index) == 1) {
-        p <- length(network$modules[[i]]$nodes)
-        network$modules[[i]]$struct[node_index, ] <- rep(0, p)
-        network$modules[[i]]$struct[, node_index] <- rep(0, p)
-        network$modules[[i]]$signs[node_index, ] <- rep(0, p) 
-        network$modules[[i]]$signs[, node_index] <- rep(0, p) 
+        network <- remove_node_from_module(network, i, node_index)
       }
     }
   }
@@ -523,8 +514,7 @@ remove_connections_to_node <- function(network, node) {
     for(i in 1:length(network$clique)) {
       node_index <- which(node == network$clique[[i]]$nodes)
       if(length(node_index) == 1) {
-        network$cliques[[i]]$struct[node_index] <- 0
-        network$cliques[[i]]$signs[node_index] <- 0 
+        network <- remove_node_from_clique(network, i, node_index)
       }
     }
   }
