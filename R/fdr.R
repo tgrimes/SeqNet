@@ -21,6 +21,7 @@
 #' in the output?
 #' @param show_plot If TRUE, a histogram of scores with estimated density
 #' and null distribution is plotted.
+#' @param ignore_zeroes If TRUE, zeroes in scores input will be ignored.
 #' @return A list containing: `scores`, the scores with non-significant values 
 #' set to zero; `mu_f0`, the estimate of mu for the null distribution; `sigma_f0`,
 #' the estimate of sigma for the null distribution; `f`, the empirical density
@@ -37,7 +38,8 @@ fdr <- function(scores,
                 transformation = NULL, 
                 robust = TRUE,
                 include_likelihood = FALSE,
-                show_plot = TRUE) {
+                show_plot = TRUE,
+                ignore_zeroes = TRUE) {
   
   # Determine whether scores is a vector or matrix.
   if(is.matrix(scores)) {
@@ -51,30 +53,36 @@ fdr <- function(scores,
     stop("scores is neither a vector nor symmetric matrix.")
   }
   
+  index_include <- 1:length(scores)
+  if(ignore_zeroes) {
+    index_include <- which(scores != 0)
+  }
   # Apply transformation, if one is provided.
   if(!is.null(transformation)) {
-    scores <- transformation(scores)
+    scores[index_include] <- transformation(scores[index_include])
     if(!is.vector(scores)) stop("transformation did not return a vector as output.")
   }
   
   # Estimate paramters of null distribution (assumed to be Gaussian).
   if(robust) {
-    mu_f0 <- median(scores) # Use median to account for any skewness.
-    sigma_f0 <- 1.4826 * median(abs(scores - median(scores))) # Use 1.4826 * MAD.
+    mu_f0 <- median(scores[index_include]) # Use median to account for any skewness.
+    sigma_f0 <- 1.4826 * median(abs(scores[index_include] - median(scores[index_include]))) # Use 1.4826 * MAD.
   }
   if(!robust || (robust && sigma_f0 == 0)){
-    mu_f0 <- mean(scores) 
-    sigma_f0 <- sd(scores) 
+    mu_f0 <- mean(scores[index_include]) 
+    sigma_f0 <- sd(scores[index_include]) 
   }
   
   # Emperical Bayes FDR. Save likelihood ratios.
-  f <- density(scores, 
+  f <- density(scores[index_include], 
                kernel = "gaussian")
-  likelihood <- dnorm(scores, mu_f0, sigma_f0) / approx(f, xout = scores)$y
+  likelihood <- rep(1, length(scores))
+  likelihood[index_include] <- dnorm(scores[index_include], mu_f0, sigma_f0) / 
+    approx(f, xout = scores[index_include])$y
   
   # Generate plot of requested.
   if(show_plot) {
-    hist(scores, freq = FALSE)
+    hist(scores[index_include], freq = FALSE)
     par(xpd = FALSE) # Keep lines within plot
     curve(approx(f, xout = x)$y, col = "blue", add = TRUE)
     curve(dnorm(x, mu_f0, sigma_f0), col = "orange", add = TRUE)
