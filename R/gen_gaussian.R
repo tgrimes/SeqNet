@@ -2,7 +2,7 @@
 #' 
 #' Generates count data based on the multivariate normal distribution.
 #' @param n The number of samples to generate.
-#' @param network The underlying network (from create_network()). 
+#' @param network The underlying network (from [create_network()]). 
 #' @param sigma The covariance matrix to use. If network$sigma or network$precision 
 #' is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
 #' a matrix is generated for sigma.
