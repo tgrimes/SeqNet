@@ -208,6 +208,8 @@ create_network_from_adjacency <- function(adj_matrix, p = ncol(adj_matrix)) {
   return(network)
 }
 
+
+
 create_network_scale_free <- function(p) {
   max_iter <- 500
   iter <- 1
@@ -562,6 +564,14 @@ rewire_connections_to_node <- function(network, node, p = 0.2) {
   return(network)
 }
 
+#' Removes small components within a network module.
+#' 
+#' Connectivity of the network module is enforced by removing all but the 
+#' largest connected component in the module.
+#' @param network The network to modify.
+#' @param module The module to make connected.
+#' @return The modified network.
+#' @export
 remove_small_components_from_module <- function(network, module) {
   g <- igraph::graph_from_adjacency_matrix(network$modules[[module]]$struct,
                                            mode = "undirected")
