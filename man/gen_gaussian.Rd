@@ -9,7 +9,7 @@ gen_gaussian(n, network = NULL, sigma = NULL)
 \arguments{
 \item{n}{The number of samples to generate.}
 
-\item{network}{The underlying network (from create_network()).}
+\item{network}{The underlying network (from [create_network()]).}
 
 \item{sigma}{The covariance matrix to use. If network$sigma or network$precision 
 is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
