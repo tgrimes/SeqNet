@@ -108,9 +108,9 @@ random_precision_from_network <- function(network) {
 #' @export
 get_sigma_from_precision <- function(precision, k = 1) {
   # If a network is given, check if "precision" matrix is provided.
-  if(is.list(precision)) {
+  if(class(precision) == "network") {
     if(!("precision" %in% names(precision)))
-      stop("precision matrix not found.")
+      stop("network object provided but does not contain precision matrix.")
     precision <- precision$precision
   }
   
