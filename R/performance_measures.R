@@ -93,34 +93,29 @@ get_network_inference_performance <- function(pred, true) {
 get_confusion_matrix <- function(true, pred) {
   if(class(true) == "network") {
     true <- get_adj_matrix_from_network(true)
-  } else if((!is.matrix(true))) {
-    stop("true should be a network or matrix.")
-  }
-  if(!is.matrix(pred)) {
-    stop("pred is not a matrix.")
-  }
-  if(dim(pred)[1] != dim(pred)[2]) {
-    stop("pred is not a square matrix.")
-  }
-  if(dim(true)[1] != dim(true)[2]) {
-    stop("true is not a square matrix.")
-  }
-  if(dim(pred)[1] != dim(true)[1]) {
-    stop("true and pred are not of equal dimension.")
-  }
-  if(!isSymmetric(unname(true))) {
-    stop("true is not symmetric.")
-  }
-  if(!isSymmetric(unname(pred))) {
-    stop("pred is not symmetric.")
-  }
+    if(!is.matrix(pred)) {
+      stop("true is a network object, so pred should be a matrix.")
+    }
+  } else if(is.matrix(true) & !is.matrix(pred)) {
+    stop("true is a matrix, but pred is not.")
+  } else if(!is.matrix(true) & is.matrix(pred)) {
+    stop("pred is a matrix, but true is not.")
+  }  
   
   # Change any non-zero entries in pred to 1. 
   pred[pred != 0] <- 1
   
-  # Take values in lower triangle.
-  true <- true[lower.tri(true)]
-  pred <- pred[lower.tri(pred)]
+  if(is.matrix(true) & is.matrix(pred)) {
+    # Take values in lower triangle.
+    true <- true[lower.tri(true)]
+    pred <- pred[lower.tri(pred)]
+  }
+  
+  if(length(true) != length(pred)) {
+    stop("length of true is not equal to length of true")
+  }
+  
+  
   
   # Setup:
   #           pred
