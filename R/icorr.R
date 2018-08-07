@@ -25,6 +25,7 @@ run_icorr <- function(x, threshold = NULL, k = 1) {
     (min(eigen_vals) < max(eigen_vals) * 10^-k) # Add diag if this is TRUE.
   
   scores <- corpcor::cor2pcor(scores) # Computes inverse and handles negative signs.
+  diag(scores) <- 0
   
   if(!is.null(threshold)) {
     scores[abs(scores) <= threshold] <- 0

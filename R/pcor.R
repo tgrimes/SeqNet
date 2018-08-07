@@ -17,6 +17,7 @@ run_pcor <- function(x, threshold = NULL, verbose = FALSE) {
   }
   
   scores <- corpcor::pcor.shrink(x, verbose = verbose)
+  diag(scores) <- 0
   
   if(!is.null(threshold)) {
     scores[abs(scores) <= threshold] <- 0
