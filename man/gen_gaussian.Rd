@@ -4,7 +4,7 @@
 \alias{gen_gaussian}
 \title{Generate sample from a Gaussian graphical model.}
 \usage{
-gen_gaussian(n, network = NULL, sigma = NULL)
+gen_gaussian(n, network = NULL, sigma = NULL, network_list = NULL)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
@@ -14,6 +14,8 @@ gen_gaussian(n, network = NULL, sigma = NULL)
 \item{sigma}{The covariance matrix to use. If network$sigma or network$precision 
 is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
 a matrix is generated for sigma.}
+
+\item{network_list}{A list of networks (from [create_network()]).}
 }
 \value{
 A list containing the n by p matrix of samples, the underlying network,

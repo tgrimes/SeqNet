@@ -6,6 +6,7 @@
 #' @param sigma The covariance matrix to use. If network$sigma or network$precision 
 #' is defined, they will be used instead of sigma. Otherwise, if sigma NULL, 
 #' a matrix is generated for sigma.
+#' @param network_list A list of networks (from [create_network()]).
 #' @return A list containing the n by p matrix of samples, the underlying network,
 #' and the p by p covariance matrix.
 #' @export
@@ -15,7 +16,9 @@
 #' network <- create_network(p = 100, modules = list(1:100)) 
 #' # Generate "normalized" expression data from the network:
 #' x <- gen_gaussian(n, network)$x
-gen_gaussian <- function(n, network = NULL, sigma = NULL) {
+gen_gaussian <- function(n, network = NULL, sigma = NULL, network_list = NULL) {
+  if(!is.null(network_list)) 
+    return(gen_gaussian_list(n = n, network_list = network_list))
   if(is.null(network) & is.null(sigma))
     stop("Either network or sigma must be provided.")
   if(n <= 0) 
@@ -27,10 +30,10 @@ gen_gaussian <- function(n, network = NULL, sigma = NULL) {
       sigma <- network$sigma
     } else if(("precision" %in% names(network)) & !is.null(network$precision)) {
       precision <- network$precision
-      sigma <- get_sigma_from_precision(precision)
+      sigma <- get_sigma_from_precision_list(list(precision))[[1]]
     } else {
-      precision <- random_precision_from_network(network)
-      sigma <- get_sigma_from_precision(precision)
+      precision <- random_precision_from_network_list(list(network))[[1]]
+      sigma <- get_sigma_from_precision_list(list(precision))[[1]]
     }
     gene_names <- network$node_names
   } else {
@@ -65,67 +68,110 @@ gen_gaussian <- function(n, network = NULL, sigma = NULL) {
 attr(gen_gaussian, "name") <- "gen_gaussian"
 
 
-#' Generate a precision matrix from a network
+#' Generate samples from a Gaussian graphical model.
 #' 
-#' A random precision matrix (i.e. an inverse covariance matrix) is generated
-#' based on the structure from a given network.
-#' @param network The underlying network (from [create_network()]). 
-#' @return A p by p precision matrix.
+#' Generates count data based on the multivariate normal distribution. Input
+#' consists of a list of networks, for which corresponding samples are generated.
+#' @param n The number of samples to generate.
+#' @param network_list A list of networks (from [create_network()]).
+#' @return A list containing output from [gen_gaussian()] for each network.
 #' @export
-random_precision_from_network <- function(network) {
-  # Obtain an adjacency matrix representation of the network.
-  graph <- get_adj_matrix_from_network(network)
-  p <- ncol(graph)
-  
-  # Find nodes with edges in the graph.
-  connected <- apply(graph, 2, function(x) sum(x != 0) > 0)
-  n_connected <- sum(connected)
-  
-  # Each edge corresponds to a nonzero partial correlation.
-  # Generate random value for each partial correlation.
-  A <- graph[connected, connected] # Subset graph on nodes with edges.
-  n_A <- n_connected * (n_connected - 1) / 2 # Number of possible edges in the graph.
-  A[lower.tri(A)] <- A[lower.tri(A)] * (-1)^rbinom(n_A, 1, 0.5) * runif(n_A, 0.5, 1)
-  A[upper.tri(A)] <- 0
-  A <- A + t(A)
-  
-  # Create p by p precision matrix with partial correlations.
-  precision <- matrix(0, p, p)
-  precision[connected, connected] <- A
-  diag(precision) <- 1
-  
-  return(precision)
+gen_gaussian_list <- function(n, network_list) {
+  precision_list <- random_precision_from_network_list(network_list)
+  sigma_list <- get_sigma_from_precision_list(precision_list)
+  gen_list <- lapply(sigma_list, 
+                     function(sigma) gen_gaussian(n = n, sigma = sigma))
+  for(i in 1:length(gen_list)) {
+    gen_list[[i]]$network <- network_list[[i]]
+  }
+  return(gen_list)
 }
 
-#' Compute the covariance matrix from a precision matrix
+
+
+#' Generate partial correlations for a list of networks.
 #' 
-#' If the precision matrix is singular, it is made invertible by adding a 
-#' diagonal matrix.
-#' @param precision The precision matrix.
+#' Matrices containing partial correlations are generated based on the structure 
+#' of each network. Edges that are common across networks are given the same 
+#' partial correlation value.
+#' @param network_list A list of network objects (from [create_network()]).
 #' @param k An integer that ensures the matrix inverse is numerically stable. 
 #' k = 1 is default; higher values will give less stable results.
-#' @return A p by p covariance matrix.
+#' @param limits A vector of length 2 containing the lower and upper limits
+#' for partial correlations (generated from a uniform distribution).
+#' @return A list of matrices containing partial correlations.
 #' @export
-get_sigma_from_precision <- function(precision, k = 1) {
+random_precision_from_network_list <- function(network_list, k = 1, 
+                                               limits = c(0.5, 1)) {
+  if(length(limits) != 2) 
+    stop("limits must be a vector of length 2.")
+  if(limits[1] > 1 | limits[1] < 0)
+    stop("limits[1] is not between 0 and 1.")
+  if(limits[2] > 1 | limits[2] < 0)
+    stop("limits[2] is not between 0 and 1.")
+  if(limits[1] >= limits[2])
+    stop("limits[1] must be less than limits[2]")
+  
+  nodes <- unique(unlist(lapply(network_list, function(nw) nw$node_names)))
+  p <- length(nodes)
+  
+  # Generate partial correlation values for every possible connection.
+  precision_all <- matrix(0, p, p)
+  m <- p * (p - 1) / 2
+  precision_all[lower.tri(precision_all)] <- 
+    (-1)^rbinom(m, 1, 0.5) * runif(m, limits[1], limits[2])
+  precision_all <- precision_all + t(precision_all)
+  
+  # Obtain an adjacency matrix representation of each network.
+  adj_matrix_list <- lapply(network_list, get_adj_matrix_from_network)
+  
+  # Fill in partial correlations for each network.
+  precision_list <- lapply(adj_matrix_list, function(nw) {
+    index <- which(nodes %in% colnames(nw))
+    
+    # Create p by p precision matrix with partial correlations.
+    precision <- nw * precision_all[index, index]
+    diag(precision) <- 1
+    return(precision)
+  })
+  
+  # Ensure each precision matrix is invertible by adjusting the diagonal.
+  eigen_val_list <- lapply(precision_list, function(P) eigen(P)$values)
+  adjustment_list <- lapply(eigen_val_list, function(E) {
+    (max(E) * 10^-k - min(E)) * (min(E) < max(E) * 10^-k)
+  })
+  # Apply the same adjustment to each precision matrix.
+  # This ensures the partial correlations remain constant for each connection.
+  adjustment <- diag(max(unlist(adjustment_list)), p)
+  precision_list <- lapply(precision_list, function(P) P + adjustment)
+  
+  # Standardize with 1s along diagonal so that partial correlation = -Precision.
+  precision_list <- lapply(precision_list, cov2cor)
+  
+  return(precision_list)
+}
+
+
+#' Compute covariance matrices from a list of precision matrices
+#' 
+#' @param precision_list A list of precision matricies.
+#' @return A list of covariance matrices. 
+#' @export
+get_sigma_from_precision_list <- function(precision_list) {
   # If a network is given, check if "precision" matrix is provided.
-  if(class(precision) == "network") {
-    if(!("precision" %in% names(precision)))
-      stop("network object provided but does not contain precision matrix.")
-    precision <- precision$precision
+  if(class(precision_list[[1]]) == "network") {
+    if(!all(sapply(precision_list, function(nw) "precision" %in% names(nw))))
+      stop("List of network objects provided but not all contain precision matrix.")
+    precision_list <- lapply(precision_list, function(nw) nw$precision)
   }
   
-  if(!is.matrix(precision)) stop("precision is not a matrix.")
-  if(!isSymmetric(precision)) stop("precision matrix is not symmetric.")
+  if(!all(sapply(precision_list, is.matrix))) 
+    stop("At least one object in precision list is not a matrix.")
+  if(!all(sapply(precision_list, function(P) isSymmetric(unname(P))))) 
+    stop("At least one matrix in precision list is not symmetric.")
   
-  # Add values to diagonal to ensure positive definiteness and 
-  # numerical stablility of taking the inverse.
-  p <- nrow(precision)
-  eigen_val <- eigen(precision)$values
-  precision <- precision + diag((max(eigen_val) * 10^-k - min(eigen_val)), p) * 
-    (min(eigen_val) < max(eigen_val) * 10^-k)
+  # Invert adjusted precision matrix to obtain covariance matrix.
+  sigma_list <- lapply(precision_list, function(P) pcor2cor(P))
   
-  # Invert precision matrix to obtain covariance matrix.
-  sigma <- solve(precision)
-  
-  return(sigma)
+  return(sigma_list)
 }
