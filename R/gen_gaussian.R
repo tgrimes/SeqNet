@@ -145,8 +145,13 @@ random_precision_from_network_list <- function(network_list, k = 1,
   adjustment <- diag(max(unlist(adjustment_list)), p)
   precision_list <- lapply(precision_list, function(P) P + adjustment)
   
-  # Standardize with 1s along diagonal so that partial correlation = -Precision.
-  precision_list <- lapply(precision_list, cov2cor)
+  # Standardize with 1s along diagonal and switch sign of off diagonas,
+  # so that partial correlation = -Precision.
+  precision_list <- lapply(precision_list, function(P) {
+    P <- -cov2cor(P)
+    diag(P) <- -diag(P)
+    return(P)
+  })
   
   return(precision_list)
 }
