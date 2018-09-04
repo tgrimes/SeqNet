@@ -2,23 +2,26 @@
 % Please edit documentation in R/performance_measures.R
 \name{get_confusion_matrix}
 \alias{get_confusion_matrix}
-\title{Get performance measures for network inference}
+\title{Get confusion matrix for predicted classes.}
 \usage{
 get_confusion_matrix(true, pred)
 }
 \arguments{
-\item{true}{a network object or an adjacency matrix indicating the 
-true underlying connections in the graph.}
+\item{true}{a network object, adjacency matrix indicating the 
+true underlying connections in the graph, or a binary vector.}
 
 \item{pred}{a matrix indicating the predicted connections
 between the genes. Can be adjacency matrix or sparse association matrix 
-(i.e. with non-significant associations removed); all non-zero entries are
-changed to 1.}
+(i.e. with non-significant associations set to zero); all non-zero entries 
+will be set to 1. If true is a binary vector, pred can also be a vector.}
 }
 \value{
-The confusion matrix.
+An object of class "CONFUSION".
 }
 \description{
-Computes the confusion matrix for an inferred network based on the true 
-network.
+Computes the confusion matrix for predicted classes. The current implementation
+only handles binary classes and is designed to primarily deal with network objects
+and adjacency matricies. The true values are assumed to be either 0 or 1,
+and the predicted values are 0 or nonzero - all nonzero predicted values are 
+converted to 1.
 }

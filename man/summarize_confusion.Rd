@@ -7,13 +7,17 @@
 summarize_confusion(confusion)
 }
 \arguments{
-\item{confusion}{The confusion matrix.}
+\item{confusion}{The confusion matrix. This can either be an object of class
+"CONFUSION" or a 2 by 2 integer matrix.}
 }
 \value{
-A list containing the sensitivity (i.e. true positive rate; recall), 
-specificity (i.e. true negative rate), true discovery rate (i.e. positive 
-predictive value; precision), true non-discovery rate (i.e. negative 
-predictive value), and f1-score (geometric mean of tdr and sensitivity).
+A list containing several summary measures: 
+sensitivity (a.k.a. true positive rate; recall), 
+specificity (a.k.a. true negative rate), 
+TDR (true discovery rate; a.k.a. positive predictive value; precision), 
+TNDR (true non-discovery rate; a.k.a. negative predictive value), 
+f1-score (harmonic mean of TDR and sensitivity), and
+MCC (Matthew's correlation coefficient).
 }
 \description{
 Provides summary measures for confusion matrix
