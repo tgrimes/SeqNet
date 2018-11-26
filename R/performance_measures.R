@@ -205,7 +205,9 @@ summarize_confusion <- function(confusion) {
   TDR <- ifelse((TP + FP) == 0, NA, TP / (TP + FP)) # Positive predictive value (PPV); Precision.
   TNDR <- ifelse((FN + TN) == 0, NA, TN / (TN + FN)) # Negative predictive value (NPV).
   f1_score <-  2 / (1 / TDR + 1 / sensitivity)
-  MCC <- (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN))
+  MCC <- exp(log(TP * TN - FP * FN) - 
+               0.5 * (log(TP + FP) + log(TP + FN) + log(TN + FP) + log(TN + FN)))
+  # MCC <- (TP * TN - FP * FN) / sqrt((TP + FP) * (TP + FN) * (TN + FP) * (TN + FN))
 
   return(list(sensitivity = sensitivity,
               specificity = specificity,
