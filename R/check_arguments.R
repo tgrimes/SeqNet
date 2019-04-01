@@ -2,17 +2,23 @@
 #' 
 #' @param check An object of class ArgCheck.
 #' @details see ?ArgumentCheck::finishArgCheck for details. 
+#' @export
 report_checks <- function(check) {
   ArgumentCheck::finishArgCheck(check)
 }
 
 #' Wrapper for ArgumentCheck::newArgCheck()
 #' 
-#' @details see ?ArgumentCheck::newArgCheck() for details.
+#' @details see ?ArgumentCheck::newArgCheck() for details. 
+#' @export
 new_checklist <- function() {
   ArgumentCheck::newArgCheck()
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_adjacency_matrix <- function(adjacency_matrix, checklist) {
   arg <- deparse(substitute(adjacency_matrix))
   
@@ -35,6 +41,10 @@ check_adjacency_matrix <- function(adjacency_matrix, checklist) {
   return(checklist)
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_association_matrix <- function(association_matrix, checklist) {
   arg <- deparse(substitute(association_matrix))
   
@@ -58,7 +68,10 @@ check_association_matrix <- function(association_matrix, checklist) {
   return(checklist)
 }
 
-
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_precision_matrix <- function(precision_matrix, checklist) {
   arg <- deparse(substitute(precision_matrix))
   
@@ -93,6 +106,10 @@ check_precision_matrix <- function(precision_matrix, checklist) {
   return(checklist)
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_positive_integer <- function(p, checklist) {
   arg <- deparse(substitute(p))
   
@@ -116,6 +133,10 @@ check_positive_integer <- function(p, checklist) {
   return(checklist)
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_positive_integer_vector <- function(p, checklist) {
   arg <- deparse(substitute(p))
   
@@ -139,6 +160,10 @@ check_positive_integer_vector <- function(p, checklist) {
   return(checklist)
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_in_closed_interval <- function(x, checklist, 
                                       lower_bound, upper_bound) {
   arg <- deparse(substitute(x))
@@ -150,6 +175,10 @@ check_in_closed_interval <- function(x, checklist,
     )
 }
 
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
+#' @export
 check_in_open_interval <- function(x, checklist, 
                                    lower_bound, upper_bound) {
   arg <- deparse(substitute(x))
