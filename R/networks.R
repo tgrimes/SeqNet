@@ -230,9 +230,9 @@ create_module_from_association_matrix <- function(association_matrix,
   }
   
   # Set up module.
-  module <- create_module_from_precision_matrix(association_matrix,
-                                                nodes = 1:p,
-                                                ...)
+  module <- create_module_from_association_matrix(association_matrix,
+                                                  nodes = 1:p,
+                                                  ...)
   
   network <- create_network_from_modules(p, 
                                          modules = list(module), 
