@@ -28,7 +28,7 @@ containing it and dividing by sqrt(m_i).
 \examples{
 n <- 10
 # Create a simple small-world network.
-network <- create_network(p = 100, modules = list(1:100)) 
+network <- random_network(p = 20)
 # Generate "normalized" expression data from the network:
 x <- gen_gaussian(n, network)$x
 }

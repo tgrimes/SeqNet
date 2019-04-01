@@ -525,6 +525,7 @@ update_module_with_random_struct <- function(module,
 #' weights are generated uniformly from the set (-1, -0.5)U(0.5, 1).
 #' @param ... Additional parameters are ignored.
 #' @return An updated 'network_module' object.
+#' @export
 update_module_with_random_weights <- function(module, 
                                               rdist = function(n) {
                                                 runif(n, 0.5, 1) * (-1)^rbinom(n, 1, 0.5)

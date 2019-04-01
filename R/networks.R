@@ -191,46 +191,46 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
   return(network)
 }
 
-#' Create a network object from adjacency matrix
+#' Create a network object from an association matrix
 #' 
-#' @param precision_matrix The precision matrix for the network. This is converted
+#' @param association_matrix The association matrix for the network. This is converted
 #' to a single module structure with partial correlations specified by the
-#' precision matrix.
-#' @param standardize If True, then 'precision_matrix' will be standardized
+#' matrix.
+#' @param standardize If True, then 'association_matrix' will be standardized
 #' to obtain partial correlations.
 #' @param ... Additional arguments passed to 
-#' create_module_from_precision_matrix().
+#' create_module_from_association_matrix().
 #' @return A network object.
 #' @export 
-create_network_from_precision_matrix <- function(precision_matrix, 
+create_module_from_association_matrix <- function(association_matrix, 
                                                  standardize = TRUE,
                                                  ...) {
-  p <- ncol(precision_matrix)
+  p <- ncol(association_matrix)
   
   ##################################
   # Check arguments for errors.
   checklist <- new_checklist()
   
-  # Check 'precision_matrix'
-  check_precision_matrix(precision_matrix, checklist)
+  # Check 'association_matrix'
+  check_precision_matrix(association_matrix, checklist)
   
   report_checks(checklist)
   ##################################
   
-  if(!all(diag(precision_matrix) == 1) && standardize) {
-    cat("Standardizing precision_matrix to obtain partial correlations.\n")
-    precision_matrix <- cov2cor(precision_matrix)
+  if(!all(diag(association_matrix) == 1) && standardize) {
+    cat("Standardizing association_matrix to obtain partial correlations.\n")
+    association_matrix <- cov2cor(association_matrix)
   }
   
-  # Use node names from precision_matrix, if provided and no new nodes are added.
-  if(!is.null(colnames(precision_matrix))) {
-    node_names <- colnames(precision_matrix)
+  # Use node names from association_matrix, if provided and no new nodes are added.
+  if(!is.null(colnames(association_matrix))) {
+    node_names <- colnames(association_matrix)
   } else {
     node_names <- paste(1:p)
   }
   
   # Set up module.
-  module <- create_module_from_precision_matrix(precision_matrix,
+  module <- create_module_from_precision_matrix(association_matrix,
                                                 nodes = 1:p,
                                                 ...)
   
@@ -1026,6 +1026,7 @@ print.network <- function(network, ...) {
 #' @return A boolean value that is TRUE if all of the modules in the network
 #' are weighted and FALSE otherwise. If the network contains no modules or
 #' no connections, then this function returns TRUE.
+#' @export
 is_weighted.network <- function(network, ...) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
@@ -1048,6 +1049,7 @@ is_weighted.network <- function(network, ...) {
 #' GGM rather than averaging over the GGMs for each module.
 #' @param network The 'network' object to modify
 #' @return The modified 'network' object.
+#' @export
 as_single_module <- function(network) {
   if(is_weighted(network)) {
     warning("A weighted network was provided; all connections weights have been removed.")

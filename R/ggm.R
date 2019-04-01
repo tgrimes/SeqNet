@@ -16,7 +16,7 @@
 #' @examples
 #' n <- 10
 #' # Create a simple small-world network.
-#' network <- create_network(p = 100, modules = list(1:100)) 
+#' network <- random_network(p = 20)
 #' # Generate "normalized" expression data from the network:
 #' x <- gen_gaussian(n, network)$x
 gen_gaussian <- function(n, ...) {
@@ -224,6 +224,7 @@ gen_partial_correlations <- function(...,
 #' @param network_list A list of 'network' objects.
 #' @return A logical value; TRUE indicates the networks contain the same nodes,
 #' FALSE indicates otherwise.
+#' @export
 all_networks_contain_same_nodes <- function(network_list) {
   n_networks <- length(network_list)
   if(n_networks > 1) {
@@ -248,6 +249,7 @@ all_networks_contain_same_nodes <- function(network_list) {
 #' 
 #' @param ... The 'network' object(s) or list of networks.
 #' @return A list of 'network' objects.
+#' @export
 get_network_arguments <- function(...) {
   network_list <- list(...)
   if(length(network_list) == 0) {
@@ -291,6 +293,7 @@ get_network_arguments <- function(...) {
 #' @return A logical value; TRUE indicates the networks contain the same modules,
 #' FALSE indicates otherwise. Note, this only checks that the modules contain
 #' the same nodes - the structure of the modules are allowed to differ.
+#' @export
 all_networks_contain_same_modules <- function(network_list) {
   n_networks <- length(network_list)
   if(n_networks > 1) {
