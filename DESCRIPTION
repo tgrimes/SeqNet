@@ -1,19 +1,12 @@
 Package: SeqNet
-Title: Generate RNA-seq data from co-expression networks
+Title: Generate RNA-seq data from gene-gene association networks
 Version: 0.2.0.0001
 Authors@R: person("Tyler", "Grimes", email = "tyler.grimes@ufl.edu", role = c("aut", "cre"))
 Description: This package provides methods to simulate RNA-seq data from an underlying gene-gene association network. Functions are provided to generate random networksof any size. Network objects are built from individual modules that represent pathways;these modules, which may overlap, are generated to have a small-world network structure. RNA-seq counts can be generated such that the association among gene expression reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal counts. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
 Depends: R (>= 3.3.2)
-Imports: ArgumentCheck,
-         fitdistrplus,
-         ggplot2, 
-         igraph,
-         mvtnorm,
-         RColorBrewer,
-         tibble
+Imports: ArgumentCheck, fitdistrplus, ggplot2, igraph, mvtnorm, RColorBrewer, tibble
 Suggests: knitr, rmarkdown
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
-VignetteBuilder: knitr
