@@ -175,9 +175,9 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
 #' create_module_from_association_matrix().
 #' @return A network object.
 #' @export 
-create_module_from_association_matrix <- function(association_matrix, 
-                                                 standardize = TRUE,
-                                                 ...) {
+create_network_from_association_matrix <- function(association_matrix, 
+                                                   standardize = TRUE,
+                                                   ...) {
   p <- ncol(association_matrix)
   
   ##################################
