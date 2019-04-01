@@ -13,7 +13,7 @@ random_network(p, n_modules = ceiling(p * 0.05), min_module_size = 10,
 between 10 and 20000.}
 
 \item{n_modules}{The number of modules to include in the network. The
-default value is 5% of the number of nodes in the network.}
+default value is 5\% of the number of nodes in the network.}
 
 \item{min_module_size}{The minimum number of nodes in a module.}
 
@@ -27,6 +27,8 @@ above this value will be reduced to 'max_module_size'.}
 \item{repeated_module_factor}{A value between 0 and 1. A gene selected for a 
 module has its probability of being selected for another module multiplied by 
 this factor.}
+
+\item{...}{Additional arguments passed to 'random_module()'.}
 }
 \value{
 An unweighted network object.

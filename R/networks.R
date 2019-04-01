@@ -1,30 +1,3 @@
-# Make class "network"
-# Add: setClass(
-#       class = "network",
-#       slots = list(var_name = "numeric"),
-#       validity = function(object) { #Check validity. }
-#      )
-# Add: setMethod(f = "initialize", signature = "network",
-#                definition = function(.Object, arg1, arg2) {
-#                 cat("--- bmiTraj: initializator --- \n")
-#                 rownames(arg1) <- paste("I", 1:nrow(arg1), sep='')
-#                 .Object@arg1 <- arg1
-#                 .Object@arg2 <- arg2
-#                 return(.Object)
-#                }
-#               )
-# Add: setMethod("[", "network", function(object, i, j, drop) { })
-# Add: setMethod("show", "network", function(object) { })
-# Add: setMethod("print", "network", function(object) { })
-# Add: setMethod("plot", "network", function(object) { })
-# Add: setGeneric(name = "fun_name", def = function(object) standardGeneric("fun_name"))
-#      setMethod(
-#       f = "fun_name",
-#       signature = "network",
-#       definition = function(object) {}
-#      )
-#  with "fun" = "add_hub", "add_clique", etc.
-
 setClass(Class = "network")
 
 #' Create a network object.
@@ -249,7 +222,7 @@ create_module_from_association_matrix <- function(association_matrix,
 #' @param p The number of nodes in the network; 'p' is required to be 
 #' between 10 and 20000.
 #' @param n_modules The number of modules to include in the network. The
-#' default value is 5% of the number of nodes in the network.
+#' default value is 5\% of the number of nodes in the network.
 #' @param min_module_size The minimum number of nodes in a module.
 #' @param max_module_size (optional) If specified, any generated module sizes 
 #' above this value will be reduced to 'max_module_size'.
@@ -258,6 +231,7 @@ create_module_from_association_matrix <- function(association_matrix,
 #' @param repeated_module_factor A value between 0 and 1. A gene selected for a 
 #' module has its probability of being selected for another module multiplied by 
 #' this factor.
+#' @param ... Additional arguments passed to 'random_module()'.
 #' @return An unweighted network object.
 #' @export 
 random_network <- function(p,
