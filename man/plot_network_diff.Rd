@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{plot_network_diff}
 \alias{plot_network_diff}
-\title{Plotting to compare two networks}
+\title{Plot the difference between two networks}
 \usage{
 plot_network_diff(network_1, network_2, compare_graph = NULL,
   as_subgraph = FALSE, node_scale = 5, edge_scale = 2,
@@ -10,9 +10,9 @@ plot_network_diff(network_1, network_2, compare_graph = NULL,
   generate_layout = igraph::nicely, include_vertex_labels = TRUE, ...)
 }
 \arguments{
-\item{network_1}{Either a network object or adjacency matrix of the network.}
+\item{network_1}{A 'network' or 'matrix' object.}
 
-\item{network_2}{Either a network object or adjacency matrix of the network.}
+\item{network_2}{A 'network' or 'matrix' object.}
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
@@ -36,12 +36,16 @@ if coords is NULL. See ?igraph::layout_ for details. Other options include
 }
 \value{
 Creates a plot of the network and returns a graph object. 
-The graph object can be passed back into a future call of plot.network() 
-through the `compare_edge` argument, which will setup the plot for easier 
-comparison between the old graph and the graph of `network`.
+The graph object can be passed back into a future call of 'plot_network()',
+'plot_network_diff()' or 'plot_network_sim()'
+through the 'compare_edge' argument, which will setup the plot for easier 
+comparison between the old graph and the graph of 'network'.
 }
 \description{
-This function plots the overlap of two networks. Black edges are shared by
-both networks, tan edges are in network_1 but not network_2, and red edges
-are in network_2 but not network_1.
+This function plots the difference in connectivity between two networks. 
+For two identical networks, the graph will be empty. For non-identical 
+networks, black edges are shared by both networks but differ in magnitude or 
+direction (if the networks are weighted), tan edges are in network_1 but not 
+network_2, and red edges are in network_2 but not network_1. All edges are
+scaled according to the strongest association in either network.
 }

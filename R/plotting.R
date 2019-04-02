@@ -612,13 +612,16 @@ plot_network_matrix <- function(network, main = "Untitled",
 
 
 
-#' Plotting to compare two networks
+#' Plot the difference between two networks
 #' 
-#' This function plots the overlap of two networks. Black edges are shared by
-#' both networks, tan edges are in network_1 but not network_2, and red edges
-#' are in network_2 but not network_1.
-#' @param network_1 Either a network object or adjacency matrix of the network.
-#' @param network_2 Either a network object or adjacency matrix of the network.
+#' This function plots the difference in connectivity between two networks. 
+#' For two identical networks, the graph will be empty. For non-identical 
+#' networks, black edges are shared by both networks but differ in magnitude or 
+#' direction (if the networks are weighted), tan edges are in network_1 but not 
+#' network_2, and red edges are in network_2 but not network_1. All edges are
+#' scaled according to the strongest association in either network.
+#' @param network_1 A 'network' or 'matrix' object.
+#' @param network_2 A 'network' or 'matrix' object.
 #' @param compare_graph The plot of another network to use for comparison.
 #' @param as_subgraph If TRUE, only nodes of positive degree will be shown.
 #' @param node_scale Used for scaling of nodes.
@@ -631,9 +634,10 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' @param display_plot If TRUE (default), the plot will be generated and displayed.
 #' @param ... Additional arguments passed to plot.igraph().
 #' @return Creates a plot of the network and returns a graph object. 
-#' The graph object can be passed back into a future call of plot.network() 
-#' through the `compare_edge` argument, which will setup the plot for easier 
-#' comparison between the old graph and the graph of `network`.
+#' The graph object can be passed back into a future call of 'plot_network()',
+#' 'plot_network_diff()' or 'plot_network_sim()'
+#' through the 'compare_edge' argument, which will setup the plot for easier 
+#' comparison between the old graph and the graph of 'network'.
 #' @export
 plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
                                as_subgraph = FALSE,
@@ -836,6 +840,86 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
   invisible(plot_summary)
 }
 
+
+
+#' Plot the similarity between two networks
+#' 
+#' This function plots the similarity of connections between two networks. 
+#' Both networks must be weighted. The width of each edge corresponds to 
+#' the strength of similarity and is calculated by exp(0.5(log(|s1 + s2|) +
+#' log(|s1|) + log(|s2|))), where s1 and s2 is the strength of a particular
+#' connection in network_1 and network_2, respectively
+#' @param network_1 A weighted 'network' or 'matrix' object.
+#' @param network_2 A weighted 'network' or 'matrix' object.
+#' @param compare_graph The plot of another network to use for comparison.
+#' @param ... Additional arguments passed to 'plot_network()'.
+#' @return Creates a plot of the network and returns a graph object. 
+#' The graph object can be passed back into a future call of 'plot_network()',
+#' 'plot_network_diff()' or 'plot_network_sim()'
+#' through the 'compare_edge' argument, which will setup the plot for easier 
+#' comparison between the old graph and the graph of 'network'.
+#' @export
+plot_network_sim <- function (network_1, network_2, compare_graph, ...) {
+  ##################################
+  # Check arguments for errors.
+  
+  if (!(class(network_1) %in% c("network", "network_module", "matrix")))
+    stop(paste0("Argument 'network_1' must be a 'network', 'network_module', ",
+                "or 'matrix' object."))
+  
+  if (!(class(network_2) %in% c("network", "network_module", "matrix")))
+    stop(paste0("Argument 'network_2' must be a 'network', 'network_module', ",
+                "or 'matrix' object."))
+  ##################################
+  
+  if(!is_weighted(network_1) || !is_weighted(network_2)) {
+    stop("Both networks must be weighted.")
+  }
+  
+  A <- get_association_matrix(network_1)
+  B <- get_association_matrix(network_2)
+  
+  if(ncol(A) != ncol(B)) {
+    stop("Both networks must contain the same number of nodes.")
+  }
+  
+  if(is.null(colnames(A)) && is.null(colnames(B))) {
+    warning("Networks have unnamed nodes. Setting as 1:p.")
+    colnames(A) <- 1:ncol(A)
+    colnames(B) <- colnames(A)
+  } else if(is.null(colnames(A))) {
+    # If a matrix without column names is provded, we assume the columns
+    # align with those from 'network_1'.
+    warning(paste("Columns are unnamed 'network_1';",
+                  "using the names from 'network_2'."))
+    colnames(A) <- colnames(B)
+  } else if(is.null(colnames(B))) {
+    warning(paste("Columns are unnamed for 'network_2';",
+                  "using the names from 'network_1'."))    
+    colnames(B) <- colnames(A)
+  } else if(!all(colnames(A) == colnames(B))) {
+    stop("The networks must contain the same node names.")
+  }
+  
+  genes <- colnames(A)
+  p <- nrow(A)
+  A <- A[lower.tri(A)]
+  B <- B[lower.tri(B)]
+  index <- which(abs(A) > 10^-2 & abs(B) > 10^-2)
+  if(length(index) == 0) 
+    return(matrix(0, p, p))
+  S <- rep(0, length(A))
+  A <- A[index]
+  B <- B[index]
+  S[index] <- sign(A + B) * exp(0.5 * (log(abs(A + B))  + 
+                                         log(abs(A)) + log(abs(B))))
+  sim <- matrix(0, p, p)
+  sim[lower.tri(sim)] <- S
+  sim <- sim + t(sim)
+  colnames(sim) <- genes
+  
+  plot_network(sim, compare_graph = compare_graph, ...)
+}
 
 #' Scatter plot of two gene expressions
 #' 
