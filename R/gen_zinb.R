@@ -72,33 +72,33 @@ rzinb <- function (n, size, mu, rho) {
   return(x)
 }
 
-#' Generate samples from a zero-finlated negative-binomial distribution
+#' Generate RNA-seq counts
 #' 
-#' Generates correlated count data based on an underlying association matrix. 
-#' The negative-binomial distribution is simulated using the gamma-Poisson mixture
-#' model. A correlation structure is imposed by first generating data from
-#' a multivariate Gaussian distribution, then applying the inverse CDF method. 
-#' For reference genes with excessive zeroes, a zero-inflated model is used.
+#' The count data are generated based on the gene-gene associations of an
+#' udnerlying network. An association structure is imposed by first generating 
+#' data from a multivariate Gaussian distribution, and counts are then obtained
+#' through the inverse tranformation method. To generate realistic counts, either 
+#' a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
 #' @param n The number of samples to generate.
-#' @param network The underlying network (from create_network())
+#' @param network A 'network' object.
 #' @param reference Either a vector or data.frame of counts from a reference
 #' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If NULL, the kidney dataset is used.
+#' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
+#' are estimated from the kidney dataset.
 #' @param params A matrix of ZINB parameter values; each column should contain 
 #' the size, mu, and rho parameters for a gene. 
 #' @param verbose Boolean indicator for message output.
-#' @return A list containing the n by p matrix of samples.
+#' @return A list containing the generated counts and the ZINB parameters used
+#' to create them.
 #' @export 
-gen_zinb <- function(n, 
-                     network,
-                     reference = NULL,
-                     params = NULL,
-                     verbose = TRUE) {
+gen_counts <- function(n, 
+                       ...,
+                       reference = NULL,
+                       params = NULL,
+                       verbose = TRUE) {
   if(n <= 0) {
     stop("n must be positive.")
   }
-  
-  p <- network$p
   
   if(is.null(reference) && is.null(params)) {
     warning("Using kidney data as reference dataset.")
@@ -106,9 +106,10 @@ gen_zinb <- function(n,
     reference <- sample_reference_data(reference, p)
   }
   
-  # set.seed(2)
-  # 14093 - UTY gene.
-  
+  if(!is.null(params) && network_list[[1]]$p != ncol(params)) {
+    stop("'params' must have the same number of columns as genes in the network(s).")
+  }
+
   # Estimate model paramters from reference dataset
   if(is.null(params)) {
     index <- 1:p # Default subset for columns in reference.
@@ -127,11 +128,11 @@ gen_zinb <- function(n,
     }
     # Subset the columns of the reference.
     reference <- reference[, index]
-    model <- gen_params_from_reference(
+    model <- est_params_from_reference(
       reference,
       verbose = verbose)
     params <- model$params
-  }
+  } # End if(is.null(params))
   
   colnames(params) <- colnames(reference)
   
@@ -147,121 +148,28 @@ gen_zinb <- function(n,
   }
   
   return(list(x = x,
-              gen = gen,
-              reference = reference,
-              params = params))
-}
-
-
-#' Generate samples from a zero-finlated negative-binomial distribution
-#' 
-#' Generates correlated count data based on an underlying association matrix. 
-#' The negative-binomial distribution is simulated using the gamma-Poisson mixture
-#' model. A correlation structure is imposed by first generating data from
-#' a multivariate Gaussian distribution, then applying the inverse CDF method. 
-#' For reference genes with excessive zeroes, a zero-inflated model is used.
-#' @param n The number of samples to generate.
-#' @param network The underlying network (from create_network())
-#' @param reference Either a vector or data.frame of counts from a reference
-#' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If NULL, the kidney dataset is used.
-#' @param params A matrix of ZINB parameter values; each column should contain 
-#' the size, mu, and rho parameters for a gene. 
-#' @param verbose Boolean indicator for message output.
-#' @return A list containing the n by p matrix of samples.
-#' @export 
-gen_counts <- function(n, 
-                       ...,
-                       reference = NULL,
-                       params = NULL,
-                       verbose = TRUE) {
-  if(n <= 0) {
-    stop("n must be positive.")
-  }
-  
-  # Handle network arguments
-  network_list <- get_network_arguments(...)
-  p <- network_list[[1]]$p
-  
-  # If a single network was provided, the updated network is returned unlisted.
-  if(length(list(...)) == 1 && class(list(...)[[1]]) == "network") {
-    single_network <- TRUE
-  } else {
-    single_network <- FALSE
-  }
-  
-  if(is.null(reference) && is.null(params)) {
-    warning("Using kidney data as reference dataset.")
-    reference <- get_kidney_reference_data()
-    reference <- sample_reference_data(reference, p)
-  }
-  
-  if(!is.null(params) && network_list[[1]]$p != ncol(params)) {
-    stop("'params' must have the same number of columns as genes in the network(s).")
-  }
-  
-  # TODO:
-  # Coordinate reference genes among each network
-  # Differential expression can be enforced here.
-
-  # Estimate model paramters from reference dataset
-  if(is.null(params)) {
-    index <- 1:p # Default subset for columns in reference.
-    if(p > ncol(reference)) {
-      if(verbose) {
-        cat("reference contains fewer columns than nodes in network.",
-            "Sampling genes with replacement.\n")
-      }
-      index <- sample(1:ncol(reference), p, replace = TRUE)
-    } else if (p < ncol(reference)) {
-      if(verbose) {
-        cat("reference contains more columns than nodes in network.",
-            "Sampling a subset of genes.\n")
-      }
-      index <- sample(1:ncol(reference), p)
-    }
-    # Subset the columns of the reference.
-    reference <- reference[, index]
-    model <- gen_params_from_reference(
-      reference,
-      verbose = verbose)
-    params <- model$params
-  } # End if(is.null(params))
-  
-  x <- lapply(network_list, function(network) {
-    gen_zinb(n, 
-             network, 
-             reference = NULL, 
-             params = params)$x
-  })
-  
-  if(single_network) {
-    x <- x[[1]]
-  }
-  
-  return(list(x = x,
-              reference = reference,
               params = params))
 }
 
 
 
 
-#' Estimate gamma-Poisson parameters from reference dataset
+#' Estimate ZINB parameters from reference data
 #' 
 #' The observations in the reference dataset should be as homogeneous as possible.
 #' For example, we should not expect differential expression or differential 
 #' connectivity of genes within the sample. If the data are heterogeneous, the
-#' estimation of the shape and scale parameters may be unreliable.
+#' estimation of the parameters may be unreliable.
 #' @param reference Either a vector or data.frame of counts from a reference
 #' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If NULL, the kidney dataset is used.
+#' correspond to a gene. If NULL, the kidney dataset is used and parameter estimates
+#' for all of its genes are calculated.
 #' @param verbose Boolean indicator for message output.
-#' @return a list containing the shape and scale parameters. If the reference
-#' dataset is a data.frame, these parameters will be vectors containing 
-#' estimated values for each gene.
+#' @return Returns a list containing a matrix of parameter estimates 'size', 
+#' 'mu', and 'rho' for each gene in the reference, and the reference dataset
+#' used.
 #' @export
-gen_params_from_reference <- function(reference = NULL,
+est_params_from_reference <- function(reference = NULL,
                                       verbose = TRUE) {
   get_nb_params <- function(x) {
     fit <- fitdistrplus::fitdist(x, "nbinom",
@@ -338,7 +246,6 @@ gen_params_from_reference <- function(reference = NULL,
     return(params)
   }
   
-  
   if(is.null(reference)) {
     if(verbose) {
       cat("No reference dataset provided. Using kidney data.\n")
@@ -355,6 +262,7 @@ gen_params_from_reference <- function(reference = NULL,
   p <- ncol(reference)
   params <- matrix(0, nrow = 3, ncol = p)
   colnames(params) <- colnames(reference)
+  rownames(params) <- c("size", "mu", "rho")
   
   for(i in 1:p) {
     x <- reference[, i]

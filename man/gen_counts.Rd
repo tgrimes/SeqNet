@@ -2,7 +2,7 @@
 % Please edit documentation in R/gen_zinb.R
 \name{gen_counts}
 \alias{gen_counts}
-\title{Generate samples from a zero-finlated negative-binomial distribution}
+\title{Generate RNA-seq counts}
 \usage{
 gen_counts(n, ..., reference = NULL, params = NULL, verbose = TRUE)
 }
@@ -11,22 +11,24 @@ gen_counts(n, ..., reference = NULL, params = NULL, verbose = TRUE)
 
 \item{reference}{Either a vector or data.frame of counts from a reference
 gene expression profile. If a data.frame is provided, each column should
-correspond to a gene. If NULL, the kidney dataset is used.}
+correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
+are estimated from the kidney dataset.}
 
 \item{params}{A matrix of ZINB parameter values; each column should contain 
 the size, mu, and rho parameters for a gene.}
 
 \item{verbose}{Boolean indicator for message output.}
 
-\item{network}{The underlying network (from create_network())}
+\item{network}{A 'network' object.}
 }
 \value{
-A list containing the n by p matrix of samples.
+A list containing the generated counts and the ZINB parameters used
+to create them.
 }
 \description{
-Generates correlated count data based on an underlying association matrix. 
-The negative-binomial distribution is simulated using the gamma-Poisson mixture
-model. A correlation structure is imposed by first generating data from
-a multivariate Gaussian distribution, then applying the inverse CDF method. 
-For reference genes with excessive zeroes, a zero-inflated model is used.
+The count data are generated based on the gene-gene associations of an
+udnerlying network. An association structure is imposed by first generating 
+data from a multivariate Gaussian distribution, and counts are then obtained
+through the inverse tranformation method. To generate realistic counts, either 
+a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
 }
