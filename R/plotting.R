@@ -635,8 +635,8 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' through the `compare_edge` argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of `network`.
 #' @export
-plot_network_diff <- function (network_1, network_2, as_subgraph = FALSE,
-                               compare_graph = NULL, 
+plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
+                               as_subgraph = FALSE,
                                node_scale = 5, edge_scale = 2, 
                                node_color = adjustcolor("orange", 0.5),
                                generate_layout = igraph::nicely,

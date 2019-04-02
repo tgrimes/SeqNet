@@ -4,8 +4,8 @@
 \alias{plot_network_diff}
 \title{Plotting to compare two networks}
 \usage{
-plot_network_diff(network_1, network_2, as_subgraph = FALSE,
-  compare_graph = NULL, node_scale = 5, edge_scale = 2,
+plot_network_diff(network_1, network_2, compare_graph = NULL,
+  as_subgraph = FALSE, node_scale = 5, edge_scale = 2,
   node_color = adjustcolor("orange", 0.5),
   generate_layout = igraph::nicely, include_vertex_labels = TRUE, ...)
 }
@@ -14,9 +14,9 @@ plot_network_diff(network_1, network_2, as_subgraph = FALSE,
 
 \item{network_2}{Either a network object or adjacency matrix of the network.}
 
-\item{as_subgraph}{If TRUE, only nodes of positive degree will be shown.}
-
 \item{compare_graph}{The plot of another network to use for comparison.}
+
+\item{as_subgraph}{If TRUE, only nodes of positive degree will be shown.}
 
 \item{node_scale}{Used for scaling of nodes.}
 
