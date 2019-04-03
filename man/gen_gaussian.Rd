@@ -25,10 +25,3 @@ the inverse of the standardized association matrix for the module.
 Observations are combined for gene i by taking the sum across the m_i modules 
 containing it and dividing by sqrt(m_i).
 }
-\examples{
-n <- 10
-# Create a simple small-world network.
-network <- random_network(p = 20)
-# Generate "normalized" expression data from the network:
-x <- gen_gaussian(n, network)$x
-}

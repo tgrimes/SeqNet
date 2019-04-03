@@ -25,7 +25,7 @@ comparison between the old graph and the graph of 'network'.
 \description{
 This function plots the similarity of connections between two networks. 
 Both networks must be weighted. The width of each edge corresponds to 
-the strength of similarity and is calculated by exp(0.5(log(|s1 + s2|) +
-log(|s1|) + log(|s2|))), where s1 and s2 is the strength of a particular
+the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)), 
+where s1 and s2 are the weights for a particular
 connection in network_1 and network_2, respectively
 }
