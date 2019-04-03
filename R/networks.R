@@ -613,6 +613,20 @@ get_node_names.network <- function(network, ...) {
   return(network$node_names)
 }
 
+#' Get a list of modules from the network
+#' 
+#' @param network A 'network' object.
+#' @return A list whose length is the number of modules in the network; 
+#' each element is a vector containing the indicies of the nodes
+#' that belong to that module.
+#' @export
+get_network_modules <- function(network) {
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
+  lapply(network$modules, function(module) module$nodes)
+}
+
 ###########################################################################
 #
 # Utility functions for network objects.
