@@ -7,15 +7,11 @@
 create_cytoscape_file(graph, output_name, dir = "output/")
 }
 \arguments{
-\item{graph}{the p by p adjacency matrix (0's and 1's) of the network.}
+\item{graph}{A 'network_plot' object. See ?plot_network().}
 
-\item{output_name}{a name for the .csv file.}
+\item{output_name}{A name for the .csv file.}
 
-\item{dir}{(optional) output directory.}
-
-\item{scores}{(optional) the p by p matrix of scores (weights) of each association.}
-
-\item{gene_names}{(optional) a vector of names for the p genes in the network.}
+\item{dir}{(optional) Output directory.}
 }
 \description{
 In Cytopscape, use File -> Import -> Network -> File. Select the .csv file
