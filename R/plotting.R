@@ -639,6 +639,10 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
+#' @param edge_colors A vector of three colors used for edges; the first colors
+#' edges common to both network, the second colors edges in network_1 but not
+#' network_2, and the third colors edges that are in network_2 but not 
+#' network_1. Default is c("black", "wheat", "red").
 #' @param generate_coords A function to generate the layout of a graph; used
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
@@ -655,6 +659,7 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
                                as_subgraph = FALSE,
                                node_scale = 5, edge_scale = 2, 
                                node_color = adjustcolor("orange", 0.5),
+                               edge_colors = c("black", "wheat", "red"),
                                generate_layout = igraph::nicely,
                                include_vertex_labels = TRUE, 
                                ...) {
@@ -827,11 +832,11 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
   # Edges in g1 are "wheat", in g2 are "red", and in both are "black".
   subset_1 <- which(attr(igraph::E(g), "vnames") 
                     %in% attr(igraph::E(g_1), "vnames"))
-  edge.color[subset_1] <- "wheat"
+  edge.color[subset_1] <- edge_colors[2]
   subset_2 <- which(attr(igraph::E(g), "vnames") 
                     %in% attr(igraph::E(g_2), "vnames"))
-  edge.color[subset_2] <- "red"
-  edge.color[intersect(subset_1, subset_2)] <- "black"
+  edge.color[subset_2] <- edge_colors[3]
+  edge.color[intersect(subset_1, subset_2)] <- edge_colors[1]
   
   plot(g, vertex.color = node_color, vertex.label.font = 2,
        vertex.size = vertex.size, vertex.frame.color = vertex.frame.color,

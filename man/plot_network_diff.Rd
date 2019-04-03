@@ -6,8 +6,9 @@
 \usage{
 plot_network_diff(network_1, network_2, compare_graph = NULL,
   as_subgraph = FALSE, node_scale = 5, edge_scale = 2,
-  node_color = adjustcolor("orange", 0.5),
-  generate_layout = igraph::nicely, include_vertex_labels = TRUE, ...)
+  node_color = adjustcolor("orange", 0.5), edge_colors = c("black",
+  "wheat", "red"), generate_layout = igraph::nicely,
+  include_vertex_labels = TRUE, ...)
 }
 \arguments{
 \item{network_1}{A 'network' or 'matrix' object.}
@@ -23,6 +24,11 @@ plot_network_diff(network_1, network_2, compare_graph = NULL,
 \item{edge_scale}{Used for scaling of edges.}
 
 \item{node_color}{The color used for the nodes.}
+
+\item{edge_colors}{A vector of three colors used for edges; the first colors
+edges common to both network, the second colors edges in network_1 but not
+network_2, and the third colors edges that are in network_2 but not 
+network_1. Default is c("black", "wheat", "red").}
 
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
