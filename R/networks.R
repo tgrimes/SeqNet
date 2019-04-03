@@ -542,6 +542,10 @@ get_summary_for_node <- function(node, network) {
 #' network.
 #' @export
 get_degree_distribution <- function(network) {
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
+  
   adj_matrix <- get_adjacency_matrix(network)
   degree <- apply(adj_matrix, 2, sum)
   return(degree)
@@ -558,6 +562,10 @@ get_degree_distribution <- function(network) {
 #' in the pathway.
 #' @export
 get_pathway_list <- function(network) {
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
+  
   n_hubs <- length(network$hubs)
   n_modules <- length(network$modules)
   n_cliques <- length(network$cliques)
@@ -599,6 +607,9 @@ get_pathway_list <- function(network) {
 #' @return A vector containing the node names
 #' @export
 get_node_names.network <- function(network, ...) {
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
   return(network$node_names)
 }
 
@@ -901,6 +912,10 @@ rewire_connections_to_node <- function(node, network, rewire_prob = 0.2) {
 #' @return The modified network.
 #' @export
 remove_connections_to_node <- function(node, network) {
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
+  
   return(rewire_connections_to_node(node, network, rewire_prob = 0))
 }
 
@@ -916,6 +931,7 @@ trim_modules <- function(network) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
+  
   n_modules <- length(network$modules)
   if(n_modules == 0) {
     warning("Argument 'network' contains no modules. Returning network unmodified.")
