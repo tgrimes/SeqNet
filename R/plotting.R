@@ -199,9 +199,14 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' will be based on that plot and convex hulls are drawn to trace out the modules; 
 #' in this case it is likely that the displayed modules will contain extraneous
 #' nodes.
-#' @param network A 'network' object to plot.
+#' @param network A 'network' object to plot. Alternatively, an adjacency or
+#' association matrix can be provided, in which case the 'modules' argument
+#' should be specified.
 #' @param compare_graph The plot of another network to use for comparison.
 #' @param as_subgraph If TRUE, only nodes of positive degree will be shown.
+#' @param modules A list of modules for the network; this is used to provide
+#' a member list of each module when the 'network' argument is not a 'network' 
+#' object. To get this list from a network, use 'get_network_modules()'.
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
@@ -210,8 +215,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
 #' @param include_vertex_labels If TRUE, the verticies will be labeled.
-#' @param show_legend If TRUE, a legend for the modules - module colors is shown.
-#' Defaults to TRUE if there are 10 or fewer modules and to FALSE otherwise.
+#' @param show_legend If TRUE, a legend for the modules is shown. Default is FALSE.
 #' @param legend_position The location of the legend. Can be any one of "bottomright",
 #' "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" or "center".
 #' @param legend_horizontal If TRUE, the legend will be displayed horizontally.
@@ -223,34 +227,42 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' graph and the new graph of `network`.
 #' @export
 plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
+                         modules = NULL,
                          node_scale = 5, edge_scale = 2,
                          node_color = adjustcolor("orange", 0.5),
-                         group_color = RColorBrewer::brewer.pal(
-                           min(9, max(3, length(network$modules))),'Set1'),
+                         group_color = RColorBrewer::brewer.pal(9, 'Set1'),
                          coords =  NULL, 
                          generate_layout = igraph::nicely,
                          include_vertex_labels = TRUE, 
-                         show_legend = ifelse(length(network$modules) <= 10, 
-                                              TRUE, FALSE),
+                         show_legend = FALSE,
                          legend_position = "topright", 
                          legend_horizontal = FALSE, 
                          display_plot = TRUE, ...) {
   ##################################
   # Check arguments for errors.
   
-  if(!(class(network) %in% "network")) {
+  if(!(class(network) %in% c("network", "matrix"))) {
     stop("Argument 'network' must be a 'network' object.")
   }
+  if((class(network) %in% "matrix") && is.null(modules)) {
+    stop("If 'network' is a matrix, then the 'modules' argument must be specified.")
+  }
   
-  modules <- lapply(network$modules, function(module) module$nodes)
+  if(is.null(modules)) {
+    modules <- lapply(network$modules, function(module) module$nodes)
+  }
+  
   # Module fill gets an additional alpha value for transparency:
   group_color_fill <- paste0(group_color, '10')
+  
+  node_names <- get_node_names(network)
+  p <- length(node_names)
   
   if(!is.null(compare_graph)) {
     if(class(compare_graph) != "network_plot")
       stop("Argument 'compare_graph' must be a 'network_plot' object.")
-    if((nrow(compare_graph$coords) != network$p) &&
-       !all(attr(igraph::V(compare_graph$graph), "names") %in% network$node_names))
+    if((nrow(compare_graph$coords) != p) &&
+       !all(attr(igraph::V(compare_graph$graph), "names") %in% node_names))
       stop(paste("Argument 'compare_graph' and 'network' must contain the same",
                  "number of nodes or contain an overlapping set of nodes."))
   }
@@ -263,7 +275,7 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   ##################################
   
   # Initialize plot and obtain an association matrix if the network is weighted.
-  nodes <- 1:network$p # Used for updating modules.
+  nodes <- 1:p # Used for updating modules.
   if(is_weighted(network)) {
     assoc_matrix <- abs(get_association_matrix(network))
     diag(assoc_matrix) <- 0
@@ -379,9 +391,9 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   edge.width <- edge_weights * edge_scale
   edge.color <- "black"
   
-  module_names <- names(network$modules)
+  module_names <- names(modules)
   if(is.null(module_names)) {
-    module_names <- paste("module", 1:length(network$modules), sep = "_")
+    module_names <- paste("module", 1:length(modules), sep = "_")
   }
   
   if(display_plot) {
@@ -699,7 +711,9 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
     assoc_matrix_2 <- get_association_matrix(network_2)
     colnames(assoc_matrix_1) <- colnames(adj_matrix_1)
     colnames(assoc_matrix_2) <- colnames(adj_matrix_2)
-    g <- igraph::graph_from_adjacency_matrix(abs(assoc_matrix_1 - assoc_matrix_2), 
+    assoc_matrix_diff <- abs(assoc_matrix_1 - assoc_matrix_2)
+    assoc_matrix_diff[assoc_matrix_diff < 10^-13] <- 0
+    g <- igraph::graph_from_adjacency_matrix(assoc_matrix_diff, 
                                              mode = "undirected", 
                                              weighted = TRUE)
   } else {
@@ -726,13 +740,14 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
     if(weighted) {
       assoc_matrix_1 <- assoc_matrix_1[index_subset_g, index_subset_g]
       assoc_matrix_2 <- assoc_matrix_2[index_subset_g, index_subset_g]
+      assoc_matrix_diff <- assoc_matrix_diff[index_subset_g, index_subset_g]
     }
     adj_matrix_1 <- adj_matrix_1[index_subset_g, index_subset_g]
     adj_matrix_2 <- adj_matrix_2[index_subset_g, index_subset_g]
   }
   
   # Create subgraph, if requested.
-  if (as_subgraph) {
+  if(as_subgraph) {
     # Determine which nodes to keep in subgraph.
     index_nodes <- unname(which(igraph::degree(g) > 0))
     
@@ -748,6 +763,7 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
       if(weighted) {
         assoc_matrix_1 <- assoc_matrix_1[index_nodes, index_nodes]
         assoc_matrix_2 <- assoc_matrix_2[index_nodes, index_nodes]
+        assoc_matrix_diff <- assoc_matrix_diff[index_nodes, index_nodes]
       }
       adj_matrix_1 <- adj_matrix_1[index_nodes, index_nodes]
       adj_matrix_2 <- adj_matrix_2[index_nodes, index_nodes]
@@ -769,7 +785,7 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
     # Scale associations relative to largest association in either network.
     temp <- max(c(abs(assoc_matrix_1[lower.tri(assoc_matrix_1)]),
                   abs(assoc_matrix_2[lower.tri(assoc_matrix_2)])))
-    node_weights <- sqrt(apply(abs(assoc_matrix_1 - assoc_matrix_2), 2, sum) /
+    node_weights <- sqrt(apply(assoc_matrix_diff, 2, sum) /
                            ifelse(temp == 0, 1, temp))
   } else {
     # Default node weights are proportional to sqrt(degree change)
@@ -785,7 +801,7 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
   
   # Adjust edge width and color.
   if(weighted) {
-    edge_weights <- abs(assoc_matrix_1 - assoc_matrix_2)[lower.tri(assoc_matrix_1)]
+    edge_weights <- assoc_matrix_diff[lower.tri(assoc_matrix_diff)]
     edge_weights <- edge_weights[edge_weights != 0]
     # Scale edges relative to largest association in either network.
     temp <- max(c(abs(assoc_matrix_1[lower.tri(assoc_matrix_1)]),
@@ -846,8 +862,8 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
 #' 
 #' This function plots the similarity of connections between two networks. 
 #' Both networks must be weighted. The width of each edge corresponds to 
-#' the strength of similarity and is calculated by exp(0.5(log(|s1 + s2|) +
-#' log(|s1|) + log(|s2|))), where s1 and s2 is the strength of a particular
+#' the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)), 
+#' where s1 and s2 are the weights for a particular
 #' connection in network_1 and network_2, respectively
 #' @param network_1 A weighted 'network' or 'matrix' object.
 #' @param network_2 A weighted 'network' or 'matrix' object.
@@ -911,8 +927,7 @@ plot_network_sim <- function (network_1, network_2, compare_graph, ...) {
   S <- rep(0, length(A))
   A <- A[index]
   B <- B[index]
-  S[index] <- sign(A + B) * exp(0.5 * (log(abs(A + B))  + 
-                                         log(abs(A)) + log(abs(B))))
+  S[index] <- sign(A + B) * sqrt(abs((A + B) * A * B))
   sim <- matrix(0, p, p)
   sim[lower.tri(sim)] <- S
   sim <- sim + t(sim)

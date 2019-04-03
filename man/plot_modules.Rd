@@ -5,20 +5,25 @@
 \title{Visualize a network and its modules}
 \usage{
 plot_modules(network, compare_graph = NULL, as_subgraph = TRUE,
-  node_scale = 5, edge_scale = 2, node_color = adjustcolor("orange",
-  0.5), group_color = RColorBrewer::brewer.pal(min(9, max(3,
-  length(network$modules))), "Set1"), coords = NULL,
+  modules = NULL, node_scale = 5, edge_scale = 2,
+  node_color = adjustcolor("orange", 0.5),
+  group_color = RColorBrewer::brewer.pal(9, "Set1"), coords = NULL,
   generate_layout = igraph::nicely, include_vertex_labels = TRUE,
-  show_legend = ifelse(length(network$modules) <= 10, TRUE, FALSE),
-  legend_position = "topright", legend_horizontal = FALSE,
-  display_plot = TRUE, ...)
+  show_legend = FALSE, legend_position = "topright",
+  legend_horizontal = FALSE, display_plot = TRUE, ...)
 }
 \arguments{
-\item{network}{A 'network' object to plot.}
+\item{network}{A 'network' object to plot. Alternatively, an adjacency or
+association matrix can be provided, in which case the 'modules' argument
+should be specified.}
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
 \item{as_subgraph}{If TRUE, only nodes of positive degree will be shown.}
+
+\item{modules}{A list of modules for the network; this is used to provide
+a member list of each module when the 'network' argument is not a 'network' 
+object. To get this list from a network, use 'get_network_modules()'.}
 
 \item{node_scale}{Used for scaling of nodes.}
 
@@ -30,8 +35,7 @@ plot_modules(network, compare_graph = NULL, as_subgraph = TRUE,
 
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
-\item{show_legend}{If TRUE, a legend for the modules - module colors is shown.
-Defaults to TRUE if there are 10 or fewer modules and to FALSE otherwise.}
+\item{show_legend}{If TRUE, a legend for the modules is shown. Default is FALSE.}
 
 \item{legend_position}{The location of the legend. Can be any one of "bottomright",
 "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" or "center".}
