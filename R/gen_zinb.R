@@ -92,13 +92,17 @@ rzinb <- function (n, size, mu, rho) {
 #' to create them.
 #' @export 
 gen_counts <- function(n, 
-                       ...,
+                       network,
                        reference = NULL,
                        params = NULL,
                        verbose = TRUE) {
   if(n <= 0) {
-    stop("n must be positive.")
+    stop("Argument 'n' must be positive.")
   }
+  
+  if(!(class(network) == "network")) 
+    stop(paste0("'", deparse(substitute(network)), 
+                "' is not a 'network' object."))
   
   if(is.null(reference) && is.null(params)) {
     warning("Using kidney data as reference dataset.")
@@ -106,7 +110,7 @@ gen_counts <- function(n,
     reference <- sample_reference_data(reference, p)
   }
   
-  if(!is.null(params) && network_list[[1]]$p != ncol(params)) {
+  if(!is.null(params) && length(get_node_names(network)) != ncol(params)) {
     stop("'params' must have the same number of columns as genes in the network(s).")
   }
 

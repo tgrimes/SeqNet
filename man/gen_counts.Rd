@@ -4,10 +4,13 @@
 \alias{gen_counts}
 \title{Generate RNA-seq counts}
 \usage{
-gen_counts(n, ..., reference = NULL, params = NULL, verbose = TRUE)
+gen_counts(n, network, reference = NULL, params = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
+
+\item{network}{A 'network' object.}
 
 \item{reference}{Either a vector or data.frame of counts from a reference
 gene expression profile. If a data.frame is provided, each column should
@@ -18,8 +21,6 @@ are estimated from the kidney dataset.}
 the size, mu, and rho parameters for a gene.}
 
 \item{verbose}{Boolean indicator for message output.}
-
-\item{network}{A 'network' object.}
 }
 \value{
 A list containing the generated counts and the ZINB parameters used
