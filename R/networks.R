@@ -231,7 +231,9 @@ create_network_from_association_matrix <- function(association_matrix,
 #' @param repeated_module_factor A value between 0 and 1. A gene selected for a 
 #' module has its probability of being selected for another module multiplied by 
 #' this factor.
-#' @param ... Additional arguments passed to 'random_module()'.
+#' @param ... Additional arguments passed to 'random_module()' and, further 
+#' downstream, to 'update_module_with_random_struct()'; those of particular 
+#' interest may include the 'lattice_neig' and 'rewire_prob' arguments.
 #' @return An unweighted network object.
 #' @export 
 random_network <- function(p,

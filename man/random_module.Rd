@@ -16,8 +16,8 @@ module. If NULL, the module will be unnamed.}
 \item{add_weights}{If TRUE, weights will be generated for the module 
 connections.}
 
-\item{...}{Additional arguments passed to set_random_struct() and
-set_random_weights().}
+\item{...}{Additional arguments passed to 'update_module_with_random_struct()' 
+and 'update_module_with_random_weights()'.}
 }
 \value{
 A 'network_module' object.

@@ -140,8 +140,8 @@ gen_counts <- function(n,
   
   colnames(params) <- colnames(reference)
   
-  gen <- gen_gaussian(n, network)
-  x <- pnorm(gen$x) # Obtain n by p matrix of quantiles.
+  x <- gen_gaussian(n, network)$x
+  x <- pnorm(x) # Obtain n by p matrix of quantiles.
   
   # Convert quantiles to counts for each gene.
   for(i in 1:p) {

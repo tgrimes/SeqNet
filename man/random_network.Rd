@@ -28,7 +28,9 @@ above this value will be reduced to 'max_module_size'.}
 module has its probability of being selected for another module multiplied by 
 this factor.}
 
-\item{...}{Additional arguments passed to 'random_module()'.}
+\item{...}{Additional arguments passed to 'random_module()' and, further 
+downstream, to 'update_module_with_random_struct()'; those of particular 
+interest may include the 'lattice_neig' and 'rewire_prob' arguments.}
 }
 \value{
 An unweighted network object.
