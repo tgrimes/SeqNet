@@ -21,6 +21,8 @@ create_empty_module <- function(nodes) {
 
   n_nodes = length(nodes)
   
+  nodes <- sort(nodes)
+  
   module <- list(name = NULL,
                  nodes = nodes,
                  struct = rep(0, n_nodes * (n_nodes - 1) / 2))
