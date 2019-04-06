@@ -109,21 +109,19 @@ gen_counts <- function(n,
     reference <- get_kidney_reference_data()
     reference <- sample_reference_data(reference, p)
   }
-  
-  if(!is.null(params) && length(get_node_names(network)) != ncol(params)) {
-    stop("'params' must have the same number of columns as genes in the network(s).")
-  }
 
   # Estimate model paramters from reference dataset
   if(is.null(params)) {
-    index <- 1:p # Default subset for columns in reference.
+    index <- 1:p # Default: use all p columns in the reference dataset.
     if(p > ncol(reference)) {
+      # There are too few columns, sample with replacement.
       if(verbose) {
         cat("reference contains fewer columns than nodes in network.",
             "Sampling genes with replacement.\n")
       }
       index <- sample(1:ncol(reference), p, replace = TRUE)
     } else if (p < ncol(reference)) {
+      # There are too many columns, take random subset.
       if(verbose) {
         cat("reference contains more columns than nodes in network.",
             "Sampling a subset of genes.\n")
@@ -136,9 +134,29 @@ gen_counts <- function(n,
       reference,
       verbose = verbose)
     params <- model$params
-  } # End if(is.null(params))
-  
-  colnames(params) <- colnames(reference)
+    colnames(params) <- colnames(reference)
+    
+  } else {
+    # TODO: add argument checks for 'params'. 
+    # params are provided; sample columns if necessary.
+    index <- 1:p # Default: use all p columns of the params.
+    if(p > ncol(params)) {
+      # There are too few columns, sample with replacement.
+      if(verbose) {
+        cat("params contains fewer columns than nodes in network.",
+            "Sampling genes with replacement.\n")
+      }
+      index <- sample(1:ncol(params), p, replace = TRUE)
+    } else if (p < ncol(params)) {
+      # There are too many columns, take random subset.
+      if(verbose) {
+        cat("params contains more columns than nodes in network.",
+            "Sampling a subset of genes.\n")
+      }
+      index <- sample(1:ncol(params), p)
+    }
+    params <- params[, index]
+  } 
   
   x <- gen_gaussian(n, network)$x
   x <- pnorm(x) # Obtain n by p matrix of quantiles.
