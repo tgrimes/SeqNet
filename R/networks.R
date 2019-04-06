@@ -502,7 +502,7 @@ get_summary_for_node <- function(node, network) {
   # Initialize summary variables for node.
   degree <- 0
   n_modules <- 0
-  n_connections <- 0
+  connections <- NULL
   module_index <- NULL
   
   # Update degree using the marginal adjacency matrix for the network.
@@ -519,7 +519,8 @@ get_summary_for_node <- function(node, network) {
         module_index <- c(module_index, i)
         node_index_in_module <- which(network$modules[[i]]$nodes == node_index)
         adj_matrix <- get_adjacency_matrix(network$modules[[i]])
-        n_connections <- n_connections + sum(adj_matrix[, node_index_in_module])
+        connected_nodes <- colnames(adj_matrix)[which(adj_matrix[, node_index_in_module] != 0)]
+        connections <- c(connections, connected_nodes)
       }
     }
   }
