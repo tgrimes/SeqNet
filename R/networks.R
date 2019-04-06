@@ -517,7 +517,8 @@ get_summary_for_node <- function(node, network) {
         module_index <- c(module_index, i)
         node_index_in_module <- which(network$modules[[i]]$nodes == node_index)
         adj_matrix <- get_adjacency_matrix(network$modules[[i]])
-        connected_nodes <- colnames(adj_matrix)[which(adj_matrix[, node_index_in_module] != 0)]
+        connected_nodes <- network$modules[[i]]$nodes[
+          which(adj_matrix[, node_index_in_module] != 0)]
         connections <- c(connections, connected_nodes)
       }
     }
