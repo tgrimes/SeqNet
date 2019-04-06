@@ -458,10 +458,9 @@ get_sigma.network <- function(network, ...) {
 #' corresponding to a name of a node in the network, or an integer value from 
 #' 1 to p corresponding to the index of a node.
 #' @param network A network object.
-#' @return A list containing summary, a list of strings detailing each 
-#' structure the node belongs to; struct_count, the number of structures
-#' the node belongs to; and degree, the total number of connections to the 
-#' node (summed over all structures).
+#' @return A list containing summary information for the node; this includes 
+#' a vector of indicies to other nodes in the network it is connected to, and 
+#' a vector of incidices to modules that contain the node.
 #' @export
 get_summary_for_node <- function(node, network) {
   if(!(class(network) == "network")) 
@@ -515,7 +514,6 @@ get_summary_for_node <- function(node, network) {
     for(i in 1:length(network$modules)) {
       # If node is in this module, update summary information.
       if(node_index %in% network$modules[[i]]$nodes) {
-        n_modules <- n_modules + 1
         module_index <- c(module_index, i)
         node_index_in_module <- which(network$modules[[i]]$nodes == node_index)
         adj_matrix <- get_adjacency_matrix(network$modules[[i]])
@@ -525,12 +523,14 @@ get_summary_for_node <- function(node, network) {
     }
   }
   
+  # Delete any duplicated connections (this happens if two genes are connected
+  # in multiple modules). 
+  connections <- unique(connections)
+  connections <- sort(connections)
   
   return(list(node = node,
               node_index = node_index,
-              degree = degree,
-              n_modules = n_modules,
-              n_connections = n_connections,
+              connections = connections,
               module_index = module_index))
 }
 

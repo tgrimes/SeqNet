@@ -14,10 +14,9 @@ corresponding to a name of a node in the network, or an integer value from
 \item{network}{A network object.}
 }
 \value{
-A list containing summary, a list of strings detailing each 
-structure the node belongs to; struct_count, the number of structures
-the node belongs to; and degree, the total number of connections to the 
-node (summed over all structures).
+A list containing summary information for the node; this includes 
+a vector of indicies to other nodes in the network it is connected to, and 
+a vector of incidices to modules that contain the node.
 }
 \description{
 Get summary for a node in the network.
