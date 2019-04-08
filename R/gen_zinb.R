@@ -104,6 +104,9 @@ gen_counts <- function(n,
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
+  # Obtain network size (number of nodes).
+  p <- network$p
+  
   if(is.null(reference) && is.null(params)) {
     warning("Using kidney data as reference dataset.")
     reference <- get_kidney_reference_data()
