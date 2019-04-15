@@ -106,14 +106,16 @@ gen_gaussian <- function(n, ...) {
 #' @param ... The 'network' objects to modify.
 #' @param k An integer that ensures the matrix inverse is numerically stable. 
 #' k = 1 is default; higher values will give less stable results.
-#' @param rpartials A generator for partial correlation values. By default, 
-#' values are generated uniformly from (-1, 0.5) U (0.5, 1).
+#' @param rweights A generator for initial weights in the network. By default, 
+#' values are generated uniformly from (-1, 0.5) U (0.5, 1). The weights will
+#' be adjusted so that the sign of a generated weight and the sign of the
+#' corresponding partial correlation agree.
 #' @return An updated network object containing random weights. If multiple
 #' networks were provided, then a list of network objects is returned.
 #' @export
 gen_partial_correlations <- function(...,
                                      k = 2.1,
-                                     rpartials = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {
+                                     rweights = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {
   # Check 'k'.
   if(k < 1) 
     stop("Argument 'k' must be >= 1.")
@@ -133,7 +135,7 @@ gen_partial_correlations <- function(...,
   #   0. Check that the networks contain the same nodes,
   #   1. initialize random association weights for each possible connection,
   #   2. find an adjustment to ensure invertibility of association matrix, and
-  #   3. 
+  #   3. use the maximum adjustment to obtain precision matricies.
   
   if(!all_networks_contain_same_nodes(network_list)) {
     stop(paste("The networks do not contain the same nodes.",
@@ -153,19 +155,21 @@ gen_partial_correlations <- function(...,
     
     # Generate association weights for every possible connection in the module.
     # Associations along diagonal are zero; these are adjusted later.
-    associations <- matrix(0, p, p)
+    weights <- matrix(0, p, p)
     m <- p * (p - 1) / 2
-    associations[lower.tri(associations)] <- rpartials(m)
-    associations <- associations + t(associations)
+    # Use negative weight so that partial correlations have same sign as
+    # the generated weight.
+    weights[lower.tri(weights)] <- -rweights(m)
+    weights <- weights + t(weights)
     
     # Obtain an association matrix for each network using the generated values.
-    assoc_matrix_list <- lapply(module_list, function(module) {
-      assoc_matrix <- associations * get_adjacency_matrix(module)
-      assoc_matrix
+    weight_matrix_list <- lapply(module_list, function(module) {
+      weight_matrix <- weights * get_adjacency_matrix(module)
+      weight_matrix
     })
     
     # Ensure each association matrix is invertible by adjusting the diagonal.
-    eigen_val_list <- lapply(assoc_matrix_list, function(m) eigen(m)$values)
+    eigen_val_list <- lapply(weight_matrix_list, function(m) eigen(m)$values)
     adjustment_list <- lapply(eigen_val_list, function(lambda) {
       (max(lambda) * 10^-k - min(lambda))
     })
@@ -173,7 +177,7 @@ gen_partial_correlations <- function(...,
     # Find the maximum adjustment and apply to each association matrix.
     # Each matrix is now invertible and is interpreted as the precision matrix
     adjustment <- diag(max(unlist(adjustment_list)), p)
-    precision_list <- lapply(assoc_matrix_list, function(m) m + adjustment)
+    precision_list <- lapply(weight_matrix_list, function(m) m + adjustment)
     
     # Standardize with 1s along diagonal.
     # Note: the precision matrix is related to negative partial correlations.
