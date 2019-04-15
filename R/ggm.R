@@ -114,16 +114,9 @@ gen_gaussian <- function(n, ...) {
 gen_partial_correlations <- function(...,
                                      k = 2.1,
                                      rpartials = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {
-  # Check 'k' and 'limits'.
+  # Check 'k'.
   if(k < 1) 
     stop("Argument 'k' must be >= 1.")
-  if(length(limits) != 2 || !is.numeric(limits)) 
-    stop("Argument 'limits' must be a numeric vector of length 2.")
-  if(limits[1] > 1 | limits[1] < 0)
-    stop("Argument 'limits'[1] is not between 0 and 1.")
-  if(limits[2] > 1 | limits[2] < 0)
-    stop("Argument 'limits'[2] is not between 0 and 1.")
-  limits <- sort(limits)
   
   # Handle network arguments
   network_list <- get_network_arguments(...)
