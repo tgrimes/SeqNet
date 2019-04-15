@@ -106,14 +106,14 @@ gen_gaussian <- function(n, ...) {
 #' @param ... The 'network' objects to modify.
 #' @param k An integer that ensures the matrix inverse is numerically stable. 
 #' k = 1 is default; higher values will give less stable results.
-#' @param limits A vector of length 2 containing the lower and upper limits
-#' for partial correlations (generated from a uniform distribution).
+#' @param rpartials A generator for partial correlation values. By default, 
+#' values are generated uniformly from (-1, 0.5) U (0.5, 1).
 #' @return An updated network object containing random weights. If multiple
 #' networks were provided, then a list of network objects is returned.
 #' @export
 gen_partial_correlations <- function(...,
                                      k = 2.1,
-                                     limits = c(0.5, 1)) {
+                                     rpartials = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {
   # Check 'k' and 'limits'.
   if(k < 1) 
     stop("Argument 'k' must be >= 1.")
@@ -162,8 +162,7 @@ gen_partial_correlations <- function(...,
     # Associations along diagonal are zero; these are adjusted later.
     associations <- matrix(0, p, p)
     m <- p * (p - 1) / 2
-    associations[lower.tri(associations)] <- 
-      (-1)^rbinom(m, 1, 0.5) * runif(m, limits[1], limits[2])
+    associations[lower.tri(associations)] <- rpartials(m)
     associations <- associations + t(associations)
     
     # Obtain an association matrix for each network using the generated values.
