@@ -1,5 +1,5 @@
 # SeqNet
-An R package for simulating RNA-sequencing datasets based on underlying gene-gene association networks
+An R package for simulating RNA-seq counts from gene-gene association networks
 
 # Installation
 SeqNet can be installed using the `devtools` package:
