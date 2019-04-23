@@ -2,21 +2,23 @@
 % Please edit documentation in R/modules.R
 \name{set_module_struct}
 \alias{set_module_struct}
-\title{Set the connections for a module}
+\title{Set the edges in a module}
 \usage{
 set_module_struct(module, struct)
 }
 \arguments{
 \item{module}{The 'network_module' object to modify.}
 
-\item{struct}{A vector or matrix of weights for each connetions. If a vector,
-its length must equal #nodes(#nodes-1)/2, where p is the number of nodes in the module. 
-If a matrix, it should be square with the number of columns equal to p; only
-the upper-triangle of the matrix will be used.}
+\item{struct}{A matrix used to indicate the edges in the module. If the matrix
+is square and contains the same number of rows and columns as nodes in 
+the module, then it is assumed to be an adjacency matrix and the nonzero 
+lower-triangle values of the matrix are used to indicate edges in the module.
+If the matrix is not square, the first two columns are assumed to be an
+edge list.}
 }
 \value{
 The modified 'network_module' object.
 }
 \description{
-Set the connections for a module
+Set the edges in a module
 }

@@ -8,6 +8,8 @@ create_module_from_adjacency_matrix(adjacency_matrix, nodes = NULL,
   module_name = NULL)
 }
 \arguments{
+\item{adjacency_matrix}{The adjacency matrix used to create the module.}
+
 \item{nodes}{A numeric vector indicating which nodes in the network are
 contained in this module.}
 
@@ -18,5 +20,7 @@ module. If NULL, the module will be unnamed.}
 A 'network_module' object.
 }
 \description{
-Create a module from an adjacency matrix
+The edges in the module will be set to the edges in the adjacency matrix. 
+The edges are undirected, and only the lower triangle of the
+matrix is considered. See ?set_module_struct for more details.
 }

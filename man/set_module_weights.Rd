@@ -12,7 +12,7 @@ set_module_weights(module, weights)
 \item{weights}{A vector or matrix of weights for each connetions. If a vector,
 its length must equal the number of connections in the module. If a matrix,
 it should be square with the number of columns equal to the number of nodes 
-in the module; only the entries in the upper-triangle that correspond to 
+in the module; only the entries in the lower triangle that correspond to 
 connections in the module will be used.}
 }
 \value{

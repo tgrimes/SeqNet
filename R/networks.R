@@ -586,9 +586,6 @@ get_pathway_list <- function(network) {
   
   if(n_modules > 0) {
     for(i in 1:n_modules) {
-      if(any(apply(network$modules[[i]]$struct, 2, sum) == 0)) {
-        warning("node in module but has no connections")
-      }
       G[[n_hubs + i]] <- network$modules[[i]]$nodes
       names(G)[n_hubs + i] <- paste0("module_", i)
     }
