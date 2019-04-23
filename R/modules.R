@@ -245,10 +245,6 @@ set_module_struct <- function(module, struct) {
     if(nrow(struct) < 2) {
       stop("Argument 'struct' must be a matrix with at least two columns.")
     }
-    if(!all(struct[, 1] %in% module$nodes) ||
-       !all(struct[, 2] %in% module$nodes)) {
-      stop("Argument 'struct' references nodes that are not in the module.")
-    }
     # Update struct.
     module$struct <- struct
   } else {
