@@ -372,7 +372,7 @@ get_adjacency_matrix.network_module <- function(module, ...) {
   
   n_nodes <- length(module$nodes)
   adj_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
-  if(!is.null(modules$struct)) {
+  if(!is.null(module$struct)) {
     adj_matrix[module$struct[, 1:2]] <- 1
     adj_matrix[module$struct[, 2:1]] <- 1
   }
@@ -395,7 +395,7 @@ get_association_matrix.network_module <- function(module, ...) {
   
   n_nodes <- length(module$nodes)
   assoc_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
-  if(!is.null(modules$struct)) {
+  if(!is.null(module$struct)) {
     # Use weights if available, otherwise set associations to 1.
     if(ncol(module$struct) >= 3) {
       weights <- module$struct[, 3]
