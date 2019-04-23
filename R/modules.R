@@ -239,6 +239,7 @@ set_module_struct <- function(module, struct) {
       struct[struct != 0] <- 1
       struct[upper.tri(struct)] <- 0
       struct <- struct + t(struct)
+      colnames(struct) <- 1:ncol(struct) # Use indicies in edge list (struct).
       struct <- igraph::graph.adjacency(struct, mode = "undirected")
       struct <- apply(igraph::get.edgelist(struct), 2, as.numeric)
     }
