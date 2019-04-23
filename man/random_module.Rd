@@ -16,7 +16,7 @@ module. If NULL, the module will be unnamed.}
 \item{add_weights}{If TRUE, weights will be generated for the module 
 connections.}
 
-\item{...}{Additional arguments passed to 'update_module_with_random_struct()' 
+\item{...}{Additional arguments passed to 'update_module_with_random_edges()' 
 and 'update_module_with_random_weights()'.}
 }
 \value{

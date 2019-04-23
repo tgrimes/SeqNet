@@ -232,7 +232,7 @@ create_network_from_association_matrix <- function(association_matrix,
 #' module has its probability of being selected for another module multiplied by 
 #' this factor.
 #' @param ... Additional arguments passed to 'random_module()' and, further 
-#' downstream, to 'update_module_with_random_struct()'; those of particular 
+#' downstream, to 'update_module_with_random_edges()'; those of particular 
 #' interest may include the 'lattice_neig' and 'rewire_prob' arguments.
 #' @return An unweighted network object.
 #' @export 

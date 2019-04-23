@@ -25,7 +25,7 @@ create_empty_module <- function(nodes) {
   
   module <- list(name = NULL,
                  nodes = nodes,
-                 struct = NULL)
+                 edges = NULL)
   
   class(module) <- "network_module"
   
@@ -44,7 +44,7 @@ create_empty_module <- function(nodes) {
 #' 
 #' The edges in the module will be set to the edges in the adjacency matrix. 
 #' The edges are undirected, and only the lower triangle of the
-#' matrix is considered. See ?set_module_struct for more details. 
+#' matrix is considered. See ?set_module_edges for more details. 
 #' @param adjacency_matrix The adjacency matrix used to create the module.
 #' @param nodes A numeric vector indicating which nodes in the network are
 #' contained in this module.
@@ -92,7 +92,7 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
   
   module <- create_empty_module(nodes)
   module <- set_module_name(module, module_name)
-  module <- set_module_struct(module, adjacency_matrix)
+  module <- set_module_edges(module, adjacency_matrix)
   
   return(module)
 }
@@ -169,7 +169,7 @@ create_module_from_association_matrix <- function(association_matrix,
 #' module. If NULL, the module will be unnamed.
 #' @param add_weights If TRUE, weights will be generated for the module 
 #' connections.
-#' @param ... Additional arguments passed to 'update_module_with_random_struct()' 
+#' @param ... Additional arguments passed to 'update_module_with_random_edges()' 
 #' and 'update_module_with_random_weights()'.
 #' @details See ?igraph::watts.strogatz.game for details on generating
 #' small-world networks.
@@ -191,7 +191,7 @@ random_module <- function(nodes,
   
   module <- create_empty_module(nodes)
   module <- set_module_name(module, module_name)
-  module <- update_module_with_random_struct(module, ...)
+  module <- update_module_with_random_edges(module, ...)
   if(add_weights) {
     module <- update_module_with_random_weights(module, ...)
   }
@@ -212,7 +212,7 @@ random_module <- function(nodes,
 #' Set the edges in a module
 #' 
 #' @param module The 'network_module' object to modify.
-#' @param struct A matrix used to indicate the edges in the module. If the matrix
+#' @param edges A matrix used to indicate the edges in the module. If the matrix
 #' is square and contains the same number of rows and columns as nodes in 
 #' the module, then it is assumed to be an adjacency matrix and the nonzero 
 #' lower-triangle values of the matrix are used to indicate edges in the module.
@@ -220,36 +220,36 @@ random_module <- function(nodes,
 #' edge list.
 #' @return The modified 'network_module' object.
 #' @export
-set_module_struct <- function(module, struct) {
+set_module_edges <- function(module, edges) {
   if(!(class(module) == "network_module")) 
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
   p <- length(module$nodes)
-  if(is.null(struct)) {
-    module$struct <- NULL
-  } else if(is.matrix(struct)) {
+  if(is.null(edges)) {
+    module$edges <- NULL
+  } else if(is.matrix(edges)) {
     # If a square matrix is provided, 
-    if(nrow(struct) == ncol(struct)) {
-      if(nrow(struct) != p) {
-        stop(paste0("Argument 'struct' is a square matrix, but the number of", 
+    if(nrow(edges) == ncol(edges)) {
+      if(nrow(edges) != p) {
+        stop(paste0("Argument 'edges' is a square matrix, but the number of", 
                     "columns does not match number of nodes in the module."))
       }
       # Set any nonzero values to 1. Use only the lower-triangle entries.
-      struct[struct != 0] <- 1
-      struct[upper.tri(struct)] <- 0
-      struct <- struct + t(struct)
-      colnames(struct) <- 1:ncol(struct) # Use indicies in edge list (struct).
-      struct <- igraph::graph.adjacency(struct, mode = "undirected")
-      struct <- apply(igraph::get.edgelist(struct), 2, as.numeric)
+      edges[edges != 0] <- 1
+      edges[upper.tri(edges)] <- 0
+      edges <- edges + t(edges)
+      colnames(edges) <- 1:ncol(edges) # Use indicies in edge list (edges).
+      edges <- igraph::graph.adjacency(edges, mode = "undirected")
+      edges <- apply(igraph::get.edgelist(edges), 2, as.numeric)
     }
-    if(nrow(struct) < 2) {
-      stop("Argument 'struct' must be a matrix with at least two columns.")
+    if(nrow(edges) < 2) {
+      stop("Argument 'edges' must be a matrix with at least two columns.")
     }
-    # Update struct.
-    module$struct <- struct
+    # Update edges.
+    module$edges <- edges
   } else {
-    stop("Argument 'struct' must be a matrix.")
+    stop("Argument 'edges' must be a matrix.")
   }
   
   return(module)
@@ -270,13 +270,13 @@ set_module_weights <- function(module, weights) {
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(module$struct) && !is.null(weights)) {
-    warning("Argument 'weights' is not NUL,L but the module struct is.")
+  if(is.null(module$edges) && !is.null(weights)) {
+    warning("Argument 'weights' is not NULL, but the module edges is.")
     # Nothing to do, so return module unchanged.
     return(module)
   }
   
-  n_edges <- nrow(module$struct)
+  n_edges <- nrow(module$edges)
   
   if(is.vector(weights)) {
     if(length(weights) != n_edges) {
@@ -292,13 +292,13 @@ set_module_weights <- function(module, weights) {
                   "columns does not match number of nodes in the module."))
     }
     # Get values in lower-triangle that correspond to connections in the module.
-    weights <- weights[module$struct[, 2:1]]
+    weights <- weights[module$edges[, 2:1]]
   } else {
     stop("Argument 'weights' must be a vector or matrix.")
   }
   
-  # Update struct with weights.
-  module$struct <- cbind(module$struct, weights)
+  # Update edges with weights.
+  module$edges <- cbind(module$edges, weights)
   
   return(module)
 }
@@ -313,15 +313,15 @@ remove_weights.network_module <- function(module) {
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(module$struct)) {
+  if(is.null(module$edges)) {
     return(module)
   }
   if(!is_weighted(module)) {
     return(module)
   }
   
-  # Reset struct with only first two columns.
-  module$struct <- module$struct[, 1:2]
+  # Reset edges with only first two columns.
+  module$edges <- module$edges[, 1:2]
   return(module)
 }
 
@@ -369,9 +369,9 @@ get_adjacency_matrix.network_module <- function(module, ...) {
   
   n_nodes <- length(module$nodes)
   adj_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
-  if(!is.null(module$struct)) {
-    adj_matrix[module$struct[, 1:2]] <- 1
-    adj_matrix[module$struct[, 2:1]] <- 1
+  if(!is.null(module$edges)) {
+    adj_matrix[module$edges[, 1:2]] <- 1
+    adj_matrix[module$edges[, 2:1]] <- 1
   }
   
   colnames(adj_matrix) <- module$nodes
@@ -392,15 +392,15 @@ get_association_matrix.network_module <- function(module, ...) {
   
   n_nodes <- length(module$nodes)
   assoc_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
-  if(!is.null(module$struct)) {
+  if(!is.null(module$edges)) {
     # Use weights if available, otherwise set associations to 1.
-    if(ncol(module$struct) >= 3) {
-      weights <- module$struct[, 3]
+    if(ncol(module$edges) >= 3) {
+      weights <- module$edges[, 3]
     } else {
-      weights <- rep(1, nrow(module$struct))
+      weights <- rep(1, nrow(module$edges))
     }
-    assoc_matrix[module$struct[, 1:2]] <- weights
-    assoc_matrix[module$struct[, 2:1]] <- weights
+    assoc_matrix[module$edges[, 1:2]] <- weights
+    assoc_matrix[module$edges[, 2:1]] <- weights
   }
   
   diag(assoc_matrix) <- 1
@@ -443,13 +443,13 @@ get_edge_weights_from_module <- function(module) {
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(module$struct)) {
+  if(is.null(module$edges)) {
     return(NULL)
   }
-  if(ncol(module$struct) >= 3) {
-    weights <- module$struct[, 3]
+  if(ncol(module$edges) >= 3) {
+    weights <- module$edges[, 3]
   } else {
-    weights <- rep(1, nrow(module$struct))
+    weights <- rep(1, nrow(module$edges))
   }
   return(weights)
 }
@@ -493,7 +493,7 @@ get_node_names.network_module <- function(module, ...) {
 #' @param ... Additional parameters are ignored.
 #' @return An updated 'network_module' object.
 #' @export
-update_module_with_random_struct <- function(module, 
+update_module_with_random_edges <- function(module, 
                                              lattice_neig = 1, 
                                              rewire_prob = 0.8, ...) {
   if(!(class(module) == "network_module")) 
@@ -507,7 +507,7 @@ update_module_with_random_struct <- function(module,
   n_nodes <- length(module$nodes)
   if(n_nodes < 2) 
     ArgumentCheck::addError(
-      msg = "Argument 'module' contains 1 or fewer nodes. Cannot create struct.",
+      msg = "Argument 'module' contains 1 or fewer nodes. Cannot create edges.",
       argcheck = checklist
     )
   
@@ -538,7 +538,7 @@ update_module_with_random_struct <- function(module,
                                   nei = lattice_neig, 
                                   p = rewire_prob)))
   
-  module <- set_module_struct(module, adjacency_matrix)
+  module <- set_module_edges(module, adjacency_matrix)
   
   return(module)
 }
@@ -564,10 +564,10 @@ update_module_with_random_weights <- function(module,
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(nrow(module$struct))) {
+  if(is.null(nrow(module$edges))) {
     warning("Argument 'module' contains no connections. Returning module unmodified.")
   }else {
-    weights <- rdist(nrow(module$struct))
+    weights <- rdist(nrow(module$edges))
     module <- set_module_weights(module, weights)
   }
 
@@ -615,7 +615,7 @@ rewire_connections_to_node_in_module <- function(node,
     adj_matrix[node_index, ] <- new_connections
     adj_matrix[, node_index] <- new_connections
     # Update module with new connections.
-    module <- set_module_struct(module, adj_matrix)
+    module <- set_module_edges(module, adj_matrix)
   } else {
     warning("'", deparse(substitute(node)), "' is not a node in 'module'.",
             "Returning module unmodified.")
@@ -636,11 +636,11 @@ remove_small_components_from_module <- function(module) {
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(module$struct)) {
+  if(is.null(module$edges)) {
     return(module)
   }
   
-  g <- igraph::graph_from_edgelist(module$struct, mode = "undirected")
+  g <- igraph::graph_from_edgelist(module$edges, mode = "undirected")
   comp <- igraph::components(g)
   if(comp$no > 1) {
     # If there are more than one component in the graph, subset onto the largest
@@ -687,11 +687,11 @@ print.network_module <- function(module, ...) {
            "\n",
            "# nodes: ", n_nodes, "\n")
   
-  n_edges <- ifelse(is.null(module$struct), 0, nrow(module$struct))
+  n_edges <- ifelse(is.null(module$edges), 0, nrow(module$edges))
   edge_message <- 
     paste0("# edges: ", n_edges, "\n")
   
-  weighted <- ifelse(is.null(module$struct), FALSE, ncol(module$struct) >= 3)
+  weighted <- ifelse(is.null(module$edges), FALSE, ncol(module$edges) >= 3)
   weight_message <- 
     ifelse(weighted,
            paste("Connection are weighted"),
@@ -712,10 +712,10 @@ is_weighted.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
-  if(is.null(module$struct)) {
+  if(is.null(module$edges)) {
     return(TRUE)
   }
-  if(ncol(module$struct) >= 3) {
+  if(ncol(module$edges) >= 3) {
     return(TRUE)
   } 
   return(FALSE)

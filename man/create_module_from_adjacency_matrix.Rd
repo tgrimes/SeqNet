@@ -22,5 +22,5 @@ A 'network_module' object.
 \description{
 The edges in the module will be set to the edges in the adjacency matrix. 
 The edges are undirected, and only the lower triangle of the
-matrix is considered. See ?set_module_struct for more details.
+matrix is considered. See ?set_module_edges for more details.
 }
