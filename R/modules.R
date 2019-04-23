@@ -564,7 +564,7 @@ update_module_with_random_weights <- function(module,
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  if(is.null(nrow(module$edges))) {
+  if(is.null(module$edges)) {
     warning("Argument 'module' contains no connections. Returning module unmodified.")
   }else {
     weights <- rdist(nrow(module$edges))

@@ -5,7 +5,7 @@
 \title{Visualize a network and its modules}
 \usage{
 plot_modules(network, compare_graph = NULL, as_subgraph = TRUE,
-  modules = NULL, node_scale = 5, edge_scale = 2,
+  modules = NULL, node_scale = 4, edge_scale = 1,
   node_color = adjustcolor("orange", 0.5),
   group_color = RColorBrewer::brewer.pal(9, "Set1"), coords = NULL,
   generate_layout = igraph::nicely, include_vertex_labels = TRUE,

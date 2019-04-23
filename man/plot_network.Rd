@@ -5,7 +5,7 @@
 \title{Visualize a network}
 \usage{
 plot_network(network, compare_graph = NULL, as_subgraph = FALSE,
-  node_scale = 5, edge_scale = 2, node_color = adjustcolor("orange",
+  node_scale = 4, edge_scale = 1, node_color = adjustcolor("orange",
   0.5), generate_layout = igraph::nicely, include_vertex_labels = TRUE,
   display_plot = TRUE, ...)
 }

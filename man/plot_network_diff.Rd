@@ -5,7 +5,7 @@
 \title{Plot the difference between two networks}
 \usage{
 plot_network_diff(network_1, network_2, compare_graph = NULL,
-  as_subgraph = FALSE, node_scale = 5, edge_scale = 2,
+  as_subgraph = FALSE, node_scale = 4, edge_scale = 1,
   node_color = adjustcolor("orange", 0.5), edge_colors = c("black",
   "wheat", "red"), generate_layout = igraph::nicely,
   include_vertex_labels = TRUE, ...)

@@ -4,13 +4,13 @@
 \alias{plot.network}
 \title{Plot function for 'network' object}
 \usage{
-\method{plot}{network}(network,
-  show_modules = ifelse(length(network$modules) > 1, TRUE, FALSE),
-  as_subgraph = ifelse(network$p > 100, TRUE, FALSE),
-  compare_graph = NULL, ...)
+\method{plot}{network}(network, compare_graph = NULL,
+  show_modules = FALSE, as_subgraph = FALSE, ...)
 }
 \arguments{
 \item{network}{A 'network' object.}
+
+\item{compare_graph}{The plot of another network to use for comparison.}
 
 \item{show_modules}{If TRUE, the modules will highlighted in the graph. 
 Defaults to FALSE if there is exactly one module in the network and to TRUE
@@ -20,8 +20,7 @@ otherwise.}
 Defaults to FALSE if there are 100 or fewer nodes in the network and to TRUE
 otherwise.}
 
-\item{compare_graph}{The plot of another network to use for comparison.
-#' @param ... Additional arguments passed to plot_modules() or plot_network().}
+\item{...}{Additional arguments passed to plot_modules() or plot_network().}
 }
 \value{
 Creates a plot of the module and returns a graph object. 

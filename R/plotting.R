@@ -28,7 +28,7 @@ setClass(Class = "network_plot")
 #' comparison between the old graph and the graph of `network`.
 #' @export
 plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
-                         node_scale = 5, edge_scale = 2,
+                         node_scale = 4, edge_scale = 1,
                          node_color = adjustcolor("orange", 0.5),
                          generate_layout = igraph::nicely,
                          include_vertex_labels = TRUE, 
@@ -228,7 +228,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' @export
 plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
                          modules = NULL,
-                         node_scale = 5, edge_scale = 2,
+                         node_scale = 4, edge_scale = 1,
                          node_color = adjustcolor("orange", 0.5),
                          group_color = RColorBrewer::brewer.pal(9, 'Set1'),
                          coords =  NULL, 
@@ -518,14 +518,14 @@ get_layout_for_modules <- function(g, modules) {
 #' This function plots the given network. If the result of another plot is 
 #' provided, this plot will be modified for easier comparison.
 #' @param network A 'network' object.
+#' @param compare_graph The plot of another network to use for comparison.
 #' @param show_modules If TRUE, the modules will highlighted in the graph. 
 #' Defaults to FALSE if there is exactly one module in the network and to TRUE
 #' otherwise.
 #' @param as_subgraph If TRUE, only nodes of positive degree will be shown. 
 #' Defaults to FALSE if there are 100 or fewer nodes in the network and to TRUE
 #' otherwise.
-#' @param compare_graph The plot of another network to use for comparison.
-#' #' @param ... Additional arguments passed to plot_modules() or plot_network().
+#' @param ... Additional arguments passed to plot_modules() or plot_network().
 #' @return Creates a plot of the module and returns a graph object. 
 #' See ?plot_modules and ?plot_network for details.
 #' @return A 'network_plot' object for the network. This object can be passed 
@@ -534,9 +534,9 @@ get_layout_for_modules <- function(g, modules) {
 #' graph and the new graph of `network`.
 #' @export
 plot.network <- function(network, 
-                         show_modules = ifelse(length(network$modules) > 1, TRUE, FALSE), 
-                         as_subgraph = ifelse(network$p > 100, TRUE, FALSE), 
                          compare_graph = NULL, 
+                         show_modules = FALSE, 
+                         as_subgraph = FALSE, 
                          ...) {
   if(show_modules) {
     plot_modules(network, 
@@ -657,7 +657,7 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' @export
 plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
                                as_subgraph = FALSE,
-                               node_scale = 5, edge_scale = 2, 
+                               node_scale = 4, edge_scale = 1, 
                                node_color = adjustcolor("orange", 0.5),
                                edge_colors = c("black", "wheat", "red"),
                                generate_layout = igraph::nicely,
