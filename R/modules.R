@@ -382,7 +382,7 @@ get_adjacency_matrix.network_module <- function(module, ...) {
 #' @param module A 'network_module' object; can be either weighted or unweighted.
 #' @return An association matrix with entry ij != 0 if node i and j are 
 #' connected, and 0 otherwise. If the module is unweighted, then nonzero entries 
-#' are set to 1. The diagonal of the association matrix is set to 1.
+#' are set to 1. The diagonal of the association matrix is set to 0.
 #' @export
 get_association_matrix.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
@@ -401,8 +401,6 @@ get_association_matrix.network_module <- function(module, ...) {
     assoc_matrix[module$edges[, 1:2]] <- weights
     assoc_matrix[module$edges[, 2:1]] <- weights
   }
-  
-  diag(assoc_matrix) <- 1
   
   # Set values near zero to exactly zero.
   assoc_matrix[abs(assoc_matrix) <= 10^-13] <- 0
@@ -424,7 +422,7 @@ get_sigma.network_module <- function(module, ...) {
   if(all(precision_matrix == 0)) {
     return(diag(1, nrow(precision_matrix)))
   }
-  diag(precision_matrix) <- -diag(precision_matrix)
+  diag(precision_matrix) <- 1
   sigma <- solve(precision_matrix)
   return(sigma)
 }
@@ -639,16 +637,16 @@ remove_small_components_from_module <- function(module) {
     return(module)
   }
   
-  g <- igraph::graph_from_edgelist(module$edges, mode = "undirected")
+  g <- igraph::graph_from_edgelist(module$edges, directed = FALSE)
   comp <- igraph::components(g)
   if(comp$no > 1) {
     # If there are more than one component in the graph, subset onto the largest
     # one. Use association matrix to preserve weights, if they are present.
     largest_component <- which(comp$csize == max(comp$csize))[1]
     keep_nodes <- which(comp$membership == largest_component)
-    assoc_matrix <- get_association_matrix(module)
-    assoc_matrix <- assoc_matrix[keep_nodes, keep_nodes]
-    module <- create_module_from_association_matrix(assoc_matrix)
+    adj_matrix <- get_adjacency_matrix(module)
+    adj_matrix <- adj_matrix[keep_nodes, keep_nodes]
+    module <- create_module_from_adjacency_matrix(adj_matrix)
   } 
   
   return(module)

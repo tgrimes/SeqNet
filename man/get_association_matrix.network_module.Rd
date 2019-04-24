@@ -12,7 +12,7 @@
 \value{
 An association matrix with entry ij != 0 if node i and j are 
 connected, and 0 otherwise. If the module is unweighted, then nonzero entries 
-are set to 1. The diagonal of the association matrix is set to 1.
+are set to 1. The diagonal of the association matrix is set to 0.
 }
 \description{
 Get association matrix of a module

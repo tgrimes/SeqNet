@@ -387,7 +387,7 @@ get_adjacency_matrix.network <- function(network, ...) {
 #' diagonal, and off-diagonal entries are interpreted as partial correlations.
 #' @param network A weighted 'network' object.
 #' @return An association matrix with entry ij != 0 if node i and j are 
-#' connected, and 0 otherwise. 
+#' connected, and 0 otherwise. The diagonal of the matrix is set to 0.
 #' @export
 get_association_matrix.network <- function(network, ...) {
   if(!(class(network) == "network")) 

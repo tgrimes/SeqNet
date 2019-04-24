@@ -11,7 +11,7 @@
 }
 \value{
 An association matrix with entry ij != 0 if node i and j are 
-connected, and 0 otherwise.
+connected, and 0 otherwise. The diagonal of the matrix is set to 0.
 }
 \description{
 The association matrix for a weighted network is recovered from its
