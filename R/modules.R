@@ -225,13 +225,12 @@ set_module_edges <- function(module, edges) {
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
   
-  p <- length(module$nodes)
   if(is.null(edges)) {
     module$edges <- NULL
   } else if(is.matrix(edges)) {
     # If a square matrix is provided, 
     if(nrow(edges) == ncol(edges)) {
-      if(nrow(edges) != p) {
+      if(nrow(edges) != length(module$nodes)) {
         stop(paste0("Argument 'edges' is a square matrix, but the number of", 
                     "columns does not match number of nodes in the module."))
       }
@@ -287,7 +286,7 @@ set_module_weights <- function(module, weights) {
     if(ncol(weights) != nrow(weights)) {
       stop("Argument 'weights' is not a square matrix.")
     }
-    if(ncol(weights) != p) {
+    if(ncol(weights) != length(module$nodes)) {
       stop(paste0("Argument 'weights' is a square matrix, but the number of", 
                   "columns does not match number of nodes in the module."))
     }
