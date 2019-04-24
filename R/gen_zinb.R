@@ -80,7 +80,7 @@ rzinb <- function (n, size, mu, rho) {
 #' through the inverse tranformation method. To generate realistic counts, either 
 #' a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
 #' @param n The number of samples to generate.
-#' @param network A 'network' object.
+#' @param network A 'network' object or list of 'network' objects.
 #' @param reference Either a vector or data.frame of counts from a reference
 #' gene expression profile. If a data.frame is provided, each column should
 #' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
@@ -89,7 +89,8 @@ rzinb <- function (n, size, mu, rho) {
 #' the size, mu, and rho parameters for a gene. 
 #' @param verbose Boolean indicator for message output.
 #' @return A list containing the generated counts and the ZINB parameters used
-#' to create them.
+#' to create them. If a list of networks were provided, then the results for
+#' each network are returned as a list.
 #' @export 
 gen_counts <- function(n, 
                        network,
@@ -100,12 +101,22 @@ gen_counts <- function(n,
     stop("Argument 'n' must be positive.")
   }
   
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
-  
-  # Obtain network size (number of nodes).
-  p <- network$p
+  single_network <- TRUE
+  if(!(class(network) == "network")) {
+    if(is.list(network) && all(sapply(network, function(nw) class(nw) == "network"))) {
+      p <- network[[1]]$p
+      if(length(network) > 1 && !all(sapply(network[-1], function(nw) nw$p == p))) {
+        stop(paste0("'", deparse(substitute(network)), 
+                    "' is a list but does not contain networks of the same size."))
+      }
+      single_network <- FALSE
+    } else {
+      stop(paste0("'", deparse(substitute(network)), 
+                  "' is not a 'network' object or list of 'network' objects."))
+    }
+  } else {
+    p <- network$p
+  }
   
   if(is.null(reference) && is.null(params)) {
     warning("Using kidney data as reference dataset.")
@@ -160,6 +171,12 @@ gen_counts <- function(n,
     }
     params <- params[, index]
   } 
+  
+  if(!single_network) {
+    return(lapply(network, function(nw) {
+        gen_counts(n, nw, params = params, verbose = verbose)
+      }))
+  }
   
   x <- gen_gaussian(n, network)$x
   x <- pnorm(x) # Obtain n by p matrix of quantiles.

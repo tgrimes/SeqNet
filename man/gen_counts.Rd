@@ -10,7 +10,7 @@ gen_counts(n, network, reference = NULL, params = NULL,
 \arguments{
 \item{n}{The number of samples to generate.}
 
-\item{network}{A 'network' object.}
+\item{network}{A 'network' object or list of 'network' objects.}
 
 \item{reference}{Either a vector or data.frame of counts from a reference
 gene expression profile. If a data.frame is provided, each column should
@@ -24,7 +24,8 @@ the size, mu, and rho parameters for a gene.}
 }
 \value{
 A list containing the generated counts and the ZINB parameters used
-to create them.
+to create them. If a list of networks were provided, then the results for
+each network are returned as a list.
 }
 \description{
 The count data are generated based on the gene-gene associations of an
