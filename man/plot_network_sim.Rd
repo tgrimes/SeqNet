@@ -4,7 +4,7 @@
 \alias{plot_network_sim}
 \title{Plot the similarity between two networks}
 \usage{
-plot_network_sim(network_1, network_2, compare_graph, ...)
+plot_network_sim(network_1, network_2, compare_graph = NULL, ...)
 }
 \arguments{
 \item{network_1}{A weighted 'network' or 'matrix' object.}

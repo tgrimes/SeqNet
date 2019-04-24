@@ -65,7 +65,6 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
   # Initialize plot and obtain an association matrix if the network is weighted.
   if(is_weighted(network)) {
     assoc_matrix <- abs(get_association_matrix(network))
-    diag(assoc_matrix) <- 0
     adj_matrix <- 1 * (assoc_matrix != 0)
     g <- igraph::graph_from_adjacency_matrix(assoc_matrix,
                                              mode = "undirected",
@@ -880,7 +879,7 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
 #' through the 'compare_edge' argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of 'network'.
 #' @export
-plot_network_sim <- function (network_1, network_2, compare_graph, ...) {
+plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
   ##################################
   # Check arguments for errors.
   
