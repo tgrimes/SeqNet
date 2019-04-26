@@ -237,6 +237,7 @@ set_module_edges <- function(module, edges) {
       # Set any nonzero values to 1. Use only the lower-triangle entries.
       edges[edges != 0] <- 1
       edges[upper.tri(edges)] <- 0
+      diag(edges) <- 0
       edges <- edges + t(edges)
       colnames(edges) <- 1:ncol(edges) # Use indicies in edge list (edges).
       edges <- igraph::graph.adjacency(edges, mode = "undirected")
