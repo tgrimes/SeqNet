@@ -179,6 +179,9 @@ create_network_from_association_matrix <- function(association_matrix,
                                                    standardize = TRUE,
                                                    ...) {
   p <- ncol(association_matrix)
+  if(all(diag(association_matrix) == 0)) {
+    diag(association_matrix) <- 1
+  }
   
   ##################################
   # Check arguments for errors.
