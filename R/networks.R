@@ -220,8 +220,10 @@ random_network <- function(p,
   check_positive_integer(p, checklist)
   check_in_closed_interval(p, checklist, 10, 20000)
   
-  # Check 'n_modules'.
-  check_positive_integer(n_modules, checklist)
+  # Check 'n_modules', if it is not NULL.
+  if(!is.null(n_modules)) {
+    check_positive_integer(n_modules, checklist)
+  }
   
   report_checks(checklist)
   ##################################
