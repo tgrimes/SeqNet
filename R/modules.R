@@ -519,15 +519,27 @@ random_module_structure <- function(size,
       argcheck = checklist
     )
   
-  # Check 'lattice_neig'.
-  if(any(p_rewire < 0) || any(p_rewire > 1)) 
+  if(!is.null(neig_size_fn)) {
+    neig_size <- neig_size_fn(size)
+  }
+  
+  if(neig_size < 0) 
     ArgumentCheck::addError(
-      msg = "Argument 'p_rewire' must contain values between 0 and 1.",
+      msg = "'neig_size' must be positive..",
       argcheck = checklist
     )
-  if(any(p_snip < 0) || any(p_snip > 1)) 
+  
+  p_rewire <- rep(p_rewire[1], neig_size)
+  p_snip <- rep(p_snip[1], neig_size)
+  
+  if(p_rewire[1] < 0 || p_rewire[1] > 1) 
     ArgumentCheck::addError(
-      msg = "Argument 'p_snip' must contain values between 0 and 1.",
+      msg = "Argument 'p_rewire' must be between 0 and 1.",
+      argcheck = checklist
+    )
+  if(p_snip[1] < 0 || p_snip[1] > 1) 
+    ArgumentCheck::addError(
+      msg = "Argument 'p_snip' must be between 0 and 1.",
       argcheck = checklist
     )
   
@@ -535,9 +547,7 @@ random_module_structure <- function(size,
   ##################################
   
   nodes <- 1:size
-  if(!is.null(neig_size_fn)) {
-    neig_size <- neig_size_fn()
-  }
+  
   adj <- as.matrix(igraph::as_adjacency_matrix(
     igraph::make_lattice(length = size, dim = 1, nei = neig_size,
                          circular = TRUE)),
