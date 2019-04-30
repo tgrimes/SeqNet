@@ -4,15 +4,13 @@
 \alias{create_network_from_modules}
 \title{Create a network object.}
 \usage{
-create_network_from_modules(p, modules, node_names = as.character(1:p),
-  ...)
+create_network_from_modules(p, module_list,
+  node_names = as.character(1:p), ...)
 }
 \arguments{
 \item{p}{The number of nodes in the graph}
 
-\item{modules}{A named list of network_module objects, or a list 
-of numeric vectors. If numeric vectors are provided, modules
-will be created using these vectors to specify the nodes in each module.}
+\item{module_list}{A named list of 'network_module' objects.}
 
 \item{node_names}{(optional) Vector of strings providing names for each node
 in the graph. Default names are "1", "2", ..., "p".}

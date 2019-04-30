@@ -4,7 +4,7 @@
 \alias{random_module}
 \title{Create a random module}
 \usage{
-random_module(nodes, module_name = NULL, add_weights = FALSE, ...)
+random_module(nodes, module_name = NULL, ...)
 }
 \arguments{
 \item{nodes}{A numeric vector indicating which nodes in the network 
@@ -12,9 +12,6 @@ are contained in this module.}
 
 \item{module_name}{(optional) Character string specifying the name of the 
 module. If NULL, the module will be unnamed.}
-
-\item{add_weights}{If TRUE, weights will be generated for the module 
-connections.}
 
 \item{...}{Additional arguments passed to 'update_module_with_random_edges()' 
 and 'update_module_with_random_weights()'.}

@@ -4,11 +4,12 @@
 \alias{update_module_with_random_edges}
 \title{Generate small-world network structure for module}
 \usage{
-update_module_with_random_edges(module, lattice_neig = 1,
-  rewire_prob = 0.8, ...)
+update_module_with_random_edges(module, ...)
 }
 \arguments{
 \item{module}{The network_module object to modify.}
+
+\item{...}{Additional parameters are ignored.}
 
 \item{lattice_neig}{A positive integer used for generating small-world 
 networks for modules. If the number of nodes, p, in the module is 
@@ -24,8 +25,6 @@ increased or sparsity will need to be lowered.}
 \item{rewire_prob}{Used for generating small-world networks for modules; 
 specifies the rewiring probability of each initial edges. At 0 the graph is
 a lattice ring, and at 1 it is a random graph.}
-
-\item{...}{Additional parameters are ignored.}
 }
 \value{
 An updated 'network_module' object.

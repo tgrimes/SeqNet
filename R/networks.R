@@ -35,9 +35,7 @@ create_empty_network <- function(p) {
 #' are randomly constructed by generating a small-world graph using the Watts-Strogatz
 #' method (implemented through igraph::watts.strogatz.game). 
 #' @param p The number of nodes in the graph
-#' @param modules A named list of network_module objects, or a list 
-#' of numeric vectors. If numeric vectors are provided, modules
-#' will be created using these vectors to specify the nodes in each module. 
+#' @param module_list A named list of 'network_module' objects.
 #' @param node_names (optional) Vector of strings providing names for each node
 #' in the graph. Default names are "1", "2", ..., "p".
 #' @param ... Additional arguments passed to random_module(); only
@@ -45,8 +43,8 @@ create_empty_network <- function(p) {
 #' @return A network object.
 #' @export 
 create_network_from_modules <- function(p, 
-                                        modules,
-                                        node_names = as.character(1:p),
+                                        module_list, 
+                                        node_names = as.character(1:p), 
                                         ...) {
   ##################################
   # Check arguments for errors.
@@ -55,60 +53,31 @@ create_network_from_modules <- function(p,
   # Check 'p'.
   check_positive_integer(p, checklist)
   
-  # Check 'modules'.
-  if(is.null(modules)) {
+  # Check 'module_list'.
+  if(is.null(module_list)) {
     ArgumentCheck::addError(
-      msg = paste("Argument 'modules' must be a list of 'network_module'",
-                  "objects or numeric vectors, or a single integer value",
-                  "indicating the number of modules to generate."),
+      msg = paste("Argument 'module_list' must be a list of 'network_module'."),
       argcheck = checklist
     )
-  } else if(class(modules) == "list") {
+  } else if(class(module_list) == "list") {
     # Check each element in the list 'modules'.
-    if(!all(sapply(modules, function(m) class(m) == "network_module")) &&
-       !all(sapply(modules, is.numeric))) 
+    if(!all(sapply(module_list, function(m) class(m) == "network_module"))) 
       ArgumentCheck::addError(
-        msg = paste("Argument 'modules' must be a list of 'network_module'",
-                    "objects or numeric vectors, or a single integer value",
-                    "indicating the number of modules to generate."),
+        msg = paste("Argument 'module_list' must be a list of 'network_module'."),
         argcheck = checklist
       )
-  } else if(class(modules) == "network_module" || 
-            (is.numeric(modules) && length(modules) > 1)) {
-    # If 'modules' is provided but is not a list, correct without warning.
-    modules <- list(modules)
-  } else if(is.numeric(modules) && (modules %% 1 == 0)) {
-    # If a single integer value is provided, generate random modules.
-    modules <- populate_modules_for_network(modules, 
-                                            p,
-                                            ...)
+  } else if(class(module_list) == "network_module") {
+    # If 'module_list' is provided but is not a list, correct without warning.
+    module_list <- list(module_list)
   } else {
     ArgumentCheck::addError(
-      msg = paste("Argument 'modules' must be a list of 'network_module'",
-                  "objects or numeric vectors, or a single integer value",
-                  "indicating the number of modules to generate."),
+      msg = paste("Argument 'module_list' must be a list of 'network_module'."),
       argcheck = checklist
     )
   }
   
   report_checks(checklist)
   ##################################
-  
-  # Set up list of modules for the network.
-  if(!is.null(modules) && all(sapply(modules, is.numeric))) {
-    n_modules <- length(modules)
-    module_list <- vector("list", n_modules)
-    module_names <- names(modules)
-    for(i in 1:n_modules) {
-      module_list[[i]] <- random_module(nodes = modules[[i]],
-                                        name = module_names[i],
-                                        add_weights = FALSE,
-                                        ...)
-    }
-    names(module_list) <- module_names
-  } else {
-    module_list <- modules
-  }
   
   network <- create_empty_network(p)
   network <- add_modules_to_network(network, module_list)
@@ -240,12 +209,8 @@ create_network_from_association_matrix <- function(association_matrix,
 #' @return An unweighted network object.
 #' @export 
 random_network <- function(p,
-                           n_modules = ceiling(p * 0.05),
-                           min_module_size = 10,
-                           max_module_size = Inf,
-                           avg_module_size = 25,
-                           sd_module_size = 20,
-                           repeated_module_factor = 0.2,
+                           n_modules = NULL,
+                           consistent_connections = TRUE,
                            ...) {
   ##################################
   # Check arguments for errors.
@@ -261,18 +226,18 @@ random_network <- function(p,
   report_checks(checklist)
   ##################################
   
-  nodes_list <- populate_modules_for_network(n_modules, 
-                                             p,
-                                             min_module_size,
-                                             max_module_size,
-                                             avg_module_size,
-                                             sd_module_size, 
-                                             repeated_module_factor)
+  module_list <- create_modules_for_network(n_modules, p, ...)
+  network <- create_network_from_modules(p, module_list = module_list)
   
-  # Create the modules. 
-  module_list <- lapply(nodes_list, random_module, add_weights = FALSE, ...)
-  network <- create_network_from_modules(p, modules = module_list)
-  network <- trim_modules(network)
+  # If two genes are connected in one module, make them connected in all modules.
+  if(consistent_connections) {
+    adj <- get_adjacency_matrix(network)
+    network <- 
+      create_network_from_modules(p, module_list = lapply(network$modules, 
+                                                          function(m) {
+                                                            create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], m$nodes)
+                                                          }))
+  }
   
   return(network)
 }
@@ -293,45 +258,105 @@ random_network <- function(p,
 #' this factor.
 #' @return A list containing the indicies for genes contained in each module.
 #' @export 
-populate_modules_for_network <- function(n_modules, 
-                                         p,
-                                         min_module_size = 10,
-                                         max_module_size = Inf,
-                                         avg_module_size = 25,
-                                         sd_module_size = 10,
-                                         repeated_module_factor = 0.2,
-                                         ...) {
-  if(repeated_module_factor < 0 || repeated_module_factor > 1)
-    stop("Argument 'repeated_module_factor' must be between 0 and 1.")
-
+create_modules_for_network <- function(n_modules, 
+                                       p, 
+                                       avg_module_size = 12, 
+                                       sd_module_size = 4,
+                                       min_module_size = 10, 
+                                       max_module_size = 15, 
+                                       selection_weight = 100,
+                                       ...) {
+  ############################################################
+  # Check parameters for generating module size.
+  ############################################################
+  if(is.null(avg_module_size)) {
+    avg_module_size <- 15
+  }
+  if(is.null(sd_module_size)) {
+    sd_module_size <- avg_module_size / 2
+  }
+  
+  if(avg_module_size <= min_module_size) {
+    avg_module_size <- 1.1 * min_module_size
+    warning(paste("Argument min_module_size should be smaller than avg_module_size.",
+                  "Setting avg_module_size to 1.1 * min_module_size =", avg_module_size))
+  }
+  
   mu = (avg_module_size - min_module_size)
-  size <- mu^2 / (sd_module_size^2 - mu)
+  if((sd_module_size^2 - mu) <= 0) {
+    sd_module_size <- sqrt(mu) * 1.01
+    warning(paste("Argument 'sd_module_size' is too small.",
+                  "Setting to 1.01 * (avg_module_size - min_module_size) =", sd_module_size))
+  }
+  size <- mu^2/(sd_module_size^2 - mu)
+  max_module_size <- min(p, max_module_size)
   
-  # Generate random size for each module.
-  module_sizes <- min_module_size + 
-    rnbinom(n_modules, size = size, mu = mu)
-  # Reduce any sizes that are above 'max_module_size'.
-  sizes_above_max <- which(module_sizes > max_module_size)
-  if(length(sizes_above_max) > 0) {
-    module_sizes[sizes_above_max] <- max_module_size
+  ############################################################
+  # Generate module sizes.
+  ############################################################
+  if(is.null(n_modules)) {
+    # Generate extra modules sizes. Should not need more than p.
+    module_sizes <- min_module_size + rnbinom(p, size = size, 
+                                              mu = mu)
+  } else {
+    module_sizes <- min_module_size + rnbinom(n_modules, size = size, 
+                                              mu = mu)
+  }
+  module_sizes <- sapply(module_sizes, min, max_module_size)
+  
+  ############################################################
+  # Initialize nodes in the network.
+  ############################################################
+  if(is.null(n_modules)) {
+    # Generate extra modules sizes. Should not need more than p.
+    module_list <- vector("list", p)
+  } else {
+    module_list <- vector("list", n_modules)
   }
   
-  # Sample nodes to populate each module.
   all_nodes <- 1:p
-  prob <- rep(1 / p, p)
-  nodes_list <- vector("list", n_modules) 
-  nodes_selected <- NULL
-  for(i in 1:n_modules) {
-    m <- module_sizes[i]
-    nodes <- sort(sample(all_nodes, min(m, p), prob = prob))
-    nodes_selected <- union(nodes, nodes_selected)
-    prob <- rep(1 / p, p)
-    prob[nodes_selected] <- prob[nodes_selected] * repeated_module_factor
-    prob <- prob / sum(prob)
-    nodes_list[[i]] <- nodes
+  nodes_available <- min(2 * module_sizes[1], p)
+  prob <- rep(1/p, p) # Initial probability of selecting a node for a module.
+  deg <- rep(0, p)
+  node_unselected <- rep(TRUE, p)
+  need_more_modules <- TRUE
+  i <- 0
+  while(need_more_modules && i < p) {
+    i <- i + 1
+    m <- module_sizes[i] 
+    index_nodes_available <- 1:nodes_available
+    index_nodes_selected <- which(!node_unselected[index_nodes_available])
+    nodes <- rep(0, m)
+    if(i > 1) {
+      link_node <- sample(index_nodes_selected, 1, 
+                          prob = prob[index_nodes_selected])
+      nodes[-m] <- sample(index_nodes_available[-link_node], m - 1, 
+                          prob = prob[index_nodes_available][-link_node])
+      nodes[m] <- link_node
+    } else {
+      nodes <- sample(index_nodes_available, m, prob = prob[index_nodes_available])
+    }
+    nodes <- sort(nodes)
+    module_list[[i]] <- random_module(nodes, 
+                                      deg_ex = deg[nodes], 
+                                      ...)
+    node_unselected[nodes] <- FALSE
+    
+    # Update degree distribution
+    deg[nodes] <- deg[nodes] + apply(get_adjacency_matrix(module_list[[i]]), 2, sum)
+    prob[!node_unselected] <- 1 / p * ecdf(deg[!node_unselected])(deg[!node_unselected])^selection_weight
+    
+    if(is.null(n_modules)) {
+      need_more_modules <- any(node_unselected)
+    } else {
+      need_more_modules <- (i < n_modules)
+    }
+    nodes_available <- min(nodes_available + module_sizes[i], p)
   }
   
-  return(nodes_list)
+  # i = n_modules
+  module_list <- module_list[1:i] # Remove any extra nodes.
+  return(module_list)
 }
 
 ###########################################################################

@@ -167,8 +167,6 @@ create_module_from_association_matrix <- function(association_matrix,
 #' are contained in this module. 
 #' @param module_name (optional) Character string specifying the name of the 
 #' module. If NULL, the module will be unnamed.
-#' @param add_weights If TRUE, weights will be generated for the module 
-#' connections.
 #' @param ... Additional arguments passed to 'update_module_with_random_edges()' 
 #' and 'update_module_with_random_weights()'.
 #' @details See ?igraph::watts.strogatz.game for details on generating
@@ -177,7 +175,6 @@ create_module_from_association_matrix <- function(association_matrix,
 #' @export
 random_module <- function(nodes, 
                           module_name = NULL,
-                          add_weights = FALSE,
                           ...) {
   ##################################
   # Check arguments for errors.
@@ -192,9 +189,6 @@ random_module <- function(nodes,
   module <- create_empty_module(nodes)
   module <- set_module_name(module, module_name)
   module <- update_module_with_random_edges(module, ...)
-  if(add_weights) {
-    module <- update_module_with_random_weights(module, ...)
-  }
   
   return(module)
 }
@@ -424,6 +418,10 @@ get_sigma.network_module <- function(module, ...) {
     return(diag(1, nrow(precision_matrix)))
   }
   diag(precision_matrix) <- 1
+  if(any(eigen(precision_matrix)$values < 0)) {
+    warning(paste("The edge weights in the module do not correspond to a", 
+                  "positive definite precision matrix."))
+  }
   sigma <- solve(precision_matrix)
   return(sigma)
 }
@@ -492,55 +490,176 @@ get_node_names.network_module <- function(module, ...) {
 #' @return An updated 'network_module' object.
 #' @export
 update_module_with_random_edges <- function(module, 
-                                             lattice_neig = 1, 
-                                             rewire_prob = 0.8, ...) {
+                                            ...) {
   if(!(class(module) == "network_module")) 
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
+  
+  adjacency_matrix <- random_module_structure(length(module$nodes), ...)
+  adjacency_matrix <- connect_module_structure(adjacency_matrix, ...)
+  module <- set_module_edges(module, adjacency_matrix)
+  return(module)
+}
+
+random_module_structure <- function(size, 
+                                    p_rewire = rep(0.5, 3),
+                                    p_snip = rep(0.5, 3),
+                                    deg_ex = rep(0, size),
+                                    neig_size = 3,
+                                    neig_size_fn = NULL,
+                                    rewire_weight = 100,
+                                    ...) {
   ##################################
   # Check arguments for errors.
   checklist <- new_checklist()
   
-  # Check 'module', if provided.
-  n_nodes <- length(module$nodes)
-  if(n_nodes < 2) 
+  if(rewire_weight < 0) 
     ArgumentCheck::addError(
-      msg = "Argument 'module' contains 1 or fewer nodes. Cannot create edges.",
+      msg = "Argument 'rewire_weight' must be positive.",
       argcheck = checklist
     )
   
   # Check 'lattice_neig'.
-  if(lattice_neig <= 0) 
+  if(any(p_rewire < 0) || any(p_rewire > 1)) 
     ArgumentCheck::addError(
-      msg = "Argument 'lattice_neig' must be greater than zero.",
+      msg = "Argument 'p_rewire' must contain values between 0 and 1.",
       argcheck = checklist
     )
-  if(lattice_neig >= n_nodes) 
+  if(any(p_snip < 0) || any(p_snip > 1)) 
     ArgumentCheck::addError(
-      msg = paste0("Argument 'lattice_neig' must be less than the number",
-                   " of nodes in the module (= ", n_nodes, ")."),
+      msg = "Argument 'p_snip' must contain values between 0 and 1.",
       argcheck = checklist
     )
-  
-  # Check 'reqire_prob'.
-  check_in_closed_interval(rewire_prob, checklist, 0, 1)
   
   report_checks(checklist)
   ##################################
   
-  p <- length(module$nodes)
-  adjacency_matrix <- as.matrix(
-    igraph::get.adjacency(
-      igraph::watts.strogatz.game(dim = 1, 
-                                  size = p, 
-                                  nei = lattice_neig, 
-                                  p = rewire_prob)))
+  nodes <- 1:size
+  if(!is.null(neig_size_fn)) {
+    neig_size <- neig_size_fn()
+  }
+  adj <- as.matrix(igraph::as_adjacency_matrix(
+    igraph::make_lattice(length = size, dim = 1, nei = neig_size,
+                         circular = TRUE)),
+    size, size)
   
-  module <- set_module_edges(module, adjacency_matrix)
+  deg <- apply(adj, 2, sum)
+  for(i in sample(nodes)) {
+    neigs <- which(adj[, i] == 1) # Find neighbours of node i.
+    
+    # Reire to random hub with probability equal to p_rewire.
+    if(length(p_rewire) > 0) {
+      moves <- runif(length(p_rewire))
+      for(k in 1:length(p_rewire)) {
+        # If degree of node i is empty or full, stop.
+        if(deg[i] == 0 || deg[i] == (size - 1)) {
+          break
+        }
+        if((moves[k] < p_rewire[k])) {
+          # Connect to new neighbor.
+          candidates <- nodes[-c(i, neigs)]
+          if(length(candidates) > 1) {
+            # Probabilities here help the hub nodes accumulate edges, and it
+            # decreases the average path length (compared to uniform probability).
+            new_neig <- sample(candidates, 1,
+                               prob = ecdf(deg[candidates] + deg_ex[candidates])(deg[candidates] + deg_ex[candidates])^rewire_weight + 0.001)
+          } else {
+            new_neig <- candidates
+          }
+          adj[new_neig, i] <- 1
+          adj[i, new_neig] <- 1
+          deg[c(i, new_neig)] <- deg[c(i, new_neig)] + 1
+          # Remove connection from old neighbour.
+          if(length(neigs) == 1) {
+            old_neig <- neigs
+          } else {
+            old_neig <- sample(neigs, 1, 
+                               prob = 1 - ecdf(deg[neigs] + deg_ex[neigs])(deg[neigs] + deg_ex[neigs])^rewire_weight + 0.001)
+          }
+          adj[old_neig, i] <- 0
+          adj[i, old_neig] <- 0
+          deg[c(i, old_neig)] <- deg[c(i, old_neig)] - 1
+          
+          neigs[which(neigs == old_neig)] <- new_neig # Update neighbors
+        }
+      }
+    }
+    
+    # Remove connection with probability equal to p_snip.
+    if(length(p_snip) > 0 && (length(neigs) >= 2)) {
+      moves <- runif(length(p_snip))
+      for(k in 1:length(p_snip)) {
+        if(length(neigs) == 0) {
+          break
+        }
+        if(moves[k] < p_snip[k]) {
+          # Remove connection from old neighbour, if one exists.
+          # Prefer to keep nodes to small-degree nodes or hub nodes.
+          if(length(neigs) == 1) {
+            old_neig <- neigs
+          } else {
+            old_neig <- sample(neigs, 1, 
+                               prob = 1 - ecdf(deg[neigs] + deg_ex[neigs])(deg[neigs] + deg_ex[neigs])^rewire_weight + 0.001)
+          }
+          adj[old_neig, i] <- 0
+          adj[i, old_neig] <- 0
+          deg[c(i, old_neig)] <- deg[c(i, old_neig)] - 1
+          neigs <- neigs[-which(neigs == old_neig)] # Update neighbors.
+        }
+      }
+    }
+  }
   
-  return(module)
+  if(all(adj == 0)) {
+    adj <- random_module_structure(size, p_rewire, p_snip, deg_ex, 
+                                   neig_size, neig_size_fn, rewire_weight, ...)
+  }
+  
+  return(adj)
 }
 
+connect_module_structure <- function(adj,
+                                     deg_ex = NULL,
+                                     ...) {
+  deg <- apply(adj, 2, sum)
+  nodes <- 1:length(deg)
+  if(is.null(deg_ex)) {
+    deg_ex <- rep(0, ncol(adj))
+  }
+  
+  # If there multiple components, combine into one.
+  components <- igraph::components(
+    igraph::graph_from_adjacency_matrix(adj, mode = "undirected"))
+  if(components$no > 1) {
+    main_component <- which(components$membership == 1)
+    for(i in 2:components$no) {
+      sub_component <- which(components$membership == i)
+      # Choose a representative for the subcomponent.
+      if(length(sub_component) == 1) {
+        index_rep <- sub_component
+      } else {
+        index_rep <- sample(sub_component, 1) 
+      }
+      # Choose a representative for the main component.
+      if(length(main_component) == 1) {
+        index_main <- main_component
+      } else {
+        index_main <- sample(main_component, 1, 
+                             prob = ecdf(deg[main_component] + 
+                                           deg_ex[main_component])(deg[main_component] + 
+                                                                     deg_ex[main_component])^10 + 0.001)
+      }
+      
+      adj[index_main, index_rep] <- 1
+      adj[index_rep, index_main] <- 1
+      deg[c(index_rep, index_main)] <- deg[c(index_rep, index_main)] + 1
+      
+      main_component <- union(main_component, sub_component)
+    }
+  }
+  
+  return(adj)
+}
 
 #' Generate small-world network structure for module
 #' 
