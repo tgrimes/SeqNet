@@ -127,7 +127,7 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
                                                 ...)
   
   network <- create_network_from_modules(p, 
-                                         modules = list(module), 
+                                         module_list = list(module), 
                                          node_names = node_names)
   
   return(network)
@@ -180,7 +180,7 @@ create_network_from_association_matrix <- function(association_matrix,
                                                   ...)
   
   network <- create_network_from_modules(p, 
-                                         modules = list(module), 
+                                         module_list = list(module), 
                                          node_names = node_names)
   
   return(network)
@@ -1077,20 +1077,33 @@ get_network_characteristics <- function(network) {
   
   # Calculate the average clustering coefficient C(K) for nodes with each degree K.
   ind <- which(deg > 1)
-  clustco <- igraph::transitivity(graph, type = "local")[ind]
-  deg_sub <- deg[ind]
-  clus <- rep(NA, max(deg_sub))
-  for(i in 2:(max(deg_sub))) {
-    coefs <- clustco[which(deg_sub == i)]
-    if(length(coefs) > 0) {
-      clus[i] <- mean(coefs)
+  if(length(ind) == 0) {
+    # Store properties of K in a data.frame.
+    df <- data.frame(K = as.numeric(names(tab)), 
+                     P_K = as.numeric(tab / sum(tab)),
+                     C_K = NA)
+    
+  } else {
+    clustco <- igraph::transitivity(graph, type = "local")[ind]
+    deg_sub <- deg[ind]
+    clus <- rep(NA, max(deg_sub))
+    for(i in 2:(max(deg_sub))) {
+      coefs <- clustco[which(deg_sub == i)]
+      if(length(coefs) > 0) {
+        clus[i] <- mean(coefs)
+      }
     }
+    
+    # Store properties of K in a data.frame.
+    C_K <- c(NA, clus[which(!is.na(clus))])
+    if(length(tab) == 1) {
+      # If all nodes have same degree, then we do not need to prepend with NA.
+      C_K <- clus[which(!is.na(clus))]
+    }
+    df <- data.frame(K = as.numeric(names(tab)), 
+                     P_K = as.numeric(tab / sum(tab)),
+                     C_K = C_K)
   }
-  
-  # Store properties of K in a data.frame.
-  df <- data.frame(K = as.numeric(names(tab)), 
-                   P_K =  as.numeric(tab / sum(tab)),
-                   C_K = c(NA, clus[which(!is.na(clus))]))
   
   return(list(p = ncol(adj),
               n_edges = sum(adj[lower.tri(adj)]),

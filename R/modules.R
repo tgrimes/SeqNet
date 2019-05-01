@@ -228,9 +228,14 @@ set_module_edges <- function(module, edges) {
   } else if(is.matrix(edges)) {
     # If a square matrix is provided, 
     if(nrow(edges) == ncol(edges)) {
+      # Then edges is interpreted as an association matrix.
       if(nrow(edges) != length(module$nodes)) {
         stop(paste0("Argument 'edges' is a square matrix, but the number of", 
                     "columns does not match number of nodes in the module."))
+      }
+      # If there are no edges, then return the module unmodified.
+      if(all(edges[lower.tri(edges)] == 0)) {
+        return(module)
       }
       # Set any nonzero values to 1. Use only the lower-triangle entries.
       edges[edges != 0] <- 1

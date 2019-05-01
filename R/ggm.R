@@ -195,9 +195,12 @@ gen_partial_correlations <- function(...,
     })
     
     for(j in 1:n_networks) {
-      network_list[[j]]$modules[[i]] <- 
-        set_module_weights(network_list[[j]]$modules[[i]],
-                           pcor_matrix_list[[j]])
+      # If the module contains edges, then set the edge weights.
+      if(!is.null(network_list[[j]]$modules[[i]]$edges)) {
+        network_list[[j]]$modules[[i]] <- 
+          set_module_weights(network_list[[j]]$modules[[i]],
+                             pcor_matrix_list[[j]])
+      }
     }
   }
   
