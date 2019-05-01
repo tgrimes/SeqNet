@@ -13,5 +13,6 @@
 Returns the matrix with diagonal elements set to zero.
 }
 \description{
-The association matrix is constructed from all modules in a network.
+All off-diagonal values in the matrix are left unchanged. The diagonal
+is set to zero.
 }

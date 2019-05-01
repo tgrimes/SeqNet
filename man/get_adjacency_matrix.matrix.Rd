@@ -14,5 +14,6 @@ An adjacency matrix with entry ij = 1 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-The adjacency matrix is constructed from all modules in a network.
+All off-diagonal entries that are near zero are set to zero. All remaining 
+non-zero values are set to 1, and the diagonal is set to zero.
 }

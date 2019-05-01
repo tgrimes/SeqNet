@@ -367,57 +367,62 @@ create_modules_for_network <- function(n_modules,
 #
 ###########################################################################
 
-#' Get adjacency matrix of a network
+#' Get the adjacency matrix of a network
 #' 
-#' The adjacency matrix is constructed from all modules in the network
-#' and summarizes the connectivity among nodes. 
+#' The adjacency matrix indicates direct connections in the network. The ij'th
+#' entry in the adjacency matrix is 1 if gene i and j are connected in any 
+#' module and is 0 otherwise.
 #' @param network A 'network' object; can be either weighted or unweighted.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
-#' connected, and 0 otherwise. The diagonal entries are all zero.
+#' connected, and 0 otherwise. The diagonal entries are all zero. 
+#' @note Note that the connections in an adjacency matrix and association matrix
+#' will likely differ. The adjacency matrix only considers direct connections in 
+#' the network, whereas the association matrix takes into account the fact that 
+#' there are overlapping modules which can create conditional dependencies
+#' between two genes in seperate modules (i.e. genes that don't have a direct
+#' connection in the graph).
 #' @export
 get_adjacency_matrix.network <- function(network, ...) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  if(is_weighted(network)) {
-    adj_matrix <- get_association_matrix(network)
-    adj_matrix <- 1 * (adj_matrix != 0)
-  } else {
-    p <- network$p
-    adj_matrix <- matrix(0, nrow = p, ncol = p) # Adjacency matrix.
-    n_modules <- length(network$modules)
-    if(n_modules > 0) {
-      for(i in 1:n_modules) {
-        module_index <- network$modules[[i]]$nodes
-        module_matrix <- get_adjacency_matrix.network_module(network$modules[[i]])
-        adj_matrix[module_index, module_index] <- 
-          adj_matrix[module_index, module_index] + module_matrix
-      }
+  p <- network$p
+  adj_matrix <- matrix(0, nrow = p, ncol = p) # Adjacency matrix.
+  n_modules <- length(network$modules)
+  if(n_modules > 0) {
+    for(i in 1:n_modules) {
+      module_index <- network$modules[[i]]$nodes
+      module_matrix <- get_adjacency_matrix.network_module(network$modules[[i]])
+      adj_matrix[module_index, module_index] <- 
+        adj_matrix[module_index, module_index] + module_matrix
     }
-    
-    adj_matrix <- 1 * (adj_matrix > 0) # Reduce counts to 1 or 0.
   }
+  
+  adj_matrix <- 1 * (adj_matrix > 0) # Reduce counts to 1 or 0.
   
   
   colnames(adj_matrix) <- network$node_names
   
   return(adj_matrix)
 }
-# setMethod(
-#   f = "get_adjacency_matrix",
-#   signature = "network",
-#   definition = get_adjacency_matrix.network
-# )
+
 
 #' Get the association matrix of a network
 #' 
 #' The association matrix for a weighted network is recovered from its
-#' covariance structure. The association matrix will contain ones along the
-#' diagonal, and off-diagonal entries are interpreted as partial correlations.
+#' covariance structure (see ?get_sigma.network). The off-diagonal entries are 
+#' interpreted as partial correlations, and the diagonal entries are set to zero.
 #' @param network A weighted 'network' object.
-#' @return An association matrix with entry ij != 0 if node i and j are 
-#' connected, and 0 otherwise. The diagonal of the matrix is set to 0.
+#' @return An association matrix with entry ij != 0 if node i and j have a nonzero
+#' conditional linear association (in the Gaussian graphical model), and 0 
+#' otherwise. The diagonal entries are all zero.
+#' @note Note that the connections in an adjacency matrix and association matrix
+#' will likely differ. The adjacency matrix only considers direct connections in 
+#' the network, whereas the association matrix takes into account the fact that 
+#' there are overlapping modules which can create conditional dependencies
+#' between two genes in seperate modules (i.e. genes that don't have a direct
+#' connection in the graph).
 #' @export
 get_association_matrix.network <- function(network, ...) {
   if(!(class(network) == "network")) 
@@ -425,18 +430,13 @@ get_association_matrix.network <- function(network, ...) {
                 "' is not a 'network' object."))
   
   if(!all(sapply(network$modules, is_weighted))) 
-    stop("Network modules must all have weighted connections.")
-  
-  if(network$p > 5000)
-    stop("The network is too large.")
+    stop("Network modules must be weighted.")
   
   sigma <- get_sigma(network)
   assoc_matrix <- -solve(sigma)
   diag(assoc_matrix) <- -diag(assoc_matrix)
   assoc_matrix <- cov2cor(assoc_matrix)
   
-  # Set values near zero to exactly zero.
-  assoc_matrix[abs(assoc_matrix) <= 10^-13] <- 0
   diag(assoc_matrix) <- 0
   
   colnames(assoc_matrix) <- network$node_names
@@ -459,7 +459,7 @@ get_sigma.network <- function(network, ...) {
                 "' is not a 'network' object."))
   
   if(!all(sapply(network$modules, is_weighted))) 
-    stop("Network modules must all have weighted connections.")
+    stop("Network modules must be weighted.")
   
   m <- rep(0, network$p)
   sigma <- diag(0, network$p)
@@ -585,51 +585,6 @@ get_degree_distribution <- function(network) {
   return(degree)
 }
 
-#' Get a list of pathways in the network
-#' 
-#' Pathways refer to hubs, modules, and cliques. The pathways in the 
-#' network may overlap, meaning a node can be a member of multiple pathways. 
-#' This function identifies which of the nodes belong to each pathway.
-#' @param network A network object.
-#' @return A list of g vectors of integers, where g is the number of pathways 
-#' in the network and each vector contains the indicies of the nodes contained
-#' in the pathway.
-#' @export
-get_pathway_list <- function(network) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
-  
-  n_hubs <- length(network$hubs)
-  n_modules <- length(network$modules)
-  n_cliques <- length(network$cliques)
-  
-  n_structures <- n_hubs + n_modules + n_cliques
-  G <- vector("list", n_structures)
-  
-  if(n_hubs > 0) {
-    for(i in 1:n_hubs) {
-      G[[i]] <- network$hubs[[i]]$nodes
-      names(G)[i] <- paste0("hub_", i)
-    }
-  }
-  
-  if(n_modules > 0) {
-    for(i in 1:n_modules) {
-      G[[n_hubs + i]] <- network$modules[[i]]$nodes
-      names(G)[n_hubs + i] <- paste0("module_", i)
-    }
-  }
-  
-  if(n_cliques > 0) {
-    for(i in 1:n_cliques) {
-      G[[n_hubs + n_modules + i]] <- network$cliques[[i]]$nodes
-      names(G)[n_hubs + n_modules + i] <- paste0("clique_", i)
-    }
-  }
-  
-  return(G)
-}
 
 
 #' Get node names of a network
@@ -868,76 +823,35 @@ set_node_names <- function(network, node_names) {
   return(network)
 }
 
-#' Rewire node in the network.
+#' Rewire connections to a node.
 #' 
-#' Within each module the node is a member of, all connections are reset. 
-#' New connections are made with a specified probablility.
-#' @param node The node to rewire. Can be a character string 
-#' corresponding to a name of a node in the network, or an integer value from 
-#' 1 to p corresponding to the index of a node.
-#' @param network The network to modify.
-#' @param rewire_prob The node at 'node_index' has probaility equal to 
-#' 'rewire_prob' to be connected with any other node in the module.
+#' @param network A 'network' object to modify. 
+#' @param node The node to rewire.
+#' @param rewire_prob A value between 0 and 1. Each connection to 'node' 
+#' will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+#' 'node' is unchanged after this operation.
+#' @param weights (Optional) A vector of weights for each node. These are used
+#' in addition to the degree of each node when sampling nodes to rewire.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' is based on node weights.
 #' @return The modified network.
 #' @export
-rewire_connections_to_node <- function(node, network, rewire_prob = 0.2) {
+rewire_connections_to_node.network <- function(network,
+                                               node,
+                                               rewire_prob,
+                                               weights = NULL,
+                                               exponent = 0) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  # If a vector of nodes are provided, loop over each one.
-  if(length(node) > 1) {
-    if(length(rewire_prob) == 1) {
-      rewire_prob <- rep(rewire_prob, length(node))
-    } else if(length(rewire_prob) != length(node)) {
-      stop("Length of argument 'node' and 'rewire_prob' must be of the same length.")
-    }
-    for(i in 1:length(node)) {
-      network <- rewire_connections_to_node(node[i], network, rewire_prob[i])
-    }
-    return(network)
-  }
-  
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
-  # Check 'node'.
-  if(is.character(node)) {
-    # If a string is provided, find the index for this node in the network.
-    node <- which(network$node_names == node)
-    if(length(node) == 0) 
-      ArgumentCheck::addError(
-        msg = paste0("Argument 'network' does not contain a node nammed ", '"', node, '".'),
-        argcheck = checklist
-      )
-  } else if(is.numeric(node) && (node %% 1 == 0)) {
-    if(node < 1 || node > network$p) 
-      ArgumentCheck::addError(
-        msg = paste0("Argument 'node' = ", node, " must index a node in the network;",
-                     " this network contains 1:", network$p, " nodes."),
-        argcheck = checklist
-      )
-  } else {
-    ArgumentCheck::addError(
-      msg = "Argument 'node' must be a character string or integer value.",
-      argcheck = checklist
-    )
-  }
-  
-  # Check 'rewire_prob'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(rewire_prob, checklist, 0, 1)
-  
-  report_checks(checklist)
-  ##################################
-  
   if(length(network$modules) > 0) {
     for(i in 1:length(network$modules)) {
-      if(node %in%  network$modules[[i]]$nodes) {
+      if(node %in% network$modules[[i]]$nodes) {
         network$modules[[i]] <- 
-          rewire_connections_to_node_in_module(node,
-                                               network$modules[[i]], 
-                                               rewire_prob)
+          rewire_connections_to_node(network$modules[[i]], node,
+                                     rewire_prob, weights, exponent)
       }
     }
   } else {
@@ -948,44 +862,39 @@ rewire_connections_to_node <- function(node, network, rewire_prob = 0.2) {
 }
 
 
-#' Remove all connections to a node
+
+#' Remove connections to a node.
 #' 
-#' @param node The node to cut connections from. Can be a character string 
-#' corresponding to a name of a node in the network, or an integer value from 
-#' 1 to p corresponding to the index of a node.
-#' @param network The network to modify.
+#' @param network A 'network' object to modify. 
+#' @param node The node to unwire.
+#' @param remove_prob A value between 0 and 1. Each connection to 'node_index' 
+#' will be removed with probability equal to 'remove_prob'.
+#' @param weights (Optional) A vector of weights for each node. These are used
+#' in addition to the degree of each node when sampling neighbors to unwire from.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
+#' probability is based on node weights.
 #' @return The modified network.
 #' @export
-remove_connections_to_node <- function(node, network) {
+remove_connections_to_node.network <- function(network,
+                                               node,
+                                               remove_prob,
+                                               weights = NULL,
+                                               exponent = 0) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  return(rewire_connections_to_node(node, network, rewire_prob = 0))
-}
-
-
-#' Subsets all network modules to their largest components
-#' 
-#' Any nodes that are disconnected from the largest component in each module
-#' are removed from that module. No nodes are removed from the network itself.
-#' @param network The network to modify.
-#' @return The modified network.
-#' @export
-trim_modules <- function(network) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
-  
-  n_modules <- length(network$modules)
-  if(n_modules == 0) {
-    warning("Argument 'network' contains no modules. Returning network unmodified.")
-  } else {
-    for(i in 1:n_modules) {
-      module <- network$modules[[i]]
-      new_module <- remove_small_components_from_module(module)
-      network <- replace_module_in_network(i, new_module, network)
+  if(length(network$modules) > 0) {
+    for(i in 1:length(network$modules)) {
+      if(node %in%  network$modules[[i]]$nodes) {
+        network$modules[[i]] <- 
+          remove_connections_to_node(network$modules[[i]], node,
+                                     rewire_prob, weights, exponent)
+      }
     }
+  } else {
+    warning("Argument 'network' contains no modules. Returning network unmodified.")
   }
   
   return(network)
@@ -994,41 +903,92 @@ trim_modules <- function(network) {
 
 #' Perturbs the connections in a network
 #' 
-#' By default, hub nodes have a 50% chance of being turned "off", and all other
-#' nodes have a 10% chance of being perturbed by rewiring. No new hub nodes are
-#' be created.
+#' The network is perturbed by removing connections from hubs and/or rewiring
+#' other nodes in the network. By default, one hub is turned off (i.e. its 
+#' connections are removed each with probability 'rewire_hub_prob' = 0.5), and 
+#' no other nodes are changed. Hub nodes are defined as those having degree
+#' above three standard deviations from the average degree, and nodes are
+#' sampled from these to be turned off; if there are no hub nodes, then
+#' those with the largest degree are turned off.
 #' @param network The network to modify.
-#' @param rewire_hub_prob The probability that any given hub node will have its
-#' connections removed.
-#' @param rewire_other_prob The probability that any given non-hub node will be
-#' perturbed by rewiring. If a node is rewired, it will have, on average, the
-#' same number of connections as its original state.
+#' @param n_hubs The number of hub nodes to turn off.
+#' @param n_nodes The number of non-hub nodes to rewire. When rewiring, the
+#' degree of the node is unchanged.
+#' @param rewire_hub_prob The probability that a connection is removed from
+#' a hub that is selected to be turned off. If 'rewire_hub_prob' = 1, then
+#' all of the connections to the hub are removed.
+#' @param rewire_other_prob The probability that a connection is rewired from
+#' a non-hub that is selected for rewiring. If 'rewire_other_prob' = 1, then 
+#' all of the connections to the hub are rewired; however, this does not mean 
+#' that all connections will be changed, as some connections may be removed
+#' but later rewired back.
+#' @param ... Additional arguments passed to rewire_connections_to_node() and 
+#' remove_connections_to_node()
 #' @return The modified network.
 #' @export
 perturb_network <- function(network, 
+                            n_hubs = 1,
+                            n_nodes = 0,
                             rewire_hub_prob = 0.5,
-                            rewire_other_prob = 0.1) {
+                            rewire_other_prob = 0.1,
+                            ...) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
+  if(n_hubs > network$p || n_hubs < 0) {
+    stop("Argument 'n_hubs' must be between 0 and the network size, p.")
+  }
+  if(n_nodes > network$p || n_nodes < 0) {
+    stop("Argument 'n_nodes' must be between 0 and the network size, p.")
+  }
+  
+  # First rewire others, then turn off the hub.
   # Hub genes will be identified by having a degree above 3 SDs from the mean.
   degrees <- get_degree_distribution(network)
   index_hubs <- which(degrees > floor(mean(degrees) + 3 * sd(degrees)))
   index_others <- setdiff(1:network$p, index_hubs)
-  rewire_prob <- degrees / network$p
-  # Rewire hub nodes.
-  if(length(index_hubs) > 0) {
-    rewire <- rbinom(length(index_hubs), 1, rewire_hub_prob) == 1
-    for(i in index_hubs[rewire]) {
-      network <- remove_connections_to_node(i, network)
+  
+  if(n_hubs > 0) {
+    if(length(index_hubs) == 0) {
+      # If no hubs, use nodes with highest degree.
+      selected_hubs <- order(degrees, decreasing = TRUE)[1:n_hubs]
+    } else if(length(index_hubs) < n_hubs) {
+      # If not enough hubs, use hubs and nodes with highest degree.
+      selected_hubs <- c(index_hubs, 
+                         order(degrees, decreasing = TRUE)[1:(n_hubs - length(index_hubs))])
+    } else {
+      # Otherwise, sample from hubs.
+      if(length(index_hubs) == 1) { # && n_hubs == 1, but don't need to check.
+        # Do not use sample() if only 1 hub.
+        selected_hubs <- index_hubs
+      } else {
+        selected_hubs <- sample(index_hubs, n_hubs)
+      }
+    }
+    # Turn off selected hubs.
+    for(index in selected_hubs) {
+      network <- remove_connections_to_node(network, index, rewire_hub_prob, ...)
     }
   }
-  # Rewire all other nodes.
-  if(length(index_others) > 0) {
-    rewire <- rbinom(length(index_others), 1, rewire_other_prob) == 1
-    for(i in index_others[rewire]) {
-      network <- rewire_connections_to_node(i, network, rewire_prob[i])
+  
+  if(n_nodes > 0) {
+    if(length(index_others) < n_nodes) {
+      # If not enough nodes, give warning and reduce n_nodes.
+      warning(paste0(n_nodes, "nodes requested to rewire but only", length(index_others),
+                     "were available and rewired."))
+      n_nodes <- length(index_others)
+    } 
+    # Select nodes to rewire.
+    if(length(index_others) == 1) {
+      # Do not use sample() if only 1 hub.
+      selected_nodes <- index_others
+    } else {
+      selected_nodes <- sample(index_others, n_nodes)
+    }
+    # Rewire selected nodes.
+    for(index in selected_nodes) {
+      network <- rewire_connections_to_node(network, index, rewire_other_prob, ...)
     }
   }
   
@@ -1047,11 +1007,15 @@ print.network <- function(network, ...) {
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  p <- network$p
-  m <- length(network$modules)
-  message <- paste0("Network containing ", p, " nodes and ", m, 
-                    " module", ifelse(m > 1, "s", ""), ".\n")
+  n_modules <- length(network$modules)
+  vals <- get_network_characteristics(network)
+  
+  message <- paste0(ifelse(is_weighted(network), "A weighted", "An unweighted"), 
+                    " network containing ", vals$p, " nodes, ", 
+                    vals$n_edges, " edges, and ", n_modules, 
+                    " module", ifelse(n_modules > 1, "s", ""), ".\n")
   cat(message)
+  print(round(unlist(vals[-c(1, 2, 6)]), 3))
 }
 
 
@@ -1094,4 +1058,44 @@ as_single_module <- function(network) {
     get_adjacency_matrix(network))
   
   return(network)
+}
+
+
+#' Characteristics of the network topology
+#' 
+#' The average degree, clustering coefficient, and average path length are calculated.
+#' @param network A 'network', 'network_module', or 'matrix' object.
+#' @return A list containing characteristics of the network.
+#' @export
+get_network_characteristics <- function(network) {
+  adj <- get_adjacency_matrix(network)
+  graph <- igraph::graph_from_adjacency_matrix(adj, mode = "undirected")
+  
+  # Calculate the degree distribution P(K).
+  deg <- igraph::degree(graph)
+  tab <- table(deg)
+  
+  # Calculate the average clustering coefficient C(K) for nodes with each degree K.
+  ind <- which(deg > 1)
+  clustco <- igraph::transitivity(graph, type = "local")[ind]
+  deg_sub <- deg[ind]
+  clus <- rep(NA, max(deg_sub))
+  for(i in 2:(max(deg_sub))) {
+    coefs <- clustco[which(deg_sub == i)]
+    if(length(coefs) > 0) {
+      clus[i] <- mean(coefs)
+    }
+  }
+  
+  # Store properties of K in a data.frame.
+  df <- data.frame(K = as.numeric(names(tab)), 
+                   P_K =  as.numeric(tab / sum(tab)),
+                   C_K = c(NA, clus[which(!is.na(clus))]))
+  
+  return(list(p = ncol(adj),
+              n_edges = sum(adj[lower.tri(adj)]),
+              `avg degree` = mean(deg), 
+              `clustering coef` = igraph::transitivity(graph), 
+              `avg path length` = igraph::mean_distance(graph), 
+              df = df))
 }

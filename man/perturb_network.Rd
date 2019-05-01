@@ -4,24 +4,39 @@
 \alias{perturb_network}
 \title{Perturbs the connections in a network}
 \usage{
-perturb_network(network, rewire_hub_prob = 0.5,
-  rewire_other_prob = 0.1)
+perturb_network(network, n_hubs = 1, n_nodes = 0,
+  rewire_hub_prob = 0.5, rewire_other_prob = 0.1, ...)
 }
 \arguments{
 \item{network}{The network to modify.}
 
-\item{rewire_hub_prob}{The probability that any given hub node will have its
-connections removed.}
+\item{n_hubs}{The number of hub nodes to turn off.}
 
-\item{rewire_other_prob}{The probability that any given non-hub node will be
-perturbed by rewiring. If a node is rewired, it will have, on average, the
-same number of connections as its original state.}
+\item{n_nodes}{The number of non-hub nodes to rewire. When rewiring, the
+degree of the node is unchanged.}
+
+\item{rewire_hub_prob}{The probability that a connection is removed from
+a hub that is selected to be turned off. If 'rewire_hub_prob' = 1, then
+all of the connections to the hub are removed.}
+
+\item{rewire_other_prob}{The probability that a connection is rewired from
+a non-hub that is selected for rewiring. If 'rewire_other_prob' = 1, then 
+all of the connections to the hub are rewired; however, this does not mean 
+that all connections will be changed, as some connections may be removed
+but later rewired back.}
+
+\item{...}{Additional arguments passed to rewire_connections_to_node() and 
+remove_connections_to_node()}
 }
 \value{
 The modified network.
 }
 \description{
-By default, hub nodes have a 50% chance of being turned "off", and all other
-nodes have a 10% chance of being perturbed by rewiring. No new hub nodes are
-be created.
+The network is perturbed by removing connections from hubs and/or rewiring
+other nodes in the network. By default, one hub is turned off (i.e. its 
+connections are removed each with probability 'rewire_hub_prob' = 0.5), and 
+no other nodes are changed. Hub nodes are defined as those having degree
+above three standard deviations from the average degree, and nodes are
+sampled from these to be turned off; if there are no hub nodes, then
+those with the largest degree are turned off.
 }

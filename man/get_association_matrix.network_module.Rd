@@ -7,12 +7,11 @@
 \method{get_association_matrix}{network_module}(module, ...)
 }
 \arguments{
-\item{module}{A 'network_module' object; can be either weighted or unweighted.}
+\item{module}{A weighted 'network_module' object.}
 }
 \value{
 An association matrix with entry ij != 0 if node i and j are 
-connected, and 0 otherwise. If the module is unweighted, then nonzero entries 
-are set to 1. The diagonal of the association matrix is set to 0.
+connected, and 0 otherwise. The diagonal of the association matrix is set to 0.
 }
 \description{
 Get association matrix of a module

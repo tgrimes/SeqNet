@@ -10,11 +10,20 @@
 \item{network}{A weighted 'network' object.}
 }
 \value{
-An association matrix with entry ij != 0 if node i and j are 
-connected, and 0 otherwise. The diagonal of the matrix is set to 0.
+An association matrix with entry ij != 0 if node i and j have a nonzero
+conditional linear association (in the Gaussian graphical model), and 0 
+otherwise. The diagonal entries are all zero.
 }
 \description{
 The association matrix for a weighted network is recovered from its
-covariance structure. The association matrix will contain ones along the
-diagonal, and off-diagonal entries are interpreted as partial correlations.
+covariance structure (see ?get_sigma.network). The off-diagonal entries are 
+interpreted as partial correlations, and the diagonal entries are set to zero.
+}
+\note{
+Note that the connections in an adjacency matrix and association matrix
+will likely differ. The adjacency matrix only considers direct connections in 
+the network, whereas the association matrix takes into account the fact that 
+there are overlapping modules which can create conditional dependencies
+between two genes in seperate modules (i.e. genes that don't have a direct
+connection in the graph).
 }

@@ -216,8 +216,12 @@ random_module <- function(nodes,
 #' @export
 set_module_edges <- function(module, edges) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
+  
+  # If there is only one node in the module, return it unmodified.
+  if(length(module$nodes) == 1) {
+    return(module)
+  }
   
   if(is.null(edges)) {
     module$edges <- NULL
@@ -261,8 +265,7 @@ set_module_edges <- function(module, edges) {
 #' @export
 set_module_weights <- function(module, weights) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges) && !is.null(weights)) {
     warning("Argument 'weights' is not NULL, but the module edges is.")
@@ -304,8 +307,7 @@ set_module_weights <- function(module, weights) {
 #' @export
 remove_weights.network_module <- function(module) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges)) {
     return(module)
@@ -327,8 +329,7 @@ remove_weights.network_module <- function(module) {
 #' @export
 set_module_name <- function(module, module_name) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(!is.null(module_name) &&
      (is.na(module_name) || module_name == "")) {
@@ -358,8 +359,7 @@ set_module_name <- function(module, module_name) {
 #' @export
 get_adjacency_matrix.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   n_nodes <- length(module$nodes)
   adj_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
@@ -374,15 +374,16 @@ get_adjacency_matrix.network_module <- function(module, ...) {
 
 #' Get association matrix of a module
 #' 
-#' @param module A 'network_module' object; can be either weighted or unweighted.
+#' @param module A weighted 'network_module' object.
 #' @return An association matrix with entry ij != 0 if node i and j are 
-#' connected, and 0 otherwise. If the module is unweighted, then nonzero entries 
-#' are set to 1. The diagonal of the association matrix is set to 0.
+#' connected, and 0 otherwise. The diagonal of the association matrix is set to 0.
 #' @export
 get_association_matrix.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
+  
+  if(!is_weighted(module)) 
+    stop("'", deparse(substitute(module)), "' is not weighted.")
   
   n_nodes <- length(module$nodes)
   assoc_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
@@ -396,9 +397,6 @@ get_association_matrix.network_module <- function(module, ...) {
     assoc_matrix[module$edges[, 1:2]] <- weights
     assoc_matrix[module$edges[, 2:1]] <- weights
   }
-  
-  # Set values near zero to exactly zero.
-  assoc_matrix[abs(assoc_matrix) <= 10^-13] <- 0
   
   colnames(assoc_matrix) <- module$nodes
   return(assoc_matrix)
@@ -415,6 +413,7 @@ get_association_matrix.network_module <- function(module, ...) {
 get_sigma.network_module <- function(module, ...) {
   precision_matrix <- -get_association_matrix(module)
   if(all(precision_matrix == 0)) {
+    # If there are no connections in the module, return the identify matrix.
     return(diag(1, nrow(precision_matrix)))
   }
   diag(precision_matrix) <- 1
@@ -436,8 +435,7 @@ get_sigma.network_module <- function(module, ...) {
 #' @export
 get_edge_weights_from_module <- function(module) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges)) {
     return(NULL)
@@ -492,8 +490,8 @@ get_node_names.network_module <- function(module, ...) {
 update_module_with_random_edges <- function(module, 
                                             ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), 
+         "' is not a 'network_module' object.")
   
   adjacency_matrix <- random_module_structure(length(module$nodes), ...)
   adjacency_matrix <- connect_module_structure(adjacency_matrix, ...)
@@ -502,20 +500,20 @@ update_module_with_random_edges <- function(module,
 }
 
 random_module_structure <- function(size, 
-                                    p_rewire = rep(0.5, 3),
-                                    p_snip = rep(0.5, 3),
-                                    deg_ex = rep(0, size),
+                                    p_rewire = 0.5,
+                                    p_remove = 0.5,
+                                    deg_ex = NULL,
                                     neig_size = 3,
                                     neig_size_fn = NULL,
-                                    rewire_weight = 100,
+                                    exponent = 100,
                                     ...) {
   ##################################
   # Check arguments for errors.
   checklist <- new_checklist()
   
-  if(rewire_weight < 0) 
+  if(exponent < 0) 
     ArgumentCheck::addError(
-      msg = "Argument 'rewire_weight' must be positive.",
+      msg = "Argument 'exponent' must be positive.",
       argcheck = checklist
     )
   
@@ -529,17 +527,14 @@ random_module_structure <- function(size,
       argcheck = checklist
     )
   
-  p_rewire <- rep(p_rewire[1], neig_size)
-  p_snip <- rep(p_snip[1], neig_size)
-  
-  if(p_rewire[1] < 0 || p_rewire[1] > 1) 
+  if(p_rewire < 0 || p_rewire > 1) 
     ArgumentCheck::addError(
       msg = "Argument 'p_rewire' must be between 0 and 1.",
       argcheck = checklist
     )
-  if(p_snip[1] < 0 || p_snip[1] > 1) 
+  if(p_remove < 0 || p_remove > 1) 
     ArgumentCheck::addError(
-      msg = "Argument 'p_snip' must be between 0 and 1.",
+      msg = "Argument 'p_remove' must be between 0 and 1.",
       argcheck = checklist
     )
   
@@ -555,74 +550,8 @@ random_module_structure <- function(size,
   
   deg <- apply(adj, 2, sum)
   for(i in sample(nodes)) {
-    neigs <- which(adj[, i] == 1) # Find neighbours of node i.
-    
-    # Reire to random hub with probability equal to p_rewire.
-    if(length(p_rewire) > 0) {
-      moves <- runif(length(p_rewire))
-      for(k in 1:length(p_rewire)) {
-        # If degree of node i is empty or full, stop.
-        if(deg[i] == 0 || deg[i] == (size - 1)) {
-          break
-        }
-        if((moves[k] < p_rewire[k])) {
-          # Connect to new neighbor.
-          candidates <- nodes[-c(i, neigs)]
-          if(length(candidates) > 1) {
-            # Probabilities here help the hub nodes accumulate edges, and it
-            # decreases the average path length (compared to uniform probability).
-            new_neig <- sample(candidates, 1,
-                               prob = ecdf(deg[candidates] + deg_ex[candidates])(deg[candidates] + deg_ex[candidates])^rewire_weight + 0.001)
-          } else {
-            new_neig <- candidates
-          }
-          adj[new_neig, i] <- 1
-          adj[i, new_neig] <- 1
-          deg[c(i, new_neig)] <- deg[c(i, new_neig)] + 1
-          # Remove connection from old neighbour.
-          if(length(neigs) == 1) {
-            old_neig <- neigs
-          } else {
-            old_neig <- sample(neigs, 1, 
-                               prob = 1 - ecdf(deg[neigs] + deg_ex[neigs])(deg[neigs] + deg_ex[neigs])^rewire_weight + 0.001)
-          }
-          adj[old_neig, i] <- 0
-          adj[i, old_neig] <- 0
-          deg[c(i, old_neig)] <- deg[c(i, old_neig)] - 1
-          
-          neigs[which(neigs == old_neig)] <- new_neig # Update neighbors
-        }
-      }
-    }
-    
-    # Remove connection with probability equal to p_snip.
-    if(length(p_snip) > 0 && (length(neigs) >= 2)) {
-      moves <- runif(length(p_snip))
-      for(k in 1:length(p_snip)) {
-        if(length(neigs) == 0) {
-          break
-        }
-        if(moves[k] < p_snip[k]) {
-          # Remove connection from old neighbour, if one exists.
-          # Prefer to keep nodes to small-degree nodes or hub nodes.
-          if(length(neigs) == 1) {
-            old_neig <- neigs
-          } else {
-            old_neig <- sample(neigs, 1, 
-                               prob = 1 - ecdf(deg[neigs] + deg_ex[neigs])(deg[neigs] + deg_ex[neigs])^rewire_weight + 0.001)
-          }
-          adj[old_neig, i] <- 0
-          adj[i, old_neig] <- 0
-          deg[c(i, old_neig)] <- deg[c(i, old_neig)] - 1
-          neigs <- neigs[-which(neigs == old_neig)] # Update neighbors.
-        }
-      }
-    }
-  }
-  
-  if(all(adj == 0)) {
-    adj <- random_module_structure(size, p_rewire, p_snip, deg_ex, 
-                                   neig_size, neig_size_fn, rewire_weight, ...)
+    adj <- rewire_connections_to_node(adj, i, p_rewire, deg_ex, exponent)
+    adj <- remove_connections_to_node(adj, i, p_remove, deg_ex, exponent)
   }
   
   return(adj)
@@ -688,8 +617,7 @@ update_module_with_random_weights <- function(module,
                                               },
                                               ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges)) {
     warning("Argument 'module' contains no connections. Returning module unmodified.")
@@ -703,50 +631,62 @@ update_module_with_random_weights <- function(module,
 
 
 
-#' Rewire connections to a node from a module
+#' Rewire connections to a node.
 #' 
-#' @param node_index The index of the node in the module to remove.
-#' @param module The 'network_module' object to modify.
-#' @param rewire_prob The node at 'node_index' has probaility equal to 
-#' 'rewire_prob' to be connected with any other node in the module.
-#' @return The modified 'network_module' object.
+#' @param module A 'network_module' object to modify. 
+#' @param node The node to rewire.
+#' @param rewire_prob A value between 0 and 1. Each connection to 'node' 
+#' will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+#' 'node' is unchanged after this operation.
+#' @param weights (Optional) A vector of weights for each node. These are used
+#' in addition to the degree of each node when sampling nodes to rewire.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' is based on node weights.
+#' @return The modified module.
 #' @export
-rewire_connections_to_node_in_module <- function(node,
-                                                 module,
-                                                 rewire_prob = 0.2) {
+rewire_connections_to_node.network_module <- function(module,
+                                                      node,
+                                                      rewire_prob,
+                                                      weights = NULL,
+                                                      exponent = 0) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
-  # Check 'node'.
-  check_positive_integer(node, checklist)
+  adj_matrix <- get_adjacency_matrix(module)
+  adj_matrix <- rewire_connections_to_node(adj_matrix, node, 
+                                           rewire_prob, weights, exponent)
+  module <- set_module_edges(module, adj_matrix)
   
-  # Check 'rewire_prob'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(rewire_prob, checklist, 0, 1)
+  return(module)
+}
+
+
+#' Remove connections to a node.
+#' 
+#' @param module A 'network_module' object to modify. 
+#' @param node The node to unwire.
+#' @param remove_prob A value between 0 and 1. Each connection to 'node_index' 
+#' will be removed with probability equal to 'remove_prob'.
+#' @param weights (Optional) A vector of weights for each node. These are used
+#' in addition to the degree of each node when sampling neighbors to unwire from.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
+#' probability is based on node weights.
+#' @return The modified module.
+#' @export
+remove_connections_to_node.network_module <- function(module,
+                                                      node,
+                                                      remove_prob,
+                                                      weights = NULL,
+                                                      exponent = 0) {
+  if(!(class(module) == "network_module")) 
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
-  report_checks(checklist)
-  ##################################
-  
-  if(node %in% module$nodes) {
-    p <- length(module$nodes)
-    node_index <- which(node == module$nodes)
-    adj_matrix <- get_adjacency_matrix(module)
-    # Generate connections to other nodes with probability = 'rewire_prob'.
-    new_connections <- rbinom(p, 1, rewire_prob)
-    # No connection to self.
-    new_connections[node_index] <- 0
-    # Update adjacency matrix.
-    adj_matrix[node_index, ] <- new_connections
-    adj_matrix[, node_index] <- new_connections
-    # Update module with new connections.
-    module <- set_module_edges(module, adj_matrix)
-  } else {
-    warning("'", deparse(substitute(node)), "' is not a node in 'module'.",
-            "Returning module unmodified.")
-  }
+  adj_matrix <- get_adjacency_matrix(module)
+  adj_matrix <- remove_connections_to_node(adj_matrix, node, 
+                                           rewire_prob, weights, exponent)
+  module <- set_module_edges(module, adj_matrix)
   
   return(module)
 }
@@ -760,8 +700,7 @@ rewire_connections_to_node_in_module <- function(node,
 #' @export
 remove_small_components_from_module <- function(module) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges)) {
     return(module)
@@ -796,36 +735,19 @@ remove_small_components_from_module <- function(module) {
 #' @export
 print.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
-  module_message <- 
-    paste0("Module: ", 
-           ifelse(is.null(module$name), 
-                  "-unnamed-", 
-                  module$name),
-           "\n")
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
-  n_nodes <- length(module$nodes)
-  node_message <- 
-    paste0("Contains nodes:",
-           ifelse(n_nodes > 50, 
-                  paste(paste(module$nodes[1:50], collapse = ", "), "..."),
-                  paste(module$nodes, collapse = ", ")),
-           "\n",
-           "# nodes: ", n_nodes, "\n")
+  vals <- get_network_characteristics(module)
+  message <- paste0(ifelse(is_weighted(module), "A weighted", "An unweighted"), 
+                    " module containing ", vals$p, " nodes and ", 
+                    vals$n_edges, " edges.\n",
+                    "Contains nodes: ",
+                    ifelse(vals$p > 50, 
+                           paste(paste(module$nodes[1:50], collapse = ", "), "..."),
+                           paste(module$nodes, collapse = ", ")), "\n")
   
-  n_edges <- ifelse(is.null(module$edges), 0, nrow(module$edges))
-  edge_message <- 
-    paste0("# edges: ", n_edges, "\n")
-  
-  weighted <- ifelse(is.null(module$edges), FALSE, ncol(module$edges) >= 3)
-  weight_message <- 
-    ifelse(weighted,
-           paste("Connection are weighted"),
-           paste("Connections are unweighted"))
-  
-  message <- paste0(module_message, node_message, edge_message, weight_message)
   cat(message)
+  print(round(unlist(vals[-c(1, 2, 6)]), 3))
 }
 
 #' Check if a module is weighted
@@ -837,8 +759,8 @@ print.network_module <- function(module, ...) {
 #' @export
 is_weighted.network_module <- function(module, ...) {
   if(!(class(module) == "network_module")) 
-    stop(paste0("'", deparse(substitute(module)), 
-                "' is not a 'network_module' object."))
+    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
+  
   if(is.null(module$edges)) {
     return(TRUE)
   }

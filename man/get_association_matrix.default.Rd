@@ -14,5 +14,5 @@ An association matrix with entry ij != 0 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-The association matrix is constructed from all modules in a network.
+Get association matrix
 }
