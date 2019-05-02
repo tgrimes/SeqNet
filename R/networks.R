@@ -261,7 +261,7 @@ create_modules_for_network <- function(n_modules,
   ############################################################
   # Check parameters for generating module size.
   ############################################################
-  if(n_modules == 0) {
+  if(!is.null(n_modules) && n_modules == 0) {
     return(NULL)
   }
   
@@ -881,7 +881,7 @@ remove_connections_to_node.network <- function(network,
   
   if(length(network$modules) > 0) {
     for(i in 1:length(network$modules)) {
-      if(node %in%  network$modules[[i]]$nodes) {
+      if(node %in% network$modules[[i]]$nodes) {
         network$modules[[i]] <- 
           remove_connections_to_node(network$modules[[i]], node,
                                      prob_remove, weights, exponent)
