@@ -167,10 +167,7 @@ create_module_from_association_matrix <- function(association_matrix,
 #' are contained in this module. 
 #' @param module_name (optional) Character string specifying the name of the 
 #' module. If NULL, the module will be unnamed.
-#' @param ... Additional arguments passed to 'update_module_with_random_edges()' 
-#' and 'update_module_with_random_weights()'.
-#' @details See ?igraph::watts.strogatz.game for details on generating
-#' small-world networks.
+#' @param ... Additional arguments passed to 'random_module_structure()'.
 #' @return A 'network_module' object.
 #' @export
 random_module <- function(nodes, 
@@ -188,7 +185,9 @@ random_module <- function(nodes,
   
   module <- create_empty_module(nodes)
   module <- set_module_name(module, module_name)
-  module <- update_module_with_random_edges(module, ...)
+  
+  adjacency_matrix <- random_module_structure(length(nodes), ...)
+  module <- set_module_edges(module, adjacency_matrix)
   
   return(module)
 }
@@ -471,46 +470,35 @@ get_node_names.network_module <- function(module, ...) {
 #
 ###########################################################################
 
-#' Generate small-world network structure for module
+#' Create a random network structure for a module
 #' 
-#' The small-world network is generated using the Watts-Strogatz method.
-#' See ?igraph::watts.strogatz.game for details.
-#' @param module The network_module object to modify.
-#' @param lattice_neig A positive integer used for generating small-world 
-#' networks for modules. If the number of nodes, p, in the module is 
-#' p >= (1 + 2 * 'lattice_neig'), then
-#' the module will contain (p * 'lattice_neig') edges. This can be used to 
-#' the desired level of sparsity. For sparsity in [0, 1], with one indicating no 
-#' edges (completely sparse), setting 
-#' 'lattice_neig' = floor((1 - sparsity) * (p - 1) / 2) will constrain
-#' the sparsity to above the desired level. Note, if sparsity is nearly 1, this
-#' value for 'lattice_neig' may be zero, in which case p will need to be 
-#' increased or sparsity will need to be lowered.
-#' @param rewire_prob Used for generating small-world networks for modules; 
-#' specifies the rewiring probability of each initial edges. At 0 the graph is
-#' a lattice ring, and at 1 it is a random graph. 
-#' @param ... Additional parameters are ignored.
-#' @return An updated 'network_module' object.
+#' A single, connected graph is created. The graph is initialized as a ring 
+#' lattice, and edges are randomly rewired and/or removed. The procedure
+#' is similar to the Watts-Strogatz method, but the sampling of edges to 
+#' modify can be based on the degree of each node.
+#' @param size The number of nodes to include in the graph.
+#' @param prob_rewire The probability of rewiring an edge.
+#' @param prob_remove The probability of removing an edge.
+#' @param weights (Optional) Weights used for sampling nodes. See 
+#' ?rewire_connections_to_node and ?remove_connections_to_node for details.
+#' @param neig_size The neighborhood size within which the nodes of the 
+#' ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
+#' so long as 'size' >= (1 + 2 * 'neig_size') 
+#' @param neig_size_fn (Optional) A function that takes as input 'size' and returns
+#' a neighborhood size to be used in place of 'neig_size'. This can be useful
+#' if it is desired to scale the ring lattice with the size of the module.
+#' @param exponent A positive value used for sampling nodes. See 
+#' ?rewire_connections_to_node and ?remove_connections_to_node for details.
+#' @param ... Additional arguments are ignored.
+#' @return An adjacency matrix representing the network structure.
 #' @export
-update_module_with_random_edges <- function(module, 
-                                            ...) {
-  if(!(class(module) == "network_module")) 
-    stop("'", deparse(substitute(module)), 
-         "' is not a 'network_module' object.")
-  
-  adjacency_matrix <- random_module_structure(length(module$nodes), ...)
-  adjacency_matrix <- connect_module_structure(adjacency_matrix, ...)
-  module <- set_module_edges(module, adjacency_matrix)
-  return(module)
-}
-
 random_module_structure <- function(size, 
-                                    p_rewire = 0.5,
-                                    p_remove = 0.5,
-                                    deg_ex = NULL,
+                                    prob_rewire = 0.5,
+                                    prob_remove = 0.5,
+                                    weights = NULL,
                                     neig_size = 3,
                                     neig_size_fn = NULL,
-                                    exponent = 100,
+                                    exponent = 10,
                                     ...) {
   ##################################
   # Check arguments for errors.
@@ -532,14 +520,14 @@ random_module_structure <- function(size,
       argcheck = checklist
     )
   
-  if(p_rewire < 0 || p_rewire > 1) 
+  if(prob_rewire < 0 || prob_rewire > 1) 
     ArgumentCheck::addError(
-      msg = "Argument 'p_rewire' must be between 0 and 1.",
+      msg = "Argument 'prob_rewire' must be between 0 and 1.",
       argcheck = checklist
     )
-  if(p_remove < 0 || p_remove > 1) 
+  if(prob_remove < 0 || prob_remove > 1) 
     ArgumentCheck::addError(
-      msg = "Argument 'p_remove' must be between 0 and 1.",
+      msg = "Argument 'prob_remove' must be between 0 and 1.",
       argcheck = checklist
     )
   
@@ -553,23 +541,41 @@ random_module_structure <- function(size,
                          circular = TRUE)),
     size, size)
   
-  deg <- apply(adj, 2, sum)
+  # Go through each node, in random order, and rewire its edges.
   for(i in sample(nodes)) {
-    adj <- rewire_connections_to_node(adj, i, p_rewire, deg_ex, exponent)
-    adj <- remove_connections_to_node(adj, i, p_remove, deg_ex, exponent)
+    adj <- rewire_connections_to_node(adj, i, prob_rewire, weights, exponent)
   }
+  # Remove edges from the network.
+  adj <- remove_connections(adj, prob_remove, weights, exponent)
+  
+  # Connect any disconnected components in the module.
+  adj <- connect_module_structure(adj, weights, exponent)
   
   return(adj)
 }
 
+#' Connect disconnected components in an adjacency matrix
+#' 
+#' @param adj An adjacency matrix to modify.
+#' @param weights (Optional) weights used for sampling nodes.
+#' @param exponent A positive value used for sampling nodes.
+#' @return A modified adjacency matrix
+#' @note When connecting two components, a node is sampled from each with
+#' probability proportional to ecdf(weights)(weights)^exponent + 0.001,
+#' where 'weights' are subset to only those nodes in the corresponding component.
+#' When 'exponent' = 0, this results in uniform sampling. When 'exponent' > 0, 
+#' nodes having larger 'weight' are more likely to be selected, where 'weight'
+#' is equal to 'weights' + degree. (If Arugment 'weights' is NULL, then 'weight'
+#' is simply the node degree).
+#' @export
 connect_module_structure <- function(adj,
-                                     deg_ex = NULL,
-                                     ...) {
-  deg <- apply(adj, 2, sum)
-  nodes <- 1:length(deg)
-  if(is.null(deg_ex)) {
-    deg_ex <- rep(0, ncol(adj))
+                                     weights = NULL,
+                                     exponent = 0) {
+  nodes <- 1:ncol(adj)
+  if(is.null(weights)) {
+    weights <- rep(0, ncol(adj))
   }
+  weights <- apply(adj, 2, sum) + weights
   
   # If there multiple components, combine into one.
   components <- igraph::components(
@@ -582,21 +588,20 @@ connect_module_structure <- function(adj,
       if(length(sub_component) == 1) {
         index_rep <- sub_component
       } else {
-        index_rep <- sample(sub_component, 1) 
+        index_rep <- sample(sub_component, 1,
+                            prob = ecdf(weights[sub_component])(weights[sub_component])^exponent + 0.001) 
       }
       # Choose a representative for the main component.
       if(length(main_component) == 1) {
         index_main <- main_component
       } else {
         index_main <- sample(main_component, 1, 
-                             prob = ecdf(deg[main_component] + 
-                                           deg_ex[main_component])(deg[main_component] + 
-                                                                     deg_ex[main_component])^10 + 0.001)
+                             prob = ecdf(weights[main_component])(weights[main_component])^exponent + 0.001)
       }
       
       adj[index_main, index_rep] <- 1
       adj[index_rep, index_main] <- 1
-      deg[c(index_rep, index_main)] <- deg[c(index_rep, index_main)] + 1
+      weights[c(index_rep, index_main)] <- weights[c(index_rep, index_main)] + 1
       
       main_component <- union(main_component, sub_component)
     }
@@ -640,8 +645,8 @@ update_module_with_random_weights <- function(module,
 #' 
 #' @param module A 'network_module' object to modify. 
 #' @param node The node to rewire.
-#' @param rewire_prob A value between 0 and 1. Each connection to 'node' 
-#' will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+#' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
+#' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
@@ -652,7 +657,7 @@ update_module_with_random_weights <- function(module,
 #' @export
 rewire_connections_to_node.network_module <- function(module,
                                                       node,
-                                                      rewire_prob,
+                                                      prob_rewire,
                                                       weights = NULL,
                                                       exponent = 0) {
   if(!(class(module) == "network_module")) 
@@ -660,7 +665,7 @@ rewire_connections_to_node.network_module <- function(module,
   
   adj_matrix <- get_adjacency_matrix(module)
   adj_matrix <- rewire_connections_to_node(adj_matrix, node, 
-                                           rewire_prob, weights, exponent)
+                                           prob_rewire, weights, exponent)
   module <- set_module_edges(module, adj_matrix)
   
   return(module)
@@ -671,7 +676,7 @@ rewire_connections_to_node.network_module <- function(module,
 #' 
 #' @param module A 'network_module' object to modify. 
 #' @param node The node to unwire.
-#' @param remove_prob A value between 0 and 1. Each connection to 'node_index' 
+#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
 #' will be removed with probability equal to 'remove_prob'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
@@ -682,7 +687,7 @@ rewire_connections_to_node.network_module <- function(module,
 #' @export
 remove_connections_to_node.network_module <- function(module,
                                                       node,
-                                                      remove_prob,
+                                                      prob_remove,
                                                       weights = NULL,
                                                       exponent = 0) {
   if(!(class(module) == "network_module")) 
@@ -690,7 +695,7 @@ remove_connections_to_node.network_module <- function(module,
   
   adj_matrix <- get_adjacency_matrix(module)
   adj_matrix <- remove_connections_to_node(adj_matrix, node, 
-                                           rewire_prob, weights, exponent)
+                                           prob_remove, weights, exponent)
   module <- set_module_edges(module, adj_matrix)
   
   return(module)

@@ -4,7 +4,7 @@
 \alias{rewire_connections_to_node.matrix}
 \title{Rewire connections to a node.}
 \usage{
-\method{rewire_connections_to_node}{matrix}(m, node, rewire_prob,
+\method{rewire_connections_to_node}{matrix}(m, node, prob_rewire,
   weights = NULL, exponent = 0)
 }
 \arguments{
@@ -12,8 +12,8 @@
 
 \item{node}{The node to rewire.}
 
-\item{rewire_prob}{A value between 0 and 1. Each connection to 'node' 
-will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+\item{prob_rewire}{A value between 0 and 1. Each connection to 'node' 
+will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 'node' is unchanged after this operation.}
 
 \item{weights}{(Optional) A vector of weights for each node. These are used

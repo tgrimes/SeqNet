@@ -5,14 +5,14 @@
 \title{Remove connections to a node.}
 \usage{
 \method{remove_connections_to_node}{network_module}(module, node,
-  remove_prob, weights = NULL, exponent = 0)
+  prob_remove, weights = NULL, exponent = 0)
 }
 \arguments{
 \item{module}{A 'network_module' object to modify.}
 
 \item{node}{The node to unwire.}
 
-\item{remove_prob}{A value between 0 and 1. Each connection to 'node_index' 
+\item{prob_remove}{A value between 0 and 1. Each connection to 'node_index' 
 will be removed with probability equal to 'remove_prob'.}
 
 \item{weights}{(Optional) A vector of weights for each node. These are used

@@ -19,12 +19,14 @@ create_modules_for_network(n_modules, p, avg_module_size = 12,
 
 \item{min_module_size}{The minimum number of nodes in a module.}
 
-\item{max_module_size}{(optional) If specified, any generated module sizes 
-above this value will be reduced to 'max_module_size'.}
+\item{max_module_size}{A positive value. Any generated module sizes above this 
+value will be reduced to 'max_module_size'. Set to 'Inf' to avoid this 
+truncation.}
 
-\item{repeated_module_factor}{A value between 0 and 1. A gene selected for a 
-module has its probability of being selected for another module multiplied by 
-this factor.}
+\item{selection_weight}{A positive value used for sampling nodes for a new 
+module.}
+
+\item{...}{Additional arguments passed to random_module().}
 }
 \value{
 A list containing the indicies for genes contained in each module.

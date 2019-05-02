@@ -10,7 +10,7 @@ remove_connections_to_node(...)
 \item{...}{A 'network', 'network_module', or 'matrix' object to modify.}
 }
 \value{
-The modified object m.
+The modified object.
 }
 \description{
 Remove connections to a node.

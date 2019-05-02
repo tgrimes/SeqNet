@@ -10,25 +10,14 @@ random_network(p, n_modules = NULL, consistent_connections = TRUE, ...)
 \item{p}{The number of nodes in the network; 'p' is required to be 
 between 10 and 20000.}
 
-\item{n_modules}{The number of modules to include in the network. The
-default value is 5\% of the number of nodes in the network.}
+\item{n_modules}{The number of modules to include in the network. If NULL,
+then modules are created until all nodes in the network have positive degree.}
 
-\item{...}{Additional arguments passed to 'random_module()' and, further 
-downstream, to 'update_module_with_random_edges()'; those of particular 
-interest may include the 'lattice_neig' and 'rewire_prob' arguments.}
+\item{consistent_connections}{If TRUE, then each module is modified so that,
+if two genes are connected in one module, then they are connected in 
+every module.}
 
-\item{min_module_size}{The minimum number of nodes in a module.}
-
-\item{max_module_size}{(optional) If specified, any generated module sizes 
-above this value will be reduced to 'max_module_size'.}
-
-\item{avg_module_size}{The average number of nodes in a module.}
-
-\item{sd_module_size}{The standard deviation of module size.}
-
-\item{repeated_module_factor}{A value between 0 and 1. A gene selected for a 
-module has its probability of being selected for another module multiplied by 
-this factor.}
+\item{...}{Additional arguments passed to 'create_modules_for_network()'.}
 }
 \value{
 An unweighted network object.

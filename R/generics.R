@@ -293,7 +293,7 @@ get_node_names.matrix <- function(m, ...) {
 #' Rewire connections to a node.
 #' 
 #' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
-#' @return The modified object m.
+#' @return The modified object.
 #' @export
 rewire_connections_to_node <- function(...) {
   UseMethod("rewire_connections_to_node")
@@ -302,7 +302,7 @@ rewire_connections_to_node <- function(...) {
 #' Rewire connections to a node.
 #' 
 #' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
-#' @return The modified object m.
+#' @return The modified object.
 #' @export
 rewire_connections_to_node.default <- function(...) {
   cat("rewire_connections_to_node() is defined for 'network', 'network_module'",
@@ -313,8 +313,8 @@ rewire_connections_to_node.default <- function(...) {
 #' 
 #' @param m A 'matrix' object to modify. 
 #' @param node The node to rewire.
-#' @param rewire_prob A value between 0 and 1. Each connection to 'node' 
-#' will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+#' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
+#' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
@@ -325,7 +325,7 @@ rewire_connections_to_node.default <- function(...) {
 #' @export
 rewire_connections_to_node.matrix <- function(m,
                                               node,
-                                              rewire_prob,
+                                              prob_rewire,
                                               weights = NULL,
                                               exponent = 0) {
   if(!(class(m) == "matrix")) 
@@ -345,8 +345,8 @@ rewire_connections_to_node.matrix <- function(m,
   # Check 'node'.
   check_positive_integer(node, checklist)
   
-  # Check 'rewire_prob'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(rewire_prob, checklist, 0, 1)
+  # Check 'prob_rewire'. (Allowed to equal 0 or 1.)
+  check_in_closed_interval(prob_rewire, checklist, 0, 1)
   
   # Check 'weights'.
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
@@ -378,7 +378,7 @@ rewire_connections_to_node.matrix <- function(m,
       available <- setdiff((1:p)[-node_index], neighbors)
       
       # Determine how many connections to rewire
-      n_rewire <- sum(runif(length(neighbors)) < rewire_prob)
+      n_rewire <- sum(runif(length(neighbors)) < prob_rewire)
       if(n_rewire > 0) {
         
         # Sample the connections to rewire.
@@ -435,7 +435,7 @@ rewire_connections_to_node.matrix <- function(m,
 #' Remove connections to a node.
 #' 
 #' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
-#' @return The modified object m.
+#' @return The modified object.
 #' @export
 remove_connections_to_node <- function(...) {
   UseMethod("remove_connections_to_node")
@@ -455,8 +455,8 @@ remove_connections_to_node.default <- function(...) {
 #' 
 #' @param adj_matrix An adjacency matrix to modify.
 #' @param node The node to unwire.
-#' @param remove_prob A value between 0 and 1. Each connection to 'node_index' 
-#' will be removed with probability equal to 'remove_prob'.
+#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
+#' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
@@ -466,7 +466,7 @@ remove_connections_to_node.default <- function(...) {
 #' @export
 remove_connections_to_node.matrix <- function(adj_matrix,
                                               node,
-                                              remove_prob,
+                                              prob_remove,
                                               weights = NULL,
                                               exponent = 0) {
   if(!(class(adj_matrix) == "matrix")) 
@@ -486,8 +486,8 @@ remove_connections_to_node.matrix <- function(adj_matrix,
   # Check 'node'.
   check_positive_integer(node, checklist)
   
-  # Check 'remove_prob'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(remove_prob, checklist, 0, 1)
+  # Check 'prob_remove'. (Allowed to equal 0 or 1.)
+  check_in_closed_interval(prob_remove, checklist, 0, 1)
   
   # Check 'weights'.
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
@@ -511,10 +511,10 @@ remove_connections_to_node.matrix <- function(adj_matrix,
     degree <- apply(adj_matrix, 2, sum)
     weights <- weights + degree
     
-    # Rewire if the node has neighbors.
-    if(degree[node_index] > 0 && degree[node_index] != (p - 1)) {
+    # Remove connections if the node has neighbors.
+    if(degree[node_index] > 0) {
       neighbors <- which(adj_matrix[, node_index] != 0)
-      n_remove <- sum(runif(length(neighbors)) < remove_prob)
+      n_remove <- sum(runif(length(neighbors)) < prob_remove)
       
       if(n_remove > 0) {
         
@@ -535,6 +535,99 @@ remove_connections_to_node.matrix <- function(adj_matrix,
   } else {
     warning("'", deparse(substitute(node)), "' is not a node in 'adj_matrix'.",
             "Returning 'adj_matrix' unmodified.")
+  }
+  
+  return(adj_matrix)
+}
+
+
+#' Remove connections in a network.
+#' 
+#' @param ... A 'matrix' object to modify. 
+#' @return The modified object.
+#' @export
+remove_connections <- function(...) {
+  UseMethod("remove_connections")
+}
+
+#' Remove connections in a network.
+#' 
+#' @param ... A 'matrix' object to modify. 
+#' @return The modified object.
+#' @export
+remove_connections.default <- function(...) {
+  cat("remove_connections() is defined for ",
+      "'matrix' objects.\n")
+}
+
+#' Remove connections in a network.
+#' 
+#' @param adj_matrix An adjacency matrix to modify.
+#' @param prob_remove A value between 0 and 1. Each edge will be removed with 
+#' probability equal to 'prob_remove'.
+#' @param weights (Optional) A vector of weights for each node. These are used,
+#' in addition to the degree of each node, when sampling edges to remove.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' edges are sampled uniformly. When exponent > 0, the sampling probability is
+#' based on the connected node weights.
+#' @return The modified adjacency matrix.
+#' @export
+remove_connections.matrix <- function(adj_matrix,
+                                      prob_remove,
+                                      weights = NULL,
+                                      exponent = 0) {
+  if(!(class(adj_matrix) == "matrix")) 
+    stop(paste0("'", deparse(substitute(adj_matrix)), 
+                "' is not a 'matrix' object."))
+  
+  nodes <- get_node_names(adj_matrix)
+  p <- length(nodes)
+  
+  ##################################
+  # Check arguments for errors.
+  checklist <- new_checklist()
+  
+  # Check 'adj_matrix'.
+  check_adjacency_matrix(adj_matrix, checklist)
+  
+  # Check 'prob_remove'. (Allowed to equal 0 or 1.)
+  check_in_closed_interval(prob_remove, checklist, 0, 1)
+  
+  # Check 'weights'.
+  if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
+    stop(paste0("'", deparse(substitute(weights)), 
+                "' is not a numeric vector of length equal to the number of",
+                " nodes in 'adj_matrix'"))
+  
+  if(length(exponent) != 1 || !is.numeric(exponent)) 
+    stop(paste0("'", deparse(substitute(exponent)), 
+                "' is not positive numeric value."))
+  
+  report_checks(checklist)
+  ##################################
+  
+  if(is.null(weights)) {
+    weights <- rep(0, p)
+  }
+  weights <- weights + apply(adj_matrix, 2, sum)
+  weights <- unname(weights)
+  
+  # Obtain list of edges in the network.
+  edges <- which(adj_matrix == 1, arr.ind = TRUE)
+  edges <- edges[edges[, 2] < edges[, 1], ]
+  weights <- weights[edges[, 1]] + weights[edges[, 2]]
+  
+  n_remove <- sum(runif(nrow(edges)) < prob_remove)
+  
+  if(n_remove > 0) {
+    
+    # Sample the edges to rewire.
+    edge_index <- sample(1:nrow(edges), n_remove,
+                         prob = 1 - ecdf(weights)(weights)^exponent + 0.001)
+    
+    # Remove connections
+    adj_matrix[matrix(edges[edge_index, ], ncol = 2)] <- 0
+    adj_matrix[matrix(edges[edge_index, 2:1], ncol = 2)] <- 0
   }
   
   return(adj_matrix)

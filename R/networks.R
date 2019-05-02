@@ -190,19 +190,12 @@ create_network_from_association_matrix <- function(association_matrix,
 #' modules.
 #' @param p The number of nodes in the network; 'p' is required to be 
 #' between 10 and 20000.
-#' @param n_modules The number of modules to include in the network. The
-#' default value is 5\% of the number of nodes in the network.
-#' @param min_module_size The minimum number of nodes in a module.
-#' @param max_module_size (optional) If specified, any generated module sizes 
-#' above this value will be reduced to 'max_module_size'.
-#' @param avg_module_size The average number of nodes in a module.
-#' @param sd_module_size The standard deviation of module size.
-#' @param repeated_module_factor A value between 0 and 1. A gene selected for a 
-#' module has its probability of being selected for another module multiplied by 
-#' this factor.
-#' @param ... Additional arguments passed to 'random_module()' and, further 
-#' downstream, to 'update_module_with_random_edges()'; those of particular 
-#' interest may include the 'lattice_neig' and 'rewire_prob' arguments.
+#' @param n_modules The number of modules to include in the network. If NULL,
+#' then modules are created until all nodes in the network have positive degree.
+#' @param consistent_connections If TRUE, then each module is modified so that,
+#' if two genes are connected in one module, then they are connected in 
+#' every module.
+#' @param ... Additional arguments passed to 'create_modules_for_network()'.
 #' @return An unweighted network object.
 #' @export 
 random_network <- function(p,
@@ -229,11 +222,12 @@ random_network <- function(p,
   # If two genes are connected in one module, make them connected in all modules.
   if(consistent_connections) {
     adj <- get_adjacency_matrix(network)
+    module_list = lapply(network$modules, function(m) {
+                           create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], 
+                                                               m$nodes)
+                         })
     network <- 
-      create_network_from_modules(p, module_list = lapply(network$modules, 
-                                                          function(m) {
-                                                            create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], m$nodes)
-                                                          }))
+      create_network_from_modules(p, module_list)
   }
   
   return(network)
@@ -245,14 +239,15 @@ random_network <- function(p,
 #' Creates a collection of modules containing randomly samples genes.
 #' @param n_modules The number of modules to include in the network.
 #' @param p The number of nodes in the network.
-#' @param min_module_size The minimum number of nodes in a module.
-#' @param max_module_size (optional) If specified, any generated module sizes 
-#' above this value will be reduced to 'max_module_size'.
 #' @param avg_module_size The average number of nodes in a module.
 #' @param sd_module_size The standard deviation of module size.
-#' @param repeated_module_factor A value between 0 and 1. A gene selected for a 
-#' module has its probability of being selected for another module multiplied by 
-#' this factor.
+#' @param min_module_size The minimum number of nodes in a module.
+#' @param max_module_size A positive value. Any generated module sizes above this 
+#' value will be reduced to 'max_module_size'. Set to 'Inf' to avoid this 
+#' truncation.
+#' @param selection_weight A positive value used for sampling nodes for a new 
+#' module.
+#' @param ... Additional arguments passed to random_module().
 #' @return A list containing the indicies for genes contained in each module.
 #' @export 
 create_modules_for_network <- function(n_modules, 
@@ -826,8 +821,8 @@ set_node_names <- function(network, node_names) {
 #' 
 #' @param network A 'network' object to modify. 
 #' @param node The node to rewire.
-#' @param rewire_prob A value between 0 and 1. Each connection to 'node' 
-#' will be rewired with probability equal to 'rewire_prob'. Note, the degree of 
+#' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
+#' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
@@ -838,7 +833,7 @@ set_node_names <- function(network, node_names) {
 #' @export
 rewire_connections_to_node.network <- function(network,
                                                node,
-                                               rewire_prob,
+                                               prob_rewire,
                                                weights = NULL,
                                                exponent = 0) {
   if(!(class(network) == "network")) 
@@ -850,7 +845,7 @@ rewire_connections_to_node.network <- function(network,
       if(node %in% network$modules[[i]]$nodes) {
         network$modules[[i]] <- 
           rewire_connections_to_node(network$modules[[i]], node,
-                                     rewire_prob, weights, exponent)
+                                     prob_rewire, weights, exponent)
       }
     }
   } else {
@@ -866,8 +861,8 @@ rewire_connections_to_node.network <- function(network,
 #' 
 #' @param network A 'network' object to modify. 
 #' @param node The node to unwire.
-#' @param remove_prob A value between 0 and 1. Each connection to 'node_index' 
-#' will be removed with probability equal to 'remove_prob'.
+#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
+#' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
@@ -877,7 +872,7 @@ rewire_connections_to_node.network <- function(network,
 #' @export
 remove_connections_to_node.network <- function(network,
                                                node,
-                                               remove_prob,
+                                               prob_remove,
                                                weights = NULL,
                                                exponent = 0) {
   if(!(class(network) == "network")) 
@@ -889,7 +884,7 @@ remove_connections_to_node.network <- function(network,
       if(node %in%  network$modules[[i]]$nodes) {
         network$modules[[i]] <- 
           remove_connections_to_node(network$modules[[i]], node,
-                                     rewire_prob, weights, exponent)
+                                     prob_remove, weights, exponent)
       }
     }
   } else {

@@ -13,16 +13,11 @@ are contained in this module.}
 \item{module_name}{(optional) Character string specifying the name of the 
 module. If NULL, the module will be unnamed.}
 
-\item{...}{Additional arguments passed to 'update_module_with_random_edges()' 
-and 'update_module_with_random_weights()'.}
+\item{...}{Additional arguments passed to 'random_module_structure()'.}
 }
 \value{
 A 'network_module' object.
 }
 \description{
 Create a random module
-}
-\details{
-See ?igraph::watts.strogatz.game for details on generating
-small-world networks.
 }

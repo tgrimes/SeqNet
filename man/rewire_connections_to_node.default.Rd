@@ -10,7 +10,7 @@
 \item{...}{A 'network', 'network_module', or 'matrix' object to modify.}
 }
 \value{
-The modified object m.
+The modified object.
 }
 \description{
 Rewire connections to a node.
