@@ -55,10 +55,7 @@ create_network_from_modules <- function(p,
   
   # Check 'module_list'.
   if(is.null(module_list)) {
-    ArgumentCheck::addError(
-      msg = paste("Argument 'module_list' must be a list of 'network_module'."),
-      argcheck = checklist
-    )
+    # NULL module_list is ok.
   } else if(class(module_list) == "list") {
     # Check each element in the list 'modules'.
     if(!all(sapply(module_list, function(m) class(m) == "network_module"))) 
@@ -269,6 +266,10 @@ create_modules_for_network <- function(n_modules,
   ############################################################
   # Check parameters for generating module size.
   ############################################################
+  if(n_modules == 0) {
+    return(NULL)
+  }
+  
   if(is.null(avg_module_size)) {
     avg_module_size <- 15
   }
@@ -633,12 +634,12 @@ add_modules_to_network <- function(network, module_list) {
   checklist <- new_checklist()
   
   # Check 'module_list'
-  if(class(module_list) == "network_module") {
-    # A single module is provided; put into a list without warning.
-    module_list <- list(module_list)
-  }
   # Only perform checks if module_list is not NULL and non-empty.
   if(!is.null(module_list) && length(module_list) > 0) {
+    if(class(module_list) == "network_module") {
+      # A single module is provided; put into a list without warning.
+      module_list <- list(module_list)
+    }
     if(!all(sapply(module_list, function(m) class(m) == "network_module"))) { 
       ArgumentCheck::addError(
         msg = "Argument 'module_list' must be a list of 'network_module' objects.",
