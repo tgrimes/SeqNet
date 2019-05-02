@@ -285,6 +285,7 @@ create_modules_for_network <- function(n_modules,
                   "Setting to 1.01 * (avg_module_size - min_module_size) =", sd_module_size))
   }
   size <- mu^2/(sd_module_size^2 - mu)
+  # Max module size cannot be larger than the number of nodes in the network.
   max_module_size <- min(p, max_module_size)
   
   ############################################################
@@ -311,7 +312,7 @@ create_modules_for_network <- function(n_modules,
   }
   
   all_nodes <- 1:p
-  nodes_available <- min(2 * module_sizes[1], p)
+  nodes_available <- min(module_sizes[1], p)
   prob <- rep(1/p, p) # Initial probability of selecting a node for a module.
   deg <- rep(0, p)
   node_unselected <- rep(TRUE, p)
@@ -347,7 +348,7 @@ create_modules_for_network <- function(n_modules,
     } else {
       need_more_modules <- (i < n_modules)
     }
-    nodes_available <- min(nodes_available + module_sizes[i], p)
+    nodes_available <- min(nodes_available + module_sizes[i + 1], p)
   }
   
   # i = n_modules
