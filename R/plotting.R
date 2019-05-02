@@ -150,8 +150,10 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
   if(!is.null(assoc_matrix)) {
     edge_weights <- assoc_matrix[lower.tri(assoc_matrix)]
     edge_weights <- edge_weights[edge_weights != 0]
-    edge_weights <- edge_weights / 
-      ifelse(max(edge_weights) == 0, 1, max(edge_weights))
+    if(length(edge_weights) > 0) {
+      edge_weights <- edge_weights / 
+        ifelse(max(edge_weights) == 0, 1, max(edge_weights))
+    }
     if(length(edge_weights) != length(igraph::E(g))) {
       stop("Edge weights do not match number of edges.")
     }
@@ -380,8 +382,10 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   if(!is.null(assoc_matrix)) {
     edge_weights <- assoc_matrix[lower.tri(assoc_matrix)]
     edge_weights <- edge_weights[edge_weights != 0]
-    edge_weights <- edge_weights / 
-      ifelse(max(edge_weights) == 0, 1, max(edge_weights))
+    if(length(edge_weights) > 0) {
+      edge_weights <- edge_weights / 
+        ifelse(max(edge_weights) == 0, 1, max(edge_weights))
+    }
     if(length(edge_weights) != length(igraph::E(g))) {
       stop("Edge weights do not match number of edges.")
     }
