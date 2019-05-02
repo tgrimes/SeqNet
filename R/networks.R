@@ -1093,9 +1093,9 @@ get_network_characteristics <- function(network) {
     }
     
     # Store properties of K in a data.frame.
-    C_K <- c(NA, clus[which(!is.na(clus))])
-    if(length(tab) == 1) {
-      # If all nodes have same degree, then we do not need to prepend with NA.
+    if("1" %in% names(tab)) {
+      C_K <- c(NA, clus[which(!is.na(clus))])
+    } else {
       C_K <- clus[which(!is.na(clus))]
     }
     df <- data.frame(K = as.numeric(names(tab)), 

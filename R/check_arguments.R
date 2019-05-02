@@ -130,6 +130,32 @@ check_positive_integer <- function(p, checklist) {
 #' Wrapper for ArgumentCheck::addError()
 #' 
 #' @details see ?ArgumentCheck::addError() for details. 
+check_nonnegative_integer <- function(p, checklist) {
+  arg <- deparse(substitute(p))
+  
+  if(!is.numeric(p)) {
+    ArgumentCheck::addError(
+      msg = paste0("Argument '", arg, "' must be a positive numeric value."),
+      argcheck = checklist
+    )
+  } else if(p %% 1 != 0) {
+    ArgumentCheck::addError(
+      msg = paste0("Argument '", arg, "' = ", p, " must be an integer."),
+      argcheck = checklist
+    )
+  }
+  if(p < 0) 
+    ArgumentCheck::addError(
+      msg = paste0("Argument '", arg, "' must be non-negative"),
+      argcheck = checklist
+    )
+  
+  return(checklist)
+}
+
+#' Wrapper for ArgumentCheck::addError()
+#' 
+#' @details see ?ArgumentCheck::addError() for details. 
 check_positive_integer_vector <- function(p, checklist) {
   arg <- deparse(substitute(p))
   
