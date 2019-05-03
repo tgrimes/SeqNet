@@ -1,10 +1,12 @@
 testthat::test_that("cpp functions work", {
   x <- rnorm(100)
-  expect_equal(ecdf_cpp(x), ecdf(x)(x))
+  expect_equal(ecdf(x)(x), ecdf_cpp(x))
   x <- rep(1, 10)
-  expect_equal(ecdf_cpp(x), ecdf(x)(x))
+  expect_equal(ecdf(x)(x), ecdf_cpp(x))
+  x <- rep(10, 1)
+  expect_equal(ecdf(x)(x), ecdf_cpp(x))
   x <- 1
-  expect_equal(ecdf_cpp(x), ecdf(x)(x))
+  expect_equal(ecdf(x)(x), ecdf_cpp(x))
   
   adj <- matrix(0, 5, 5)
   edges <- rbind(c(1, 2), c(3, 4), c(3, 5))
