@@ -274,7 +274,8 @@ create_modules_for_network <- function(n_modules,
   node_unselected <- rep(TRUE, p)
   need_more_modules <- TRUE
   i <- 0
-  while(need_more_modules && i < p) {
+  # Loop until all nodes are selected, but do not allow more than 2p modules.
+  while(need_more_modules && i < (2 * p)) {
     i <- i + 1
     m <- module_sizes[i] 
     index_nodes_available <- 1:nodes_available
