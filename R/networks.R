@@ -398,7 +398,7 @@ get_association_matrix.network <- function(x, tol = 10^-13, ...) {
   assoc_matrix <- cov2cor(assoc_matrix)
   
   diag(assoc_matrix) <- 0
-  assoc_matrix[abs(assoc_matrix < tol)] <- 0
+  assoc_matrix[abs(assoc_matrix) < tol] <- 0
   
   colnames(assoc_matrix) <- x$node_names
   
