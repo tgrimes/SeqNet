@@ -459,17 +459,18 @@ random_module_structure <- function(size,
                                     neig_size_fn = NULL,
                                     exponent = 100,
                                     ...) {
-  if(exponent < 0) 
-    stop("Argument 'exponent' must be positive.")
-  if(!is.null(neig_size_fn)) 
-    neig_size <- neig_size_fn(size)
-  if(neig_size < 0) 
-    stop("'neig_size' must be positive.")
+  if(size < 1)
+    stop("Argument 'size' must be positive.")
   if(prob_rewire < 0 || prob_rewire > 1) 
     stop("Argument 'prob_rewire' must be between 0 and 1.")
   if(prob_remove < 0 || prob_remove > 1) 
     stop("Argument 'prob_remove' must be between 0 and 1.")
-  
+  if(neig_size < 0) 
+    stop("'neig_size' must be positive.")
+  if(exponent < 0) 
+    stop("Argument 'exponent' must be positive.")
+  if(!is.null(neig_size_fn)) 
+    neig_size <- neig_size_fn(size)
   
   nodes <- 1:size
   
@@ -477,10 +478,10 @@ random_module_structure <- function(size,
   
   # Go through each node, in random order, and rewire its edges.
   for(i in sample(nodes)) {
-    adj <- rewire_connections_to_node(adj, i, prob_rewire, weights, exponent)
+    adj <- rewire_connections_to_node(adj, i, prob_rewire, weights, exponent, ...)
   }
   # Remove edges from the network.
-  adj <- remove_connections(adj, prob_remove, weights, exponent)
+  adj <- remove_connections(adj, prob_remove, weights, exponent, ...)
   
   # Connect any disconnected components in the module.
   adj <- connect_module_structure(adj, weights, exponent)
@@ -603,7 +604,7 @@ rewire_connections_to_node.network_module <- function(x,
   
   adj_matrix <- get_adjacency_matrix(x)
   adj_matrix <- rewire_connections_to_node(adj_matrix, node, 
-                                           prob_rewire, weights, exponent)
+                                           prob_rewire, weights, exponent, ...)
   x <- set_module_edges(x, adj_matrix)
   
   return(x)
@@ -635,7 +636,7 @@ remove_connections_to_node.network_module <- function(x,
   
   adj_matrix <- get_adjacency_matrix(x)
   adj_matrix <- remove_connections_to_node(adj_matrix, node, 
-                                           prob_remove, weights, exponent)
+                                           prob_remove, weights, exponent, ...)
   x <- set_module_edges(x, adj_matrix)
   
   return(x)
