@@ -4,16 +4,12 @@
 \alias{create_network_from_association_matrix}
 \title{Create a network object from an association matrix}
 \usage{
-create_network_from_association_matrix(association_matrix,
-  standardize = TRUE, ...)
+create_network_from_association_matrix(association_matrix, ...)
 }
 \arguments{
 \item{association_matrix}{The association matrix for the network. This is converted
 to a single module structure with partial correlations specified by the
-matrix.}
-
-\item{standardize}{If True, then 'association_matrix' will be standardized
-to obtain partial correlations.}
+nonzero values in the matrix.}
 
 \item{...}{Additional arguments passed to 
 create_module_from_association_matrix().}
