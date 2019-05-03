@@ -52,11 +52,9 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
                                                 nodes = NULL,
                                                 module_name = NULL,
                                                 run_checks = TRUE) {
-  
-  print(adjacency_matrix)
   if(run_checks && !check_adjacency_cpp(adjacency_matrix)) {
     if(!all(diag(adjacency_matrix) == 0))
-      stop("Argument 'adjacency_matrix' has nonzero values on its diagonal.")
+      stop("Argument 'adjacency_matrix' has nonzero diagonal values.")
     if(!all(abs(adjacency_matrix - t(adjacency_matrix)) < 10^-13))
       stop("Argument 'adjacency matrix' is not symmetric.")
     if(!all(adjacency_matrix %in% c(0, 1)))
