@@ -4,10 +4,12 @@
 \alias{get_association_matrix.network}
 \title{Get the association matrix of a network}
 \usage{
-\method{get_association_matrix}{network}(x, ...)
+\method{get_association_matrix}{network}(x, tol = 10^-13, ...)
 }
 \arguments{
 \item{x}{A weighted 'network' object.}
+
+\item{tol}{A numeric value. Associations within tol to zero are set to zero.}
 
 \item{...}{Additional arguments.}
 }

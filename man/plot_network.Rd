@@ -22,15 +22,15 @@ plot_network(network, compare_graph = NULL, as_subgraph = FALSE,
 
 \item{node_color}{The color used for the nodes.}
 
+\item{generate_layout}{A function to generate the layout of a graph; used
+if coords is NULL. See ?igraph::layout_ for details. Other options include 
+'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
 \item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
 
 \item{...}{Additional arguments passed to plot.igraph().}
-
-\item{generate_coords}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
 }
 \value{
 Creates a plot of the network and returns a graph object. 

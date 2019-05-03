@@ -5,7 +5,7 @@
 #' @param mu The distribution mean.
 #' @param rho The zero-inflation parameter.
 #' @param log Logical; if TRUE, then log(d) is returned.
-#' @param return The value(s) of the density function evaluated at x.
+#' @return The value(s) of the density function evaluated at x.
 #' @export 
 dzinb <- function(x, size, mu, rho = 0, log = FALSE) {
   d <- rho * (x == 0) + (1 - rho) * dnbinom(x, size, mu = mu)

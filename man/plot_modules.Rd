@@ -33,6 +33,10 @@ object. To get this list from a network, use 'get_network_modules()'.}
 
 \item{group_color}{A vector of colors used for the modules.}
 
+\item{generate_layout}{A function to generate the layout of a graph; used
+if coords is NULL. See ?igraph::layout_ for details. Other options include 
+'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
 \item{show_legend}{If TRUE, a legend for the modules is shown. Default is FALSE.}
@@ -45,10 +49,6 @@ object. To get this list from a network, use 'get_network_modules()'.}
 \item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
 
 \item{...}{Additional arguments passed to plot.igraph().}
-
-\item{generate_coords}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
 }
 \value{
 A 'network_plot' object for the network. This object can be passed 

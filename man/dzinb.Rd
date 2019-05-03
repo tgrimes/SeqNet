@@ -16,8 +16,9 @@ dzinb(x, size, mu, rho = 0, log = FALSE)
 \item{rho}{The zero-inflation parameter.}
 
 \item{log}{Logical; if TRUE, then log(d) is returned.}
-
-\item{return}{The value(s) of the density function evaluated at x.}
+}
+\value{
+The value(s) of the density function evaluated at x.
 }
 \description{
 The Zero-Inflated Negative Binomial Distribution

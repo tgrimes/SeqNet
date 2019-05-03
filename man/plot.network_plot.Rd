@@ -4,12 +4,7 @@
 \alias{plot.network_plot}
 \title{Plot function for 'network_plot' class}
 \usage{
-\method{plot}{network_plot}(x, vertex.color = x$vertex.color,
-  vertex.label.font = 2, vertex.size = x$vertex.size,
-  vertex.frame.color = x$vertex.frame.color,
-  vertex.label.color = x$vertex.label.color, vertex.label.cex = 0.7,
-  edge.color = x$edge.color, edge.width = x$edge.width,
-  layout = x$coords, ...)
+\method{plot}{network_plot}(x, ...)
 }
 \arguments{
 \item{x}{A 'network_plot' object obtained from plot.network() or

@@ -15,7 +15,10 @@ Imports:
     RColorBrewer,
     tibble,
     Rcpp
-Suggests: knitr, rmarkdown
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true

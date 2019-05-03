@@ -6,6 +6,7 @@ using namespace Rcpp;
 //' 
 //' Sets all nonzero values to 1.
 //' @param m A matrix to convert.
+//' @param tol A numeric value. Entires within tol from zero are set to zero.
 //' @return Returns the adjacency matrix.
 //' @export
 //[[Rcpp::export]]

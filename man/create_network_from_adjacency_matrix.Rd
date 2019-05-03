@@ -7,11 +7,11 @@
 create_network_from_adjacency_matrix(adjacency_matrix, ...)
 }
 \arguments{
+\item{adjacency_matrix}{The adjacency matrix for the network. This is converted
+to a single module structure.}
+
 \item{...}{Additional arguments passed to
 create_module_from_adjacency_matrix().}
-
-\item{adj_matrix}{The adjacency matrix for the network. This is converted
-to a single module structure.}
 }
 \value{
 A network object.

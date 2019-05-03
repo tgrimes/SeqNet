@@ -16,7 +16,7 @@ setClass(Class = "network_plot")
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
-#' @param generate_coords A function to generate the layout of a graph; used
+#' @param generate_layout A function to generate the layout of a graph; used
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
 #' @param include_vertex_labels If TRUE, the verticies will be labeled.
@@ -166,22 +166,25 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
   if(display_plot) {
     plot(g, vertex.color = node_color, vertex.label.font = 2,
          vertex.size = vertex.size, vertex.frame.color = vertex.frame.color,
-         vertex.label.color = vertex.label.color, vertex.label.cex = 0.7,
+         vertex.label.color = vertex.label.color, vertex.label.cex = 0.75,
          edge.color = edge.color, edge.width = edge.width, layout = coords, 
          ...)
   }
   
   plot_summary <- list(graph = g,
                        coords = coords,
-                       modules = NULL,
-                       node_weights = node_weights,
-                       edge_weights = edge_weights,
                        vertex.size = vertex.size,
                        vertex.frame.color = vertex.frame.color,
                        vertex.label.color = vertex.label.color,
+                       vertex.label.font = 2,
+                       vertex.label.cex = 0.75,
                        vertex.color = node_color,
                        edge.color = edge.color,
-                       edge.width = edge.width)
+                       edge.width = edge.width,
+                       mark.groups = NULL,
+                       mark.shape = 1,
+                       mark.col = NULL,
+                       mark.border = NULL)
   class(plot_summary) <- "network_plot"
   
   # Return list silently:
@@ -213,7 +216,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
 #' @param group_color A vector of colors used for the modules.
-#' @param generate_coords A function to generate the layout of a graph; used
+#' @param generate_layout A function to generate the layout of a graph; used
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
 #' @param include_vertex_labels If TRUE, the verticies will be labeled.
@@ -420,15 +423,18 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   
   plot_summary <- list(graph = g,
                        coords = coords,
-                       modules = modules,
-                       node_weights = node_weights,
-                       edge_weights = edge_weights,
                        vertex.size = vertex.size,
                        vertex.frame.color = vertex.frame.color,
                        vertex.label.color = vertex.label.color,
+                       vertex.label.font = 2,
+                       vertex.label.cex = 0.75,
                        vertex.color = node_color,
                        edge.color = edge.color,
-                       edge.width = edge.width)
+                       edge.width = edge.width,
+                       mark.groups = modules,
+                       mark.shape = 1,
+                       mark.col = group_color_fill,
+                       mark.border = group_color)
   class(plot_summary) <- "network_plot"
   
   # Return list silently:
@@ -571,31 +577,36 @@ plot.network_module <- function(x, ...) {
 #' plot_network().
 #' @param ... Additional arguments passed to plot.igraph().
 #' @export
-plot.network_plot <- function(x, 
-                              vertex.color = x$vertex.color, 
-                              vertex.label.font = 2,
-                              vertex.size = x$vertex.size, 
-                              vertex.frame.color = x$vertex.frame.color,
-                              vertex.label.color = x$vertex.label.color, 
-                              vertex.label.cex = 0.7,
-                              edge.color = x$edge.color, 
-                              edge.width = x$edge.width, 
-                              layout = x$coords,
-                              ...) {
+plot.network_plot <- function(x, ...) {
   
   plot(x$graph, 
-       vertex.color = vertex.color, 
-       vertex.label.font = vertex.label.font,
-       vertex.size = vertex.size, 
-       vertex.frame.color = vertex.frame.color,
-       vertex.label.color = vertex.label.color, 
-       vertex.label.cex = vertex.label.cex,
-       edge.color = edge.color, 
-       edge.width = edge.width, 
-       layout = layout,
+       vertex.color = x$vertex.color, 
+       vertex.label.font = x$vertex.label.font,
+       vertex.size = x$vertex.size, 
+       vertex.frame.color = x$vertex.frame.color,
+       vertex.label.color = x$vertex.label.color, 
+       vertex.label.cex = x$vertex.label.cex,
+       edge.color = x$edge.color, 
+       edge.width = x$edge.width, 
+       layout = x$coords,
+       mark.groups = x$mark.groups,
+       mark.shape = x$mark.shape,
+       mark.col = x$mark.col,
+       mark.border = x$mark.border,
        ...)
 }
 
+
+#' Print function for 'network_plot' class
+#' 
+#' Displays the network plot.
+#' @param x A 'network_plot' object obtained from plot.network() or
+#' plot_network().
+#' @param ... Additional arguments passed to plot().
+#' @export
+print.network_plot <- function(x, ...) {
+  plot(x, ...)
+}
 
 #' Plot matrix representation of network
 #' 
@@ -647,7 +658,7 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' edges common to both network, the second colors edges in network_1 but not
 #' network_2, and the third colors edges that are in network_2 but not 
 #' network_1. Default is c("black", "wheat", "red").
-#' @param generate_coords A function to generate the layout of a graph; used
+#' @param generate_layout A function to generate the layout of a graph; used
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
 #' @param include_vertex_labels If TRUE, the verticies will be labeled.
@@ -844,21 +855,24 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
   
   plot(g, vertex.color = node_color, vertex.label.font = 2,
        vertex.size = vertex.size, vertex.frame.color = vertex.frame.color,
-       vertex.label.color = vertex.label.color, vertex.label.cex = 0.7,
+       vertex.label.color = vertex.label.color, vertex.label.cex = 0.75,
        edge.color = edge.color, edge.width = edge.width, layout = coords, 
        ...)
   
   plot_summary <- list(graph = g,
                        coords = coords,
-                       node_weights = node_weights,
-                       edge_weights = edge_weights,
                        vertex.size = vertex.size,
                        vertex.frame.color = vertex.frame.color,
                        vertex.label.color = vertex.label.color,
+                       vertex.label.font = 2,
+                       vertex.label.cex = 0.75,
                        vertex.color = node_color,
                        edge.color = edge.color,
-                       edge.width = edge.width)
-  
+                       edge.width = edge.width,
+                       mark.groups = NULL,
+                       mark.shape = 1,
+                       mark.col = NULL,
+                       mark.border = NULL)
   class(plot_summary) <- "network_plot"
   
   # Return list silently:

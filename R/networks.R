@@ -76,7 +76,7 @@ create_network_from_modules <- function(p,
 
 #' Create a network object from adjacency matrix
 #' 
-#' @param adj_matrix The adjacency matrix for the network. This is converted
+#' @param adjacency_matrix The adjacency matrix for the network. This is converted
 #' to a single module structure.
 #' @param ... Additional arguments passed to
 #' create_module_from_adjacency_matrix(). 
@@ -373,6 +373,7 @@ get_adjacency_matrix.network <- function(x, ...) {
 #' covariance structure (see ?get_sigma.network). The off-diagonal entries are 
 #' interpreted as partial correlations, and the diagonal entries are set to zero.
 #' @param x A weighted 'network' object.
+#' @param tol A numeric value. Associations within tol to zero are set to zero.
 #' @param ... Additional arguments.
 #' @return An association matrix with entry ij != 0 if node i and j have a nonzero
 #' conditional linear association (in the Gaussian graphical model), and 0 
@@ -384,7 +385,7 @@ get_adjacency_matrix.network <- function(x, ...) {
 #' between two genes in seperate modules (i.e. genes that don't have a direct
 #' connection in the graph).
 #' @export
-get_association_matrix.network <- function(x, ...) {
+get_association_matrix.network <- function(x, tol = 10^-13, ...) {
   if(!(class(x) == "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
@@ -397,6 +398,7 @@ get_association_matrix.network <- function(x, ...) {
   assoc_matrix <- cov2cor(assoc_matrix)
   
   diag(assoc_matrix) <- 0
+  assoc_matrix[abs(assoc_matrix < tol)] <- 0
   
   colnames(assoc_matrix) <- x$node_names
   
@@ -409,7 +411,7 @@ get_association_matrix.network <- function(x, ...) {
 #' the covariance matrix is calculated from these assuming that expression
 #' for gene i is the weighted average over each module using 1/sqrt(m_i) 
 #' as the weight, where m_i is the number of modules containing gene i.
-#' @param network A weighted 'network' object.
+#' @param x A weighted 'network' object.
 #' @param ... Additional arguments.
 #' @return A covariance matrix for the network.
 #' @export
@@ -437,7 +439,7 @@ get_sigma.network <- function(x, ...) {
   # module and dividing by 1 / sqrt(m).
   denom <- 1 / sqrt(m)
   # The following calculates diag(denom) %*% sigma %*% diag(denom).
-  sigma <- denom * sigma * rep(denom, each = p)
+  sigma <- denom * sigma * rep(denom, each = x$p)
   return(sigma)
 }
 
@@ -888,19 +890,19 @@ perturb_network <- function(network,
 
 #' Print function for 'network' object.
 #' 
-#' @param network A 'network' object.
+#' @param x A 'network' object.
 #' @param ... Additional arguments are ignored.
 #' @return Prints a summary of the module.
 #' @export
-print.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
+print.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), 
                 "' is not a 'network' object."))
   
-  n_modules <- length(network$modules)
-  vals <- get_network_characteristics(network)
+  n_modules <- length(x$modules)
+  vals <- get_network_characteristics(x)
   
-  message <- paste0(ifelse(is_weighted(network), "A weighted", "An unweighted"), 
+  message <- paste0(ifelse(is_weighted(x), "A weighted", "An unweighted"), 
                     " network containing ", vals$p, " nodes, ", 
                     vals$n_edges, " edges, and ", n_modules, 
                     " module", ifelse(n_modules > 1, "s", ""), ".\n")
@@ -912,6 +914,7 @@ print.network <- function(network, ...) {
 #' Check if a network is weighted
 #' 
 #' @param x The 'network' object to check.
+#' @param ... Additional arguments
 #' @return A boolean value that is TRUE if all of the modules in the network
 #' are weighted and FALSE otherwise. If the network contains no modules or
 #' no connections, then this function returns TRUE.

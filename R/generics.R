@@ -18,7 +18,7 @@ get_adjacency_matrix <- function(x, ...) {
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
-get_adjacency_matrix.default <- function(...) {
+get_adjacency_matrix.default <- function(x, ...) {
   cat("get_adjacency_matrix() is defined for 'network' and 'network_module' objects.\n")
 }
 
@@ -77,10 +77,11 @@ get_association_matrix.default <- function(x, ...) {
 #' All off-diagonal values in the matrix are left unchanged. The diagonal
 #' is set to zero.
 #' @param x A 'matrix' object.
+#' @param tol A numeric value. Associations within tol from zero are set to zero.
 #' @param ... Additional arguments.
 #' @return Returns the matrix with diagonal elements set to zero.
 #' @export
-get_association_matrix.matrix <- function(x, ...) {
+get_association_matrix.matrix <- function(x, tol = 10^-13, ...) {
   if(!(class(x) == "matrix")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   if(dim(x)[1] != dim(x)[2])
@@ -91,6 +92,7 @@ get_association_matrix.matrix <- function(x, ...) {
     stop(paste0("'", deparse(substitute(x)), "' is not a weighted matrix."))
   
   diag(x) <- 0
+  x[abs(x) < tol] <- 0
   return(x)
 }
 

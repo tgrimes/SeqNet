@@ -4,12 +4,12 @@
 \alias{get_adjacency_matrix.default}
 \title{Get adjacency matrix}
 \usage{
-\method{get_adjacency_matrix}{default}(...)
+\method{get_adjacency_matrix}{default}(x, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
-
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An adjacency matrix with entry ij = 1 if node i and j are 

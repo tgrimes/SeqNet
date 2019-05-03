@@ -4,10 +4,12 @@
 \alias{get_association_matrix.matrix}
 \title{Get association matrix}
 \usage{
-\method{get_association_matrix}{matrix}(x, ...)
+\method{get_association_matrix}{matrix}(x, tol = 10^-13, ...)
 }
 \arguments{
 \item{x}{A 'matrix' object.}
+
+\item{tol}{A numeric value. Associations within tol from zero are set to zero.}
 
 \item{...}{Additional arguments.}
 }

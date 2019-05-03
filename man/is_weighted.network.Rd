@@ -8,6 +8,8 @@
 }
 \arguments{
 \item{x}{The 'network' object to check.}
+
+\item{...}{Additional arguments}
 }
 \value{
 A boolean value that is TRUE if all of the modules in the network

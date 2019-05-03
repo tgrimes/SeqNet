@@ -53,8 +53,17 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
                                                 module_name = NULL,
                                                 run_checks = TRUE) {
   
-  if(run_checks && !check_adjacency_cpp(adjacency_matrix)) 
+  print(adjacency_matrix)
+  if(run_checks && !check_adjacency_cpp(adjacency_matrix)) {
+    if(!all(diag(adjacency_matrix) == 0))
+      stop("Argument 'adjacency_matrix' has nonzero values on its diagonal.")
+    if(!all(abs(adjacency_matrix - t(adjacency_matrix)) < 10^-13))
+      stop("Argument 'adjacency matrix' is not symmetric.")
+    if(!all(adjacency_matrix %in% c(0, 1)))
+      stop("Argument 'adjacency_matrix' contains values that are not 0 or 1.")
     stop("Argument 'adjacency_matrix' is not an adjacency matrix.")
+  }
+    
   if(run_checks && !is.null(nodes)) {
     if(any(nodes <= 0)) {
       stop("Argument 'nodes' must contain positive integers.")
@@ -103,8 +112,8 @@ create_module_from_association_matrix <- function(association_matrix,
   if(!is.null(nodes)) {
     if(any(nodes <= 0)) {
       stop("Argument 'nodes' must contain positive integers.")
-    } else if(length(nodes) != ncol(adjacency_matrix)) {
-      stop( "Length of argument 'nodes' must equal the number of columns of 'adjacency_matrix'.")
+    } else if(length(nodes) != ncol(association_matrix)) {
+      stop( "Length of argument 'nodes' must equal the number of columns of 'association_matrix'.")
     }
   }
   if(!is.null(module_name) && !is.character(module_name))
@@ -119,8 +128,7 @@ create_module_from_association_matrix <- function(association_matrix,
     }
   }
   
-  adjacency_matrix <- association_matrix
-  adjacency_matrix[adjacency_matrix != 0] <- 1
+  adjacency_matrix <- (association_matrix != 0) * 1
   
   module <- create_module_from_adjacency_matrix(adjacency_matrix, 
                                                 nodes = nodes, 
@@ -644,22 +652,22 @@ remove_connections_to_node.network_module <- function(x,
 
 #' Print function for 'network_module' object.
 #' 
-#' @param module A 'network_module' object.
+#' @param x A 'network_module' object.
 #' @param ... Additional arguments are ignored.
 #' @return Prints a summary of the module.
 #' @export
-print.network_module <- function(module, ...) {
-  if(!(class(module) == "network_module")) 
-    stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
+print.network_module <- function(x, ...) {
+  if(!(class(x) == "network_module")) 
+    stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
-  vals <- get_network_characteristics(module)
-  message <- paste0(ifelse(is_weighted(module), "A weighted", "An unweighted"), 
+  vals <- get_network_characteristics(x)
+  message <- paste0(ifelse(is_weighted(x), "A weighted", "An unweighted"), 
                     " module containing ", vals$p, " nodes and ", 
                     vals$n_edges, " edges.\n",
                     "Contains nodes: ",
                     ifelse(vals$p > 50, 
-                           paste(paste(module$nodes[1:50], collapse = ", "), "..."),
-                           paste(module$nodes, collapse = ", ")), "\n")
+                           paste(paste(x$nodes[1:50], collapse = ", "), "..."),
+                           paste(x$nodes, collapse = ", ")), "\n")
   
   cat(message)
   print(round(unlist(vals[-c(1, 2, 6)]), 3))

@@ -4,10 +4,10 @@
 \alias{print.network_module}
 \title{Print function for 'network_module' object.}
 \usage{
-\method{print}{network_module}(module, ...)
+\method{print}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{A 'network_module' object.}
+\item{x}{A 'network_module' object.}
 
 \item{...}{Additional arguments are ignored.}
 }

@@ -4,10 +4,10 @@
 \alias{print.network}
 \title{Print function for 'network' object.}
 \usage{
-\method{print}{network}(network, ...)
+\method{print}{network}(x, ...)
 }
 \arguments{
-\item{network}{A 'network' object.}
+\item{x}{A 'network' object.}
 
 \item{...}{Additional arguments are ignored.}
 }

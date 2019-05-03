@@ -30,13 +30,13 @@ edges common to both network, the second colors edges in network_1 but not
 network_2, and the third colors edges that are in network_2 but not 
 network_1. Default is c("black", "wheat", "red").}
 
+\item{generate_layout}{A function to generate the layout of a graph; used
+if coords is NULL. See ?igraph::layout_ for details. Other options include 
+'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
 \item{...}{Additional arguments passed to plot.igraph().}
-
-\item{generate_coords}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
 
 \item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
 }

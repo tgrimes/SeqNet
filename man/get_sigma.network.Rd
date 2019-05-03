@@ -7,9 +7,9 @@
 \method{get_sigma}{network}(x, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{x}{A weighted 'network' object.}
 
-\item{network}{A weighted 'network' object.}
+\item{...}{Additional arguments.}
 }
 \value{
 A covariance matrix for the network.

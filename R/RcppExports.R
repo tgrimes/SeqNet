@@ -5,6 +5,7 @@
 #' 
 #' Sets all nonzero values to 1.
 #' @param m A matrix to convert.
+#' @param tol A numeric value. Entires within tol from zero are set to zero.
 #' @return Returns the adjacency matrix.
 #' @export
 overwrite_as_adjacency_cpp <- function(m, tol = 10^-13) {

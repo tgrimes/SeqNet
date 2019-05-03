@@ -8,6 +8,8 @@ overwrite_as_adjacency_cpp(m, tol = 10^-13)
 }
 \arguments{
 \item{m}{A matrix to convert.}
+
+\item{tol}{A numeric value. Entires within tol from zero are set to zero.}
 }
 \value{
 Returns the adjacency matrix.
