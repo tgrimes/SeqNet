@@ -11,11 +11,12 @@ using namespace Rcpp;
 //' @export
 //[[Rcpp::export]]
 NumericVector ecdf_cpp(NumericVector x) {
-  int nobs = x.size();
-  NumericVector ans(nobs);
-  std::sort(x.begin(), x.end());
-  for (int i = 0; i < nobs; ++i){
-    ans[i] = (std::upper_bound(x.begin(), x.end(), x[i]) - x.begin());
+  int n = x.size();
+  NumericVector obs = x + 0.0;
+  NumericVector ans(n);
+  std::sort(obs.begin(), obs.end());
+  for (int i = 0; i < n; ++i){
+    ans[i] = (std::upper_bound(obs.begin(), obs.end(), x[i]) - obs.begin());
   }
-  return ans/((double) nobs);
+  return ans/((double) n);
 }
