@@ -24,8 +24,8 @@ NumericMatrix ring_lattice_cpp(int p, int neig_size) {
         neig = neig - p;
       }
       
-      adj(i, neig) += 1.0;
-      adj(neig, i) += 1.0;
+      adj(i, neig) = 1.0;
+      adj(neig, i) = 1.0;
     }
   }
   
