@@ -7,7 +7,7 @@
 plot_modules(network, compare_graph = NULL, as_subgraph = TRUE,
   modules = NULL, node_scale = 4, edge_scale = 1,
   node_color = adjustcolor("orange", 0.5),
-  group_color = RColorBrewer::brewer.pal(9, "Set1"), coords = NULL,
+  group_color = RColorBrewer::brewer.pal(9, "Set1"),
   generate_layout = igraph::nicely, include_vertex_labels = TRUE,
   show_legend = FALSE, legend_position = "topright",
   legend_horizontal = FALSE, display_plot = TRUE, ...)

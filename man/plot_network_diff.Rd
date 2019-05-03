@@ -37,8 +37,6 @@ if coords is NULL. See ?igraph::layout_ for details. Other options include
 \item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
 
 \item{...}{Additional arguments passed to plot.igraph().}
-
-\item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
 }
 \value{
 Creates a plot of the network and returns a graph object. 
