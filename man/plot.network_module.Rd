@@ -4,10 +4,10 @@
 \alias{plot.network_module}
 \title{Plot function for 'network_module' object.}
 \usage{
-\method{plot}{network_module}(module, ...)
+\method{plot}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{A 'network_module' object.}
+\item{x}{A 'network_module' object.}
 
 \item{...}{Additional arguments passed to plot_network().}
 }

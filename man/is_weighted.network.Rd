@@ -4,10 +4,10 @@
 \alias{is_weighted.network}
 \title{Check if a network is weighted}
 \usage{
-\method{is_weighted}{network}(network, ...)
+\method{is_weighted}{network}(x, ...)
 }
 \arguments{
-\item{network}{The 'network' object to check.}
+\item{x}{The 'network' object to check.}
 }
 \value{
 A boolean value that is TRUE if all of the modules in the network

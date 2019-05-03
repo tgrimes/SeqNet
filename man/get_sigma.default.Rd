@@ -4,10 +4,12 @@
 \alias{get_sigma.default}
 \title{Get the covariance matrix}
 \usage{
-\method{get_sigma}{default}(...)
+\method{get_sigma}{default}(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A covariance matrix.

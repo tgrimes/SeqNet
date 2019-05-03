@@ -4,9 +4,9 @@
 \alias{create_modules_for_network}
 \title{Randomly sample subsets of genes for each module}
 \usage{
-create_modules_for_network(n_modules, p, avg_module_size = 12,
-  sd_module_size = 4, min_module_size = 10, max_module_size = 15,
-  selection_weight = 100, ...)
+create_modules_for_network(n_modules, p, avg_module_size = 20,
+  sd_module_size = 10, min_module_size = 5, max_module_size = 100,
+  selection_weight = 20, ...)
 }
 \arguments{
 \item{n_modules}{The number of modules to include in the network.}

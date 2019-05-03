@@ -4,10 +4,12 @@
 \alias{remove_weights.matrix}
 \title{Removes the weights of all connections}
 \usage{
-\method{remove_weights}{matrix}(m, ...)
+\method{remove_weights}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified object.

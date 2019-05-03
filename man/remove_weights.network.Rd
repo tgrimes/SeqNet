@@ -4,10 +4,12 @@
 \alias{remove_weights.network}
 \title{Removes the weights of all connections in the network}
 \usage{
-\method{remove_weights}{network}(network)
+\method{remove_weights}{network}(x, ...)
 }
 \arguments{
-\item{network}{The 'network' object to modify.}
+\item{x}{The 'network' object to modify.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified 'network' object.

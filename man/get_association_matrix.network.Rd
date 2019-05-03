@@ -4,10 +4,12 @@
 \alias{get_association_matrix.network}
 \title{Get the association matrix of a network}
 \usage{
-\method{get_association_matrix}{network}(network, ...)
+\method{get_association_matrix}{network}(x, ...)
 }
 \arguments{
-\item{network}{A weighted 'network' object.}
+\item{x}{A weighted 'network' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An association matrix with entry ij != 0 if node i and j have a nonzero

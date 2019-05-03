@@ -4,10 +4,12 @@
 \alias{get_adjacency_matrix.network_module}
 \title{Get adjacency matrix of a module}
 \usage{
-\method{get_adjacency_matrix}{network_module}(module, ...)
+\method{get_adjacency_matrix}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{The 'network_module' object to get adjacency matrix for.}
+\item{x}{The 'network_module' object to get adjacency matrix for.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An adjacency matrix with entry ij == 1 if node i and j are 

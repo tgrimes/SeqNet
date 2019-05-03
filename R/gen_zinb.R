@@ -298,7 +298,7 @@ est_params_from_reference <- function(reference = NULL,
   if(is.vector(reference)) {
     reference <- matrix(reference, ncol = 1)
   } else if(!is.data.frame(reference) && !is.matrix(reference)) {
-    stop("reference should be a vector or data.frame.")
+    stop("Argument 'reference' should be a vector or data.frame.")
   }
   
   p <- ncol(reference)
@@ -328,10 +328,10 @@ get_kidney_reference_data <- function() {
   kidney <- kidney$tumor
   
   # Remove any genes that have zero variation or have extremely low expression.
-  index <- apply(kidney, 2, function(x) sd(x) > 0)
-  kidney <- kidney[, index]
-  index <- apply(kidney, 2, function(x) mean(x) > 5)
-  kidney <- kidney[, index]
+  has_variation <- apply(kidney, 2, function(x) length(unique(x)) != 1)
+  kidney <- kidney[, has_variation]
+  has_expression <- apply(kidney, 2, function(x) mean(x) > 5)
+  kidney <- kidney[, has_expression]
   
   return(kidney)
 }

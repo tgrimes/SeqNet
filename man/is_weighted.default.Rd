@@ -4,10 +4,12 @@
 \alias{is_weighted.default}
 \title{Check if an object is weighted}
 \usage{
-\method{is_weighted}{default}(...)
+\method{is_weighted}{default}(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 Returns FALSE if all of the connections in the 

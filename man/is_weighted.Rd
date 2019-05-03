@@ -4,15 +4,14 @@
 \alias{is_weighted}
 \title{Check if an object is weighted}
 \usage{
-is_weighted(...)
+is_weighted(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
-}
-\value{
-Returns FALSE if all of the connections in the 
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.
 object are weighted by 0s and 1s, and returns TRUE otherwise. If there
-are no connections in the module, then this function returns TRUE.
+are no connections in the module, then this function returns TRUE.}
 }
 \description{
 Check if an object is weighted

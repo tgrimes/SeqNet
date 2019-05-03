@@ -4,10 +4,12 @@
 \alias{get_node_names.network}
 \title{Get node names of a network}
 \usage{
-\method{get_node_names}{network}(network, ...)
+\method{get_node_names}{network}(x, ...)
 }
 \arguments{
-\item{network}{The 'network' object to get node names from.}
+\item{x}{The 'network' object to get node names from.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A vector containing the node names

@@ -4,10 +4,12 @@
 \alias{get_association_matrix}
 \title{Get association matrix}
 \usage{
-get_association_matrix(...)
+get_association_matrix(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An association matrix with entry ij != 0 if node i and j are 

@@ -5,7 +5,7 @@
 \title{Create a module from an adjacency matrix}
 \usage{
 create_module_from_adjacency_matrix(adjacency_matrix, nodes = NULL,
-  module_name = NULL)
+  module_name = NULL, run_checks = TRUE)
 }
 \arguments{
 \item{adjacency_matrix}{The adjacency matrix used to create the module.}
@@ -15,6 +15,8 @@ contained in this module.}
 
 \item{module_name}{(optional) Character string specifying the name of the 
 module. If NULL, the module will be unnamed.}
+
+\item{run_checks}{If TRUE, then the 'adjacency_matrix' argument is checked.}
 }
 \value{
 A 'network_module' object.

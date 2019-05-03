@@ -4,10 +4,12 @@
 \alias{get_association_matrix.network_module}
 \title{Get association matrix of a module}
 \usage{
-\method{get_association_matrix}{network_module}(module, ...)
+\method{get_association_matrix}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{A weighted 'network_module' object.}
+\item{x}{A weighted 'network_module' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An association matrix with entry ij != 0 if node i and j are 

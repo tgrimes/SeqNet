@@ -4,14 +4,14 @@
 \alias{get_association_matrix.default}
 \title{Get association matrix}
 \usage{
-\method{get_association_matrix}{default}(...)
+\method{get_association_matrix}{default}(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
-}
-\value{
-An association matrix with entry ij != 0 if node i and j are 
-connected, and 0 otherwise. The diagonal entries are all zero.
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.
+#' @return An association matrix with entry ij != 0 if node i and j are 
+connected, and 0 otherwise. The diagonal entries are all zero.}
 }
 \description{
 Get association matrix

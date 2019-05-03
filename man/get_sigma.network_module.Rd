@@ -4,10 +4,12 @@
 \alias{get_sigma.network_module}
 \title{Get the covariance matrix of a module}
 \usage{
-\method{get_sigma}{network_module}(module, ...)
+\method{get_sigma}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{A weighted 'network_module' object.}
+\item{x}{A weighted 'network_module' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A covariance matrix for the module

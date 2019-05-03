@@ -4,11 +4,11 @@
 \alias{plot.network}
 \title{Plot function for 'network' object}
 \usage{
-\method{plot}{network}(network, compare_graph = NULL,
-  show_modules = FALSE, as_subgraph = FALSE, ...)
+\method{plot}{network}(x, compare_graph = NULL, show_modules = FALSE,
+  as_subgraph = FALSE, ...)
 }
 \arguments{
-\item{network}{A 'network' object.}
+\item{x}{A 'network' object.}
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 

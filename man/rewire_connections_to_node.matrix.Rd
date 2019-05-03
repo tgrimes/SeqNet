@@ -4,11 +4,11 @@
 \alias{rewire_connections_to_node.matrix}
 \title{Rewire connections to a node.}
 \usage{
-\method{rewire_connections_to_node}{matrix}(m, node, prob_rewire,
-  weights = NULL, exponent = 0)
+\method{rewire_connections_to_node}{matrix}(x, node, prob_rewire,
+  weights = NULL, exponent = 0, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object to modify.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{node}{The node to rewire.}
 
@@ -22,6 +22,8 @@ in addition to the degree of each node when sampling nodes to rewire.}
 \item{exponent}{The exponent used for weighted sampling. When exponent = 0,
 nodes are sampled uniformly. When exponent > 0, the sampling probability
 is based on node weights.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified object m.

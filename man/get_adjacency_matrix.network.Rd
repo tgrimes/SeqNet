@@ -4,10 +4,12 @@
 \alias{get_adjacency_matrix.network}
 \title{Get the adjacency matrix of a network}
 \usage{
-\method{get_adjacency_matrix}{network}(network, ...)
+\method{get_adjacency_matrix}{network}(x, ...)
 }
 \arguments{
-\item{network}{A 'network' object; can be either weighted or unweighted.}
+\item{x}{A 'network' object; can be either weighted or unweighted.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An adjacency matrix with entry ij = 1 if node i and j are 

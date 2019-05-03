@@ -4,9 +4,11 @@
 \alias{get_sigma.network}
 \title{Get the covariance matrix of a network}
 \usage{
-\method{get_sigma}{network}(network, ...)
+\method{get_sigma}{network}(x, ...)
 }
 \arguments{
+\item{...}{Additional arguments.}
+
 \item{network}{A weighted 'network' object.}
 }
 \value{

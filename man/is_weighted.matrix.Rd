@@ -4,10 +4,12 @@
 \alias{is_weighted.matrix}
 \title{Check if an object is weighted}
 \usage{
-\method{is_weighted}{matrix}(m, ...)
+\method{is_weighted}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{A 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 Returns FALSE if all of entries in the matrix are either zero or one, 

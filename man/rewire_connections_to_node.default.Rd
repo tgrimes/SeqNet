@@ -4,10 +4,12 @@
 \alias{rewire_connections_to_node.default}
 \title{Rewire connections to a node.}
 \usage{
-\method{rewire_connections_to_node}{default}(...)
+\method{rewire_connections_to_node}{default}(x, ...)
 }
 \arguments{
-\item{...}{A 'network', 'network_module', or 'matrix' object to modify.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified object.

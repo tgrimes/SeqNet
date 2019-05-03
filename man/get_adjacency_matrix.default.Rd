@@ -7,7 +7,9 @@
 \method{get_adjacency_matrix}{default}(...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{...}{Additional arguments.}
+
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 }
 \value{
 An adjacency matrix with entry ij = 1 if node i and j are 

@@ -4,9 +4,9 @@
 \alias{random_module_structure}
 \title{Create a random network structure for a module}
 \usage{
-random_module_structure(size, prob_rewire = 0.5, prob_remove = 0.5,
-  weights = NULL, neig_size = 3, neig_size_fn = NULL,
-  exponent = 10, ...)
+random_module_structure(size, prob_rewire = 0.8, prob_remove = 0.5,
+  weights = NULL, neig_size = 1, neig_size_fn = NULL,
+  exponent = 100, ...)
 }
 \arguments{
 \item{size}{The number of nodes to include in the graph.}

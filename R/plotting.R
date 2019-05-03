@@ -132,7 +132,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
   if(!is.null(assoc_matrix)) {
     # Scale associations relative to largest association in the network.
     temp <- max(assoc_matrix[lower.tri(assoc_matrix)])
-    node_weights <- sqrt(apply(assoc_matrix, 2, sum) / 
+    node_weights <- sqrt(colSums(assoc_matrix) / 
                            ifelse(temp == 0, 1, temp))
   } else {
     # Default node weights are proportional to sqrt(degree)
@@ -364,7 +364,7 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   if(!is.null(assoc_matrix)) {
     # Scale associations relative to largest association in the network.
     temp <- max(assoc_matrix[lower.tri(assoc_matrix)])
-    node_weights <- sqrt(apply(assoc_matrix, 2, sum) / 
+    node_weights <- sqrt(colSums(assoc_matrix) / 
                            ifelse(temp == 0, 1, temp))
   } else {
     # Default node weights are proportional to sqrt(degree)
@@ -521,7 +521,7 @@ get_layout_for_modules <- function(g, modules) {
 #' 
 #' This function plots the given network. If the result of another plot is 
 #' provided, this plot will be modified for easier comparison.
-#' @param network A 'network' object.
+#' @param x A 'network' object.
 #' @param compare_graph The plot of another network to use for comparison.
 #' @param show_modules If TRUE, the modules will highlighted in the graph. 
 #' Defaults to FALSE if there is exactly one module in the network and to TRUE
@@ -537,17 +537,17 @@ get_layout_for_modules <- function(g, modules) {
 #' argument, which will setup the plot for easier comparison between the old 
 #' graph and the new graph of `network`.
 #' @export
-plot.network <- function(network, 
+plot.network <- function(x, 
                          compare_graph = NULL, 
                          show_modules = FALSE, 
                          as_subgraph = FALSE, 
                          ...) {
   if(show_modules) {
-    plot_modules(network, 
+    plot_modules(x, 
                  compare_graph = compare_graph, 
                  as_subgraph = as_subgraph, ...)
   } else {
-    plot_network(network,
+    plot_network(x,
                  compare_graph = compare_graph, 
                  as_subgraph = as_subgraph, ...)
   }
@@ -555,35 +555,35 @@ plot.network <- function(network,
 
 #' Plot function for 'network_module' object.
 #' 
-#' @param module A 'network_module' object.
+#' @param x A 'network_module' object.
 #' @param ... Additional arguments passed to plot_network().
 #' @return Creates a plot of the module and returns a graph object. 
 #' See ?plot_network for details.
 #' @export
-plot.network_module <- function(module, ...) {
-  plot_network(module, ...)
+plot.network_module <- function(x, ...) {
+  plot_network(x, ...)
 }
 
 
 #' Plot function for 'network_plot' class
 #' 
-#' @param network_plot A 'network_plot' object obtained from plot.network() or
+#' @param x A 'network_plot' object obtained from plot.network() or
 #' plot_network().
 #' @param ... Additional arguments passed to plot.igraph().
 #' @export
-plot.network_plot <- function(network_plot, 
-                              vertex.color = network_plot$vertex.color, 
+plot.network_plot <- function(x, 
+                              vertex.color = x$vertex.color, 
                               vertex.label.font = 2,
-                              vertex.size = network_plot$vertex.size, 
-                              vertex.frame.color = network_plot$vertex.frame.color,
-                              vertex.label.color = network_plot$vertex.label.color, 
+                              vertex.size = x$vertex.size, 
+                              vertex.frame.color = x$vertex.frame.color,
+                              vertex.label.color = x$vertex.label.color, 
                               vertex.label.cex = 0.7,
-                              edge.color = network_plot$edge.color, 
-                              edge.width = network_plot$edge.width, 
-                              layout = network_plot$coords,
+                              edge.color = x$edge.color, 
+                              edge.width = x$edge.width, 
+                              layout = x$coords,
                               ...) {
   
-  plot(network_plot$graph, 
+  plot(x$graph, 
        vertex.color = vertex.color, 
        vertex.label.font = vertex.label.font,
        vertex.size = vertex.size, 
@@ -794,11 +794,11 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
     # Scale associations relative to largest association in either network.
     temp <- max(c(abs(assoc_matrix_1[lower.tri(assoc_matrix_1)]),
                   abs(assoc_matrix_2[lower.tri(assoc_matrix_2)])))
-    node_weights <- sqrt(apply(assoc_matrix_diff, 2, sum) /
+    node_weights <- sqrt(colSums(assoc_matrix_diff) /
                            ifelse(temp == 0, 1, temp))
   } else {
     # Default node weights are proportional to sqrt(degree change)
-    node_weights <- sqrt(apply(abs(adj_matrix_1 - adj_matrix_2), 2, sum))
+    node_weights <- sqrt(colSums(abs(adj_matrix_1 - adj_matrix_2)))
   }
   vertex.size <- node_weights * node_scale
   vertex.frame.color <- "white"

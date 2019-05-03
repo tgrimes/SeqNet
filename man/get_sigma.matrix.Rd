@@ -4,10 +4,12 @@
 \alias{get_sigma.matrix}
 \title{Get the covariance matrix}
 \usage{
-\method{get_sigma}{matrix}(m, ...)
+\method{get_sigma}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{A 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A covariance matrix.

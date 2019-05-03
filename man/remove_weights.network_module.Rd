@@ -4,10 +4,12 @@
 \alias{remove_weights.network_module}
 \title{Removes the connection weights for a module}
 \usage{
-\method{remove_weights}{network_module}(module)
+\method{remove_weights}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{The 'network_module' object to modify.}
+\item{x}{The 'network_module' object to modify.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified 'network_module' object.

@@ -7,16 +7,11 @@ setClass(Class = "network")
 #' @return A network object.
 #' @export 
 create_empty_network <- function(p) {
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'p'.
-  check_positive_integer(p, checklist)
-  
-  report_checks(checklist)
-  ##################################
-  
+  if((p %% 1 != 0) || p <= 0) {
+    stop("Argument 'p' must be a positive integer.")
+  }
+
   network <- list(p = p,
                   modules = NULL, 
                   node_names = NULL)
@@ -46,35 +41,24 @@ create_network_from_modules <- function(p,
                                         module_list, 
                                         node_names = as.character(1:p), 
                                         ...) {
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'p'.
-  check_positive_integer(p, checklist)
-  
+  if((p %% 1 != 0) || p <= 0) {
+    stop("Argument 'p' must be a positive integer.")
+  }
+
   # Check 'module_list'.
   if(is.null(module_list)) {
     # NULL module_list is ok.
   } else if(class(module_list) == "list") {
     # Check each element in the list 'modules'.
     if(!all(sapply(module_list, function(m) class(m) == "network_module"))) 
-      ArgumentCheck::addError(
-        msg = paste("Argument 'module_list' must be a list of 'network_module'."),
-        argcheck = checklist
-      )
+      stop("Argument 'module_list' must be a list of 'network_module'.")
   } else if(class(module_list) == "network_module") {
     # If 'module_list' is provided but is not a list, correct without warning.
     module_list <- list(module_list)
   } else {
-    ArgumentCheck::addError(
-      msg = paste("Argument 'module_list' must be a list of 'network_module'."),
-      argcheck = checklist
-    )
+    stop("Argument 'module_list' must be a list of 'network_module'.")
   }
-  
-  report_checks(checklist)
-  ##################################
   
   network <- create_empty_network(p)
   network <- add_modules_to_network(network, module_list)
@@ -99,17 +83,11 @@ create_network_from_modules <- function(p,
 #' @return A network object.
 #' @export 
 create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
-  p <- ncol(adjacency_matrix)
-  
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'adjacency_matrix'
-  check_adjacency_matrix(adjacency_matrix, checklist)
+  if(!check_adjacency_cpp(adjacency_matrix)) 
+    stop("Argument 'adjacency_matrix' is not an adjacency matrix.")
   
-  report_checks(checklist)
-  ##################################
+  p <- ncol(adjacency_matrix)
   
   # Use node names from 'adjacency_matrix', if provided.
   if(!is.null(colnames(adjacency_matrix))) {
@@ -144,20 +122,12 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
 create_network_from_association_matrix <- function(association_matrix, 
                                                    standardize = TRUE,
                                                    ...) {
+  # TODO: Add check for 'association_matrix' as a precision matrix.
+  
   p <- ncol(association_matrix)
   if(all(diag(association_matrix) == 0)) {
     diag(association_matrix) <- 1
   }
-  
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
-  # Check 'association_matrix'
-  check_precision_matrix(association_matrix, checklist)
-  
-  report_checks(checklist)
-  ##################################
   
   if(!all(diag(association_matrix) == 1) && standardize) {
     cat("Standardizing association_matrix to obtain partial correlations.\n")
@@ -202,19 +172,15 @@ random_network <- function(p,
                            n_modules = NULL,
                            consistent_connections = TRUE,
                            ...) {
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'p'.
-  check_positive_integer(p, checklist)
-  check_in_closed_interval(p, checklist, 10, 20000)
+  if((p %% 1 != 0) || p <= 0) {
+    stop("Argument 'p' must be a positive integer.")
+  }
   
-  # Check 'n_modules', if it is not NULL.
-  check_nonnegative_integer(p, checklist)
-  
-  report_checks(checklist)
-  ##################################
+  # Check 'n_modules'.
+  if(!is.null(n_modules) && ((n_modules %% 1 != 0) || n_modules <= 0)) {
+    stop("Argument 'n_modules' must be apositive integer or NULL.")
+  }
   
   module_list <- create_modules_for_network(n_modules, p, ...)
   network <- create_network_from_modules(p, module_list = module_list)
@@ -224,7 +190,8 @@ random_network <- function(p,
     adj <- get_adjacency_matrix(network)
     module_list = lapply(network$modules, function(m) {
                            create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], 
-                                                               m$nodes)
+                                                               m$nodes,
+                                                               run_checks = FALSE)
                          })
     network <- 
       create_network_from_modules(p, module_list)
@@ -252,11 +219,11 @@ random_network <- function(p,
 #' @export 
 create_modules_for_network <- function(n_modules, 
                                        p, 
-                                       avg_module_size = 12, 
-                                       sd_module_size = 4,
-                                       min_module_size = 10, 
-                                       max_module_size = 15, 
-                                       selection_weight = 100,
+                                       avg_module_size = 20, 
+                                       sd_module_size = 10,
+                                       min_module_size = 5, 
+                                       max_module_size = 100, 
+                                       selection_weight = 20,
                                        ...) {
   ############################################################
   # Check parameters for generating module size.
@@ -335,13 +302,13 @@ create_modules_for_network <- function(n_modules,
     }
     nodes <- sort(nodes)
     module_list[[i]] <- random_module(nodes, 
-                                      deg_ex = deg[nodes], 
+                                      weights = deg[nodes], 
                                       ...)
     node_unselected[nodes] <- FALSE
     
     # Update degree distribution
-    deg[nodes] <- deg[nodes] + apply(get_adjacency_matrix(module_list[[i]]), 2, sum)
-    prob[!node_unselected] <- 1 / p * ecdf(deg[!node_unselected])(deg[!node_unselected])^selection_weight
+    deg[nodes] <- deg[nodes] + colSums(get_adjacency_matrix(module_list[[i]]))
+    prob[!node_unselected] <- 1 / p * ecdf_cpp(deg[!node_unselected])^selection_weight
     
     if(is.null(n_modules)) {
       need_more_modules <- any(node_unselected)
@@ -367,7 +334,8 @@ create_modules_for_network <- function(n_modules,
 #' The adjacency matrix indicates direct connections in the network. The ij'th
 #' entry in the adjacency matrix is 1 if gene i and j are connected in any 
 #' module and is 0 otherwise.
-#' @param network A 'network' object; can be either weighted or unweighted.
+#' @param x A 'network' object; can be either weighted or unweighted.
+#' @param ... Additional arguments.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero. 
 #' @note Note that the connections in an adjacency matrix and association matrix
@@ -377,28 +345,24 @@ create_modules_for_network <- function(n_modules,
 #' between two genes in seperate modules (i.e. genes that don't have a direct
 #' connection in the graph).
 #' @export
-get_adjacency_matrix.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+get_adjacency_matrix.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  p <- network$p
+  p <- x$p
   adj_matrix <- matrix(0, nrow = p, ncol = p) # Adjacency matrix.
-  n_modules <- length(network$modules)
+  n_modules <- length(x$modules)
   if(n_modules > 0) {
     for(i in 1:n_modules) {
-      module_index <- network$modules[[i]]$nodes
-      module_matrix <- get_adjacency_matrix.network_module(network$modules[[i]])
+      module_index <- x$modules[[i]]$nodes
+      module_matrix <- get_adjacency_matrix.network_module(x$modules[[i]])
       adj_matrix[module_index, module_index] <- 
-        adj_matrix[module_index, module_index] + module_matrix
+        (((adj_matrix[module_index, module_index] + module_matrix) > 0) * 1)
     }
   }
   
-  adj_matrix <- 1 * (adj_matrix > 0) # Reduce counts to 1 or 0.
-  
-  
-  colnames(adj_matrix) <- network$node_names
-  
+  attr(adj_matrix, "dimnames")[[2]] <- x$node_names
+
   return(adj_matrix)
 }
 
@@ -408,7 +372,8 @@ get_adjacency_matrix.network <- function(network, ...) {
 #' The association matrix for a weighted network is recovered from its
 #' covariance structure (see ?get_sigma.network). The off-diagonal entries are 
 #' interpreted as partial correlations, and the diagonal entries are set to zero.
-#' @param network A weighted 'network' object.
+#' @param x A weighted 'network' object.
+#' @param ... Additional arguments.
 #' @return An association matrix with entry ij != 0 if node i and j have a nonzero
 #' conditional linear association (in the Gaussian graphical model), and 0 
 #' otherwise. The diagonal entries are all zero.
@@ -419,22 +384,21 @@ get_adjacency_matrix.network <- function(network, ...) {
 #' between two genes in seperate modules (i.e. genes that don't have a direct
 #' connection in the graph).
 #' @export
-get_association_matrix.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+get_association_matrix.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  if(!all(sapply(network$modules, is_weighted))) 
+  if(!all(sapply(x$modules, is_weighted))) 
     stop("Network modules must be weighted.")
   
-  sigma <- get_sigma(network)
+  sigma <- get_sigma(x)
   assoc_matrix <- -solve(sigma)
   diag(assoc_matrix) <- -diag(assoc_matrix)
   assoc_matrix <- cov2cor(assoc_matrix)
   
   diag(assoc_matrix) <- 0
   
-  colnames(assoc_matrix) <- network$node_names
+  colnames(assoc_matrix) <- x$node_names
   
   return(assoc_matrix)
 }
@@ -446,21 +410,21 @@ get_association_matrix.network <- function(network, ...) {
 #' for gene i is the weighted average over each module using 1/sqrt(m_i) 
 #' as the weight, where m_i is the number of modules containing gene i.
 #' @param network A weighted 'network' object.
+#' @param ... Additional arguments.
 #' @return A covariance matrix for the network.
 #' @export
-get_sigma.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+get_sigma.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  if(!all(sapply(network$modules, is_weighted))) 
+  if(!all(sapply(x$modules, is_weighted))) 
     stop("Network modules must be weighted.")
   
-  m <- rep(0, network$p)
-  sigma <- diag(0, network$p)
-  for(i in 1:length(network$modules)) {
-    nodes <- network$modules[[i]]$nodes
-    sigma[nodes, nodes] <- sigma[nodes, nodes] + get_sigma(network$modules[[i]])
+  m <- rep(0, x$p)
+  sigma <- diag(0, x$p)
+  for(i in 1:length(x$modules)) {
+    nodes <- x$modules[[i]]$nodes
+    sigma[nodes, nodes] <- sigma[nodes, nodes] + get_sigma(x$modules[[i]])
     m[nodes] <- m[nodes] + 1
   }
   
@@ -472,8 +436,8 @@ get_sigma.network <- function(network, ...) {
   # This assumes the data are generated by summing the expression of each
   # module and dividing by 1 / sqrt(m).
   denom <- 1 / sqrt(m)
-  sigma <- diag(denom) %*% sigma %*% diag(denom)
-  
+  # The following calculates diag(denom) %*% sigma %*% diag(denom).
+  sigma <- denom * sigma * rep(denom, each = p)
   return(sigma)
 }
 
@@ -492,37 +456,21 @@ get_summary_for_node <- function(node, network) {
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'node'.
   if(is.character(node)) {
     # If a string is provided, find the index for this node in the network.
     node_index <- which(network$node_names == node)
     if(length(node) == 0) 
-      ArgumentCheck::addError(
-        msg = paste0("Argument 'network' does not contain a node nammed ", '"', node, '".'),
-        argcheck = checklist
-      )
+      stop("Argument 'network' does not contain a node nammed ", '"', node, '".')
   } else if(is.numeric(node) && (node %% 1 == 0)) {
     if(node < 1 || node > network$p) 
-      ArgumentCheck::addError(
-        msg = paste0("Argument 'node' = ", node, " must index a node in the network;",
-                     " this network contains 1:", network$p, " nodes."),
-        argcheck = checklist
-      )
+      stop("Argument 'node' = ", node, " must index a node in the network;",
+           " this network contains 1:", network$p, " nodes.")
     node_index <- node
   } else {
-    ArgumentCheck::addError(
-      msg = "Argument 'node' must be a character string or integer value.",
-      argcheck = checklist
-    )
+    stop("Argument 'node' must be a character string or integer value.")
   }
-  
-  report_checks(checklist)
-  ##################################
-  
+
   # Initialize summary variables for node.
   degree <- 0
   n_modules <- 0
@@ -572,11 +520,10 @@ get_summary_for_node <- function(node, network) {
 #' @export
 get_degree_distribution <- function(network) {
   if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+    stop(paste0("'", deparse(substitute(network)), "' is not a 'network' object."))
   
   adj_matrix <- get_adjacency_matrix(network)
-  degree <- apply(adj_matrix, 2, sum)
+  degree <- colSums(adj_matrix)
   return(degree)
 }
 
@@ -584,14 +531,14 @@ get_degree_distribution <- function(network) {
 
 #' Get node names of a network
 #' 
-#' @param network The 'network' object to get node names from.
+#' @param x The 'network' object to get node names from.
+#' @param ... Additional arguments.
 #' @return A vector containing the node names
 #' @export
-get_node_names.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
-  return(network$node_names)
+get_node_names.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
+  return(x$node_names)
 }
 
 #' Get a list of modules from the network
@@ -624,11 +571,7 @@ add_modules_to_network <- function(network, module_list) {
   if(!(class(network) == "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
-  
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
+
   # Check 'module_list'
   # Only perform checks if module_list is not NULL and non-empty.
   if(!is.null(module_list) && length(module_list) > 0) {
@@ -637,30 +580,20 @@ add_modules_to_network <- function(network, module_list) {
       module_list <- list(module_list)
     }
     if(!all(sapply(module_list, function(m) class(m) == "network_module"))) { 
-      ArgumentCheck::addError(
-        msg = "Argument 'module_list' must be a list of 'network_module' objects.",
-        argcheck = checklist
-      )
+      stop("Argument 'module_list' must be a list of 'network_module' objects.")
     } else {
       # All elements in 'module_list' are modules; check that their nodes 
       # index nodes within the network.
-      network_nodes <- 1:network$p
+      p <- network$p
       index_bad_modules <- which(sapply(module_list, function(module) {
-        !all(module$nodes %in% network_nodes)
+        module$nodes[1] <= 0 || module$nodes[length(module$nodes)] > p
       }))
       if(length(index_bad_modules) > 0)
-        ArgumentCheck::addError(
-          msg = paste0("'module_list' contains modules with nodes outside of",
-                       " 1:", network$p, ". Errors with modules: ", 
-                       paste(index_bad_modules, collapse = ", ")),
-          argcheck = checklist
-        )
+        stop("'module_list' contains modules with nodes outside of",
+             " 1:", p, ". Errors with modules: ", 
+             paste(index_bad_modules, collapse = ", "))
     }
   }
-  
-  
-  report_checks(checklist)
-  ##################################
   
   module_names <- names(module_list)
   if(!is.null(module_names)) {
@@ -689,27 +622,15 @@ replace_module_in_network <- function(module_index, module, network) {
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'module_index'.
   check_positive_integer(module_index, checklist)
   if(!(module_index %in% 1:length(network$modules)))
-    ArgumentCheck::addError(
-      msg = paste0("Argument 'module_index' must be in 1:", length(network$modules), "."),
-      argcheck = checklist
-    )
+    stop("Argument 'module_index' must be in 1:", length(network$modules), ".")
   
   # Check 'module'.
   if(!all(module$nodes %in% 1:network$p))
-    ArgumentCheck::addError(
-      msg = paste0("Argument 'module' must contain nodes in 1:", network$p, "."),
-      argcheck = checklist
-    )
+    stop("Argument 'module' must contain nodes in 1:", network$p, ".")
   
-  report_checks(checklist)
-  ##################################
   
   network$modules[[module_index]] <- module
   
@@ -719,12 +640,13 @@ replace_module_in_network <- function(module_index, module, network) {
 
 #' Removes the weights of all connections in the network
 #' 
-#' @param network The 'network' object to modify.
+#' @param x The 'network' object to modify.
+#' @param ... Additional arguments.
 #' @return The modified 'network' object.
 #' @export
-remove_weights.network <- function(network) {
-  network$modules <- lapply(network$modules, remove_weights)
-  return(network)
+remove_weights.network <- function(x, ...) {
+  x$modules <- lapply(x$modules, remove_weights)
+  return(x)
 }
 
 #' Adds a random module of a given size to the network
@@ -739,20 +661,10 @@ add_random_module_to_network <- function(network, module_size, ...) {
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'module_size'
   if(module_size > network$p) 
-    ArgumentCheck::addError(
-      msg = paste0("Argument 'module_size' = ", module_size, " cannot be greater than the",
-                   " number of nodes in the network (p =", network$p, ")"),
-      argcheck = checklist
-    )
-  
-  report_checks(checklist)
-  ##################################
+    stop("Argument 'module_size' = ", module_size, " cannot be greater than the",
+         " number of nodes in the network (p =", network$p, ")")
   
   module <- random_module(sample(1:network$p, module_size), ...)
   network <- add_modules_to_network(network, module)
@@ -775,43 +687,24 @@ set_node_names <- function(network, node_names) {
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
   # Check 'node_names'
   if(is.null(node_names)) {
     # Use default names.
     node_names <- as.character(1:network$p)
-    ArgumentCheck::addMessage(
-      msg = paste0("Argument 'node_names' is NULL; setting default names to ",
-                   '"1", "2", ..., "', network$p, '".'),
-      argcheck = checklist
-    )
+    warning("Argument 'node_names' is NULL; setting default names to ",
+         '"1", "2", ..., "', network$p, '".')
   }
   if(is.numeric(node_names)) {
     # Coerce numeric values to character strings without warning.
     node_names <- as.character(node_names)
   }
   if(!is.character(node_names)) 
-    ArgumentCheck::addError(
-      msg = "Argument 'node_names' must be a vector of strings (or numeric vector).",
-      argcheck = checklist
-    )
+    stop("Argument 'node_names' must be a vector of strings (or numeric vector).")
   if(length(node_names) != network$p)
-    ArgumentCheck::addError(
-      msg = paste0("Length of argument 'node_names' must equal the number of nodes",
-                   " in 'network' (p = ", network$p, ")."),
-      argcheck = checklist
-    )
+    stop("Length of argument 'node_names' must equal the number of nodes",
+         " in 'network' (p = ", network$p, ").")
   if(length(unique(node_names)) != length(node_names))
-    ArgumentCheck::addError(
-      msg = paste0("Argument 'node_names' must contain unique names."),
-      argcheck = checklist
-    )
-    
-  report_checks(checklist)
-  ##################################
+    stop("Argument 'node_names' must contain unique names.")
   
   network$node_names <- node_names
   
@@ -820,7 +713,7 @@ set_node_names <- function(network, node_names) {
 
 #' Rewire connections to a node.
 #' 
-#' @param network A 'network' object to modify. 
+#' @param x A 'network' object to modify. 
 #' @param node The node to rewire.
 #' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
 #' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
@@ -830,37 +723,38 @@ set_node_names <- function(network, node_names) {
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
 #' nodes are sampled uniformly. When exponent > 0, the sampling probability
 #' is based on node weights.
+#' @param ... Additional arguments.
 #' @return The modified network.
 #' @export
-rewire_connections_to_node.network <- function(network,
+rewire_connections_to_node.network <- function(x,
                                                node,
                                                prob_rewire,
                                                weights = NULL,
-                                               exponent = 0) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+                                               exponent = 0,
+                                               ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  if(length(network$modules) > 0) {
-    for(i in 1:length(network$modules)) {
-      if(node %in% network$modules[[i]]$nodes) {
-        network$modules[[i]] <- 
-          rewire_connections_to_node(network$modules[[i]], node,
+  if(length(x$modules) > 0) {
+    for(i in 1:length(x$modules)) {
+      if(node %in% x$modules[[i]]$nodes) {
+        x$modules[[i]] <- 
+          rewire_connections_to_node(x$modules[[i]], node,
                                      prob_rewire, weights, exponent)
       }
     }
   } else {
-    warning("Argument 'network' contains no modules. Returning network unmodified.")
+    warning("Argument 'x' contains no modules. Returning the network unmodified.")
   }
   
-  return(network)
+  return(x)
 }
 
 
 
 #' Remove connections to a node.
 #' 
-#' @param network A 'network' object to modify. 
+#' @param x A 'network' object to modify. 
 #' @param node The node to unwire.
 #' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
 #' will be removed with probability equal to 'prob_remove'.
@@ -869,30 +763,31 @@ rewire_connections_to_node.network <- function(network,
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
 #' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
 #' probability is based on node weights.
+#' @param ... Additional arguments.
 #' @return The modified network.
 #' @export
-remove_connections_to_node.network <- function(network,
+remove_connections_to_node.network <- function(x,
                                                node,
                                                prob_remove,
                                                weights = NULL,
-                                               exponent = 0) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+                                               exponent = 0,
+                                               ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  if(length(network$modules) > 0) {
-    for(i in 1:length(network$modules)) {
-      if(node %in% network$modules[[i]]$nodes) {
-        network$modules[[i]] <- 
-          remove_connections_to_node(network$modules[[i]], node,
+  if(length(x$modules) > 0) {
+    for(i in 1:length(x$modules)) {
+      if(node %in% x$modules[[i]]$nodes) {
+        x$modules[[i]] <- 
+          remove_connections_to_node(x$modules[[i]], node,
                                      prob_remove, weights, exponent)
       }
     }
   } else {
-    warning("Argument 'network' contains no modules. Returning network unmodified.")
+    warning("Argument 'x' contains no modules. Returning the network unmodified.")
   }
   
-  return(network)
+  return(x)
 }
 
 
@@ -942,7 +837,7 @@ perturb_network <- function(network,
   # Hub genes will be identified by having a degree above 3 SDs from the mean.
   degrees <- get_degree_distribution(network)
   index_hubs <- which(degrees > floor(mean(degrees) + 3 * sd(degrees)))
-  index_others <- setdiff(1:network$p, index_hubs)
+  index_others <- (1:network$p)[-index_hubs]
   
   if(n_hubs > 0) {
     if(length(index_hubs) == 0) {
@@ -1016,21 +911,20 @@ print.network <- function(network, ...) {
 
 #' Check if a network is weighted
 #' 
-#' @param network The 'network' object to check.
+#' @param x The 'network' object to check.
 #' @return A boolean value that is TRUE if all of the modules in the network
 #' are weighted and FALSE otherwise. If the network contains no modules or
 #' no connections, then this function returns TRUE.
 #' @export
-is_weighted.network <- function(network, ...) {
-  if(!(class(network) == "network")) 
-    stop(paste0("'", deparse(substitute(network)), 
-                "' is not a 'network' object."))
+is_weighted.network <- function(x, ...) {
+  if(!(class(x) == "network")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
-  if(length(network$modules) == 0) {
+  if(length(x$modules) == 0) {
     return(TRUE)
   } 
   
-  if(all(sapply(network$modules, is_weighted))) {
+  if(all(sapply(x$modules, is_weighted))) {
     return(TRUE)
   } else {
     return(FALSE)
@@ -1065,6 +959,7 @@ as_single_module <- function(network) {
 get_network_characteristics <- function(network) {
   adj <- get_adjacency_matrix(network)
   graph <- igraph::graph_from_adjacency_matrix(adj, mode = "undirected")
+  # graph <- igraph::graph_from_edgelist(edges_from_adjacency_cpp(adj), directed = FALSE)  
   
   # Calculate the degree distribution P(K).
   deg <- igraph::degree(graph)
@@ -1090,7 +985,9 @@ get_network_characteristics <- function(network) {
     }
     
     # Store properties of K in a data.frame.
-    if("1" %in% names(tab)) {
+    if("0" %in% names(tab) && "1" %in% names(tab)) {
+      C_K <- c(NA, NA, clus[which(!is.na(clus))])
+    } else if("0" %in% names(tab) || "1" %in% names(tab)) {
       C_K <- c(NA, clus[which(!is.na(clus))])
     } else {
       C_K <- clus[which(!is.na(clus))]

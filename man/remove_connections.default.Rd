@@ -4,10 +4,12 @@
 \alias{remove_connections.default}
 \title{Remove connections in a network.}
 \usage{
-\method{remove_connections}{default}(...)
+\method{remove_connections}{default}(x, ...)
 }
 \arguments{
-\item{...}{A 'matrix' object to modify.}
+\item{x}{A 'matrix' object to modify.}
+
+\item{...}{Additional parameters.}
 }
 \value{
 The modified object.

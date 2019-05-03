@@ -4,11 +4,11 @@
 \alias{remove_connections_to_node.network_module}
 \title{Remove connections to a node.}
 \usage{
-\method{remove_connections_to_node}{network_module}(module, node,
-  prob_remove, weights = NULL, exponent = 0)
+\method{remove_connections_to_node}{network_module}(x, node, prob_remove,
+  weights = NULL, exponent = 0, ...)
 }
 \arguments{
-\item{module}{A 'network_module' object to modify.}
+\item{x}{A 'network_module' object to modify.}
 
 \item{node}{The node to unwire.}
 
@@ -21,6 +21,8 @@ in addition to the degree of each node when sampling neighbors to unwire from.}
 \item{exponent}{The exponent used for weighted sampling. When exponent = 0,
 neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
 probability is based on node weights.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified module.

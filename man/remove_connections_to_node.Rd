@@ -4,10 +4,12 @@
 \alias{remove_connections_to_node}
 \title{Remove connections to a node.}
 \usage{
-remove_connections_to_node(...)
+remove_connections_to_node(x, ...)
 }
 \arguments{
-\item{...}{A 'network', 'network_module', or 'matrix' object to modify.}
+\item{x}{A 'network', 'network_module', or 'matrix' object to modify.}
+
+\item{...}{Additional parameters.}
 }
 \value{
 The modified object.

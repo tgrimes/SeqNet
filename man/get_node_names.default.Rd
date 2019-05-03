@@ -4,10 +4,12 @@
 \alias{get_node_names.default}
 \title{Get node names}
 \usage{
-\method{get_node_names}{default}(...)
+\method{get_node_names}{default}(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A vector containing the node names or node indicies.

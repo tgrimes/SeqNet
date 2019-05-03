@@ -1,12 +1,24 @@
 Package: SeqNet
-Title: Generate RNA-seq data from gene-gene association networks
-Version: 0.2.1.1002
+Title: Generate RNA-Seq Data from Gene-Gene Association Networks
+Version: 0.2.2.0001
 Authors@R: person("Tyler", "Grimes", email = "tyler.grimes@ufl.edu", role = c("aut", "cre"))
-Description: This package provides methods to simulate RNA-seq data from an underlying gene-gene association network. Functions are provided to generate random networksof any size. Network objects are built from individual modules that represent pathways;these modules, which may overlap, are generated to have a small-world network structure. RNA-seq counts can be generated such that the association among gene expression reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal counts. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
+Description: Methods to generate random gene-gene association network and simulate RNA-seq data from them. Includes functions to generate random networks of any size and perturb them to obtain differential networks. Network objects are built from individual, overlapping modules that represent pathways. The resulting network has various topological properties that are characteristic of gene regulatory networks. RNA-seq counts can be generated such that the association among gene expression reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal counts. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
 Depends: R (>= 3.3.2)
-Imports: ArgumentCheck, fitdistrplus, ggplot2, igraph, mvtnorm, RColorBrewer, tibble
+Imports: 
+    ArgumentCheck,
+    fitdistrplus,
+    ggplot2,
+    igraph,
+    methods,
+    mvtnorm,
+    purrr,
+    RColorBrewer,
+    tibble,
+    Rcpp
 Suggests: knitr, rmarkdown
-License: What license is it under?
+License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.1.1
+LinkingTo: 
+    Rcpp

@@ -1,18 +1,20 @@
 #' Get adjacency matrix
 #' 
 #' The adjacency matrix is constructed from all modules in a network.
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
-get_adjacency_matrix <- function(...) {
+get_adjacency_matrix <- function(x, ...) {
   UseMethod("get_adjacency_matrix")
 }
 
 #' Get adjacency matrix
 #' 
 #' The adjacency matrix is constructed from all modules in a network.
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
@@ -24,49 +26,49 @@ get_adjacency_matrix.default <- function(...) {
 #' 
 #' All off-diagonal entries that are near zero are set to zero. All remaining 
 #' non-zero values are set to 1, and the diagonal is set to zero.
-#' @param m A 'matrix' object.
+#' @param x A 'matrix' object.
+#' @param ... Additional arguments.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
-get_adjacency_matrix.matrix <- function(m, ...) {
-  if(!(class(m) == "matrix")) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a 'matrix' object."))
-  if(dim(m)[1] != dim(m)[2])
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a square matrix."))
-  if(max(abs(m - t(m))) > 10^-13)   
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a symmetric matrix."))
+get_adjacency_matrix.matrix <- function(x, ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(dim(x)[1] != dim(x)[2])
+    stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
+  if(max(abs(x - t(x))) > 10^-13)   
+    stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
   # Set any values that are near zero to exactly zero.
-  m[abs(m) <= 10^-13] <- 0
+  x[abs(x) <= 10^-13] <- 0
   # Set all non-zero values to 1.
-  m[m != 0] <- 1
+  x[x != 0] <- 1
   # Set diagonal values to zero.
-  diag(m) <- 0
-  return(m)
+  diag(x) <- 0
+  return(x)
 }
 
 
 
 #' Get association matrix
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return An association matrix with entry ij != 0 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
-get_association_matrix <- function(...) {
+get_association_matrix <- function(x, ...) {
   UseMethod("get_association_matrix")
 }
 
 #' Get association matrix
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
-#' @return An association matrix with entry ij != 0 if node i and j are 
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
+#' #' @return An association matrix with entry ij != 0 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
 #' @export
-get_association_matrix.default <- function(...) {
+get_association_matrix.default <- function(x, ...) {
   cat("get_association_matrix() is defined for 'network' and 'network_module' objects.\n")
 }
 
@@ -74,25 +76,22 @@ get_association_matrix.default <- function(...) {
 #' 
 #' All off-diagonal values in the matrix are left unchanged. The diagonal
 #' is set to zero.
-#' @param m A 'matrix' object.
+#' @param x A 'matrix' object.
+#' @param ... Additional arguments.
 #' @return Returns the matrix with diagonal elements set to zero.
 #' @export
-get_association_matrix.matrix <- function(m, ...) {
-  if(!(class(m) == "matrix")) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a 'matrix' object."))
-  if(dim(m)[1] != dim(m)[2])
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a square matrix."))
-  if(max(abs(m - t(m))) > 10^-13)   
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a symmetric matrix."))
-  if(!is_weighted(m)) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a weighted matrix."))
+get_association_matrix.matrix <- function(x, ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(dim(x)[1] != dim(x)[2])
+    stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
+  if(max(abs(x - t(x))) > 10^-13)   
+    stop(paste0("'", deparse(substitute(x)),  "' is not a symmetric matrix."))
+  if(!is_weighted(x)) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a weighted matrix."))
   
-  diag(m) <- 0
-  return(m)
+  diag(x) <- 0
+  return(x)
 }
 
 
@@ -103,13 +102,14 @@ get_association_matrix.matrix <- function(m, ...) {
 #' the covariance matrix is calculated from these assuming that expression
 #' for gene i is the weighted average over each module using 1/sqrt(m_i) 
 #' as the weight, where m_i is the number of modules containing gene i.
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @note If a matrix is provided, it is assumed to be a partial correlation matrix.
 #' A warning is given in this case. To avoid the warning message, convert the
 #' matrix into a network object using 'create_network_from_association_matrix()'.
 #' @return A covariance matrix.
 #' @export
-get_sigma <- function(...) {
+get_sigma <- function(x, ...) {
   UseMethod("get_sigma")
 }
 
@@ -119,13 +119,14 @@ get_sigma <- function(...) {
 #' the covariance matrix is calculated from these assuming that expression
 #' for gene i is the weighted average over each module using 1/sqrt(m_i) 
 #' as the weight, where m_i is the number of modules containing gene i.
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @note If a matrix is provided, it is assumed to be a partial correlation matrix.
 #' A warning is given in this case. To avoid the warning message, convert the
 #' matrix into a network object using 'create_network_from_association_matrix()'.
 #' @return A covariance matrix.
 #' @export
-get_sigma.default <- function(...) {
+get_sigma.default <- function(x, ...) {
   cat("get_sigma() is defined for 'network' and 'network_module' objects.\n")
 }
 
@@ -135,21 +136,22 @@ get_sigma.default <- function(...) {
 #' the covariance matrix is calculated from these assuming that expression
 #' for gene i is the weighted average over each module using 1/sqrt(m_i) 
 #' as the weight, where m_i is the number of modules containing gene i.
-#' @param m A 'matrix' object.
+#' @param x A 'matrix' object.
+#' @param ... Additional arguments.
 #' @note The matrix is assumed to be a partial correlation matrix.
 #' A warning is given in this case. To avoid the warning message, convert the
 #' matrix into a network object using 'create_network_from_association_matrix()'.
 #' @return A covariance matrix.
 #' @export
-get_sigma.matrix <- function(m, ...) {
-  if(any(diag(m) == 0)) {
-    stop("Matrix 'm' should have nonzero entries along its diagonal.")
+get_sigma.matrix <- function(x, ...) {
+  if(any(diag(x) == 0)) {
+    stop("Matrix 'x' should have nonzero entries along its diagonal.")
   }
-  warning("Interpreting matrix 'm' as a partial correlation matrix.")
+  warning("Interpreting as a partial correlation matrix.")
   
-  precision_matrix <- -m
+  precision_matrix <- -x
   if(all(precision_matrix == 0)) {
-    # If there are no connections in m, return the identify matrix.
+    # If there are no connections in x, return the identify matrix.
     return(diag(1, nrow(precision_matrix)))
   }
   diag(precision_matrix) <- 1
@@ -161,55 +163,54 @@ get_sigma.matrix <- function(m, ...) {
   
   return(sigma)
 }
-
+ 
 
 
 
 #' Check if an object is weighted
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
-#' @return Returns FALSE if all of the connections in the 
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' object are weighted by 0s and 1s, and returns TRUE otherwise. If there
 #' are no connections in the module, then this function returns TRUE.
 #' @export
-is_weighted <- function(...) {
+is_weighted <- function(x, ...) {
   UseMethod("is_weighted")
 }
 
 #' Check if an object is weighted
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return Returns FALSE if all of the connections in the 
 #' object are weighted by 0s and 1s, and returns TRUE otherwise. If there
 #' are no connections in the module, then this function returns TRUE.
 #' @export
-is_weighted.default <- function(...) {
+is_weighted.default <- function(x, ...) {
   cat("is_weighted() is defined for 'network' and 'network_module' objects.\n")
 }
 
 #' Check if an object is weighted
 #' 
-#' @param m A 'matrix' object.
+#' @param x A 'matrix' object.
+#' @param ... Additional arguments.
 #' @return Returns FALSE if all of entries in the matrix are either zero or one, 
 #' and returns TRUE otherwise. However, if there are no connections, i.e. all
 #' off-diagonal entries are zero, then this function returns TRUE.
 #' @export
-is_weighted.matrix <- function(m, ...) {
-  if(!(class(m) == "matrix")) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a 'matrix' object."))
-  if(dim(m)[1] != dim(m)[2])
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a square matrix."))
-  if(max(abs(m - t(m))) > 10^-13)   
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a symmetric matrix."))
+is_weighted.matrix <- function(x, ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(dim(x)[1] != dim(x)[2])
+    stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
+  if(max(abs(x - t(x))) > 10^-13)   
+    stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
-  m <- m[lower.tri(m)]
+  x <- x[lower.tri(x)]
   
-  if(any(!(m %in% c(0, 1)))) {
+  if(any(!(x %in% c(0, 1)))) {
     return(TRUE)
-  } else if(all(m == 0)){
+  } else if(all(x == 0)){
     return(TRUE)
   } else {
     return(FALSE)
@@ -218,71 +219,74 @@ is_weighted.matrix <- function(m, ...) {
 
 #' Removes the weights of all connections
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return The modified object.
 #' @export
-remove_weights <- function(...) {
+remove_weights <- function(x, ...) {
   UseMethod("remove_weights")
 }
 
 #' Removes the weights of all connections
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return The modified object.
 #' @export
-remove_weights.default <- function(...) {
+remove_weights.default <- function(x, ...) {
   cat("remove_weights() is defined for 'network', 'network_module', and 'matrix' objects.\n")
 }
 
 #' Removes the weights of all connections
 #' 
-#' @param m A 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return The modified object.
 #' @export
-remove_weights.matrix <- function(m, ...) {
-  if(!(class(m) == "matrix")) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a 'matrix' object."))
-  if(dim(m)[1] != dim(m)[2])
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a square matrix."))
-  if(max(abs(m - t(m))) > 10^-13)   
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a symmetric matrix."))
+remove_weights.matrix <- function(x, ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(dim(x)[1] != dim(x)[2])
+    stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
+  if(max(abs(x - t(x))) > 10^-13)   
+    stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
-  m[m != 0] <- 1
-  return(m)
+  x[x != 0] <- 1
+  return(x)
 }
 
 
 
 #' Get node names
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return A vector containing the node names or node indicies.
 #' @export
-get_node_names <- function(...) {
+get_node_names <- function(x, ...) {
   UseMethod("get_node_names")
 }
 
 #' Get node names
 #' 
-#' @param ... Either a 'network', 'network_module', or 'matrix' object.
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return A vector containing the node names or node indicies.
 #' @export
-get_node_names.default <- function(...) {
+get_node_names.default <- function(x, ...) {
   cat("get_node_names() is defined for 'network' and 'network_module' objects.\n")
 }
 
 #' Get node names
 #' 
-#' @param m A 'matrix' object.
+#' @param x A 'matrix' object.
+#' @param ... Additional arguments.
 #' @return A vector containing the node names or node indicies.
 #' @export
-get_node_names.matrix <- function(m, ...) {
-  node_names <- colnames(m)
+get_node_names.matrix <- function(x, ...) {
+  node_names <- colnames(x)
   if(is.null(node_names)) {
-    node_names <- 1:ncol(m)
+    return(1:ncol(x))
   }
   return(node_names)
 }
@@ -292,26 +296,28 @@ get_node_names.matrix <- function(m, ...) {
 
 #' Rewire connections to a node.
 #' 
-#' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments.
 #' @return The modified object.
 #' @export
-rewire_connections_to_node <- function(...) {
+rewire_connections_to_node <- function(x, ...) {
   UseMethod("rewire_connections_to_node")
 }
 
 #' Rewire connections to a node.
 #' 
-#' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param ... Additional arguments. 
 #' @return The modified object.
 #' @export
-rewire_connections_to_node.default <- function(...) {
+rewire_connections_to_node.default <- function(x, ...) {
   cat("rewire_connections_to_node() is defined for 'network', 'network_module'",
       " and 'matrix' objects.\n")
 }
 
 #' Rewire connections to a node.
 #' 
-#' @param m A 'matrix' object to modify. 
+#' @param x Either a 'network', 'network_module', or 'matrix' object.
 #' @param node The node to rewire.
 #' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
 #' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
@@ -321,61 +327,45 @@ rewire_connections_to_node.default <- function(...) {
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
 #' nodes are sampled uniformly. When exponent > 0, the sampling probability
 #' is based on node weights.
+#' @param ... Additional arguments.
 #' @return The modified object m.
 #' @export
-rewire_connections_to_node.matrix <- function(m,
+rewire_connections_to_node.matrix <- function(x,
                                               node,
                                               prob_rewire,
                                               weights = NULL,
-                                              exponent = 0) {
-  if(!(class(m) == "matrix")) 
-    stop(paste0("'", deparse(substitute(m)), 
-                "' is not a 'matrix' object."))
+                                              exponent = 0,
+                                              ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   
-  nodes <- get_node_names(m)
+  nodes <- get_node_names(x)
   p <- length(nodes)
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
-  # Check 'm'.
-  check_adjacency_matrix(m, checklist)
-  
-  # Check 'node'.
-  check_positive_integer(node, checklist)
-  
-  # Check 'prob_rewire'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(prob_rewire, checklist, 0, 1)
-  
-  # Check 'weights'.
+  if(node <= 0) 
+    stop("Argument 'node' must be a positive integer.")
+  if(prob_rewire < 0 || prob_rewire > 1) 
+    stop("Argument 'prob_rewire' must be in [0, 1].")
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
-    stop(paste0("'", deparse(substitute(weights)), 
-                "' is not a numeric vector of length equal to the number of",
-                " nodes in m."))
-  
+    stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
+         " equal to the number of nodes in m.")
   if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop(paste0("'", deparse(substitute(exponent)), 
-                "' is not positive numeric value."))
+    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
   
-  report_checks(checklist)
-  ##################################
   
   if(is.null(weights)) {
     weights <- rep(0, p)
   }
   
-  adj_matrix <- m
-  
   if(node %in% nodes) {
     node_index <- which(node == nodes)
-    degree <- apply(adj_matrix, 2, sum)
+    degree <- colSums(x)
     weights <- weights + degree
     
     # Rewire if the node has neighbors and is not connected to all other nodes.
     if(degree[node_index] > 0 && degree[node_index] != (p - 1)) {
-      neighbors <- which(adj_matrix[, node_index] != 0)
-      available <- setdiff((1:p)[-node_index], neighbors)
+      neighbors <- which(x[, node_index] != 0)
+      available <- (1:p)[-c(node_index, neighbors)]
       
       # Determine how many connections to rewire
       n_rewire <- sum(runif(length(neighbors)) < prob_rewire)
@@ -387,7 +377,7 @@ rewire_connections_to_node.matrix <- function(m,
           neighbors <- neighbors
         } else {
           neighbors <- sample(neighbors, n_rewire,
-                              prob = 1 - ecdf(weights[neighbors])(weights[neighbors])^exponent + 0.001)
+                              prob = 1 - ecdf_cpp(weights[neighbors])^exponent + 0.001)
         }
         
         # Rewire each connection.
@@ -398,13 +388,13 @@ rewire_connections_to_node.matrix <- function(m,
             new_neighbor <- available
           } else {
             new_neighbor <- sample(available, 1,
-                                   prob = ecdf(weights[available])(weights[available])^exponent + 0.001)
+                                   prob = ecdf_cpp(weights[available])^exponent + 0.001)
           }
           # Rewire connection to new node.
-          adj_matrix[old_neighbor, node_index] <- 0
-          adj_matrix[node_index, old_neighbor] <- 0
-          adj_matrix[new_neighbor, node_index] <- 1
-          adj_matrix[node_index, new_neighbor] <- 1
+          x[old_neighbor, node_index] <- 0
+          x[node_index, old_neighbor] <- 0
+          x[new_neighbor, node_index] <- 1
+          x[node_index, new_neighbor] <- 1
           # The new neighbor is no longer available. Replace it with the old 
           # neighbor, which can now be selected.
           available[which(available == new_neighbor)] <- old_neighbor
@@ -413,47 +403,42 @@ rewire_connections_to_node.matrix <- function(m,
           weights[old_neighbor] <- weights[old_neighbor] - 1
         }
       }
-      
-      # Update the module structure.
-      m <- adj_matrix
     }
   } else {
-    warning("'", deparse(substitute(node)), "' is not a node in 'm'.",
-            "Returning 'm' unmodified.")
+    warning("'", deparse(substitute(node)), "' is not a node in 'x'.",
+            "Returning 'x' unmodified.")
   }
   
-  return(m)
+  return(x)
 }
-
-
-
-
 
 
 
 
 #' Remove connections to a node.
 #' 
-#' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param x A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param ... Additional parameters.
 #' @return The modified object.
 #' @export
-remove_connections_to_node <- function(...) {
+remove_connections_to_node <- function(x, ...) {
   UseMethod("remove_connections_to_node")
 }
 
 #' Remove connections to a node.
 #' 
-#' @param ... A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param x A 'network', 'network_module', or 'matrix' object to modify. 
+#' @param ... Additional parameters.
 #' @return The modified object.
 #' @export
-remove_connections_to_node.default <- function(...) {
+remove_connections_to_node.default <- function(x, ...) {
   cat("remove_connections_to_node() is defined for 'network', 'network_module'",
       " and 'matrix' objects.\n")
 }
 
 #' Remove connections to a node.
 #' 
-#' @param adj_matrix An adjacency matrix to modify.
+#' @param x An adjacency matrix to modify.
 #' @param node The node to unwire.
 #' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
 #' will be removed with probability equal to 'prob_remove'.
@@ -462,45 +447,32 @@ remove_connections_to_node.default <- function(...) {
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
 #' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
 #' probability is based on node weights.
+#' @param ... Additional arguments.
 #' @return The modified adjacency matrix.
 #' @export
-remove_connections_to_node.matrix <- function(adj_matrix,
+remove_connections_to_node.matrix <- function(x,
                                               node,
                                               prob_remove,
                                               weights = NULL,
-                                              exponent = 0) {
-  if(!(class(adj_matrix) == "matrix")) 
-    stop(paste0("'", deparse(substitute(adj_matrix)), 
-                "' is not a 'matrix' object."))
+                                              exponent = 0,
+                                              ...) {
+  if(!(class(x) == "matrix")) 
+    stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
   
-  nodes <- get_node_names(adj_matrix)
+  nodes <- get_node_names(x)
   p <- length(nodes)
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
-  # Check 'adj_matrix'.
-  check_adjacency_matrix(adj_matrix, checklist)
-  
-  # Check 'node'.
-  check_positive_integer(node, checklist)
-  
-  # Check 'prob_remove'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(prob_remove, checklist, 0, 1)
-  
-  # Check 'weights'.
+  if(node <= 0) 
+    stop("Argument 'node' must be a positive integer.")
+  if(prob_remove < 0 || prob_remove > 1) 
+    stop("Argument 'prob_remove' must be in [0, 1].")
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
-    stop(paste0("'", deparse(substitute(weights)), 
-                "' is not a numeric vector of length equal to the number of",
-                " nodes in 'adj_matrix'"))
-  
+    stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
+         " equal to the number of nodes in 'x'.")
   if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop(paste0("'", deparse(substitute(exponent)), 
-                "' is not positive numeric value."))
+    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
   
-  report_checks(checklist)
-  ##################################
+  
   
   if(is.null(weights)) {
     weights <- rep(0, p)
@@ -508,12 +480,12 @@ remove_connections_to_node.matrix <- function(adj_matrix,
   
   if(node %in% nodes) {
     node_index <- which(node == nodes)
-    degree <- apply(adj_matrix, 2, sum)
+    degree <- colSums(x)
     weights <- weights + degree
     
     # Remove connections if the node has neighbors.
     if(degree[node_index] > 0) {
-      neighbors <- which(adj_matrix[, node_index] != 0)
+      neighbors <- which(x[, node_index] != 0)
       n_remove <- sum(runif(length(neighbors)) < prob_remove)
       
       if(n_remove > 0) {
@@ -524,45 +496,47 @@ remove_connections_to_node.matrix <- function(adj_matrix,
           neighbors <- neighbors
         } else {
           neighbors <- sample(neighbors, n_remove,
-                              prob = 1 - ecdf(weights[neighbors])(weights[neighbors])^exponent + 0.001)
+                              prob = 1 - ecdf_cpp(weights[neighbors])^exponent + 0.001)
         }
         
         # Remove connections
-        adj_matrix[neighbors, node_index] <- 0
-        adj_matrix[node_index, neighbors] <- 0
+        x[neighbors, node_index] <- 0
+        x[node_index, neighbors] <- 0
       }
     }
   } else {
-    warning("'", deparse(substitute(node)), "' is not a node in 'adj_matrix'.",
-            "Returning 'adj_matrix' unmodified.")
+    warning("'", deparse(substitute(node)), "' is not a node in 'x'.",
+            "Returning 'x' unmodified.")
   }
   
-  return(adj_matrix)
+  return(x)
 }
 
 
 #' Remove connections in a network.
 #' 
-#' @param ... A 'matrix' object to modify. 
+#' @param x A 'matrix' object to modify. 
+#' @param ... Additional parameters.
 #' @return The modified object.
 #' @export
-remove_connections <- function(...) {
+remove_connections <- function(x, ...) {
   UseMethod("remove_connections")
 }
 
 #' Remove connections in a network.
 #' 
-#' @param ... A 'matrix' object to modify. 
+#' @param x A 'matrix' object to modify. 
+#' @param ... Additional parameters.
 #' @return The modified object.
 #' @export
-remove_connections.default <- function(...) {
+remove_connections.default <- function(x, ...) {
   cat("remove_connections() is defined for ",
       "'matrix' objects.\n")
 }
 
 #' Remove connections in a network.
 #' 
-#' @param adj_matrix An adjacency matrix to modify.
+#' @param x An adjacency matrix to modify.
 #' @param prob_remove A value between 0 and 1. Each edge will be removed with 
 #' probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used,
@@ -570,51 +544,36 @@ remove_connections.default <- function(...) {
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
 #' edges are sampled uniformly. When exponent > 0, the sampling probability is
 #' based on the connected node weights.
+#' @param ... Additional arguments.
 #' @return The modified adjacency matrix.
 #' @export
-remove_connections.matrix <- function(adj_matrix,
+remove_connections.matrix <- function(x,
                                       prob_remove,
                                       weights = NULL,
-                                      exponent = 0) {
-  if(!(class(adj_matrix) == "matrix")) 
-    stop(paste0("'", deparse(substitute(adj_matrix)), 
-                "' is not a 'matrix' object."))
+                                      exponent = 0,
+                                      ...) {
+  if(!(class(x) == "matrix")) 
+    stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
   
-  nodes <- get_node_names(adj_matrix)
-  p <- length(nodes)
+  p <- ncol(x)
   
-  ##################################
-  # Check arguments for errors.
-  checklist <- new_checklist()
-  
-  # Check 'adj_matrix'.
-  check_adjacency_matrix(adj_matrix, checklist)
-  
-  # Check 'prob_remove'. (Allowed to equal 0 or 1.)
-  check_in_closed_interval(prob_remove, checklist, 0, 1)
-  
-  # Check 'weights'.
+  if(prob_remove < 0 || prob_remove > 1) 
+    stop("Argument 'prob_remove' must be in [0, 1].")
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
-    stop(paste0("'", deparse(substitute(weights)), 
-                "' is not a numeric vector of length equal to the number of",
-                " nodes in 'adj_matrix'"))
-  
+    stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
+         " equal to the number of nodes in m.")
   if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop(paste0("'", deparse(substitute(exponent)), 
-                "' is not positive numeric value."))
+    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
   
-  report_checks(checklist)
-  ##################################
   
   if(is.null(weights)) {
     weights <- rep(0, p)
   }
-  weights <- weights + apply(adj_matrix, 2, sum)
+  weights <- weights + colSums(x)
   weights <- unname(weights)
   
   # Obtain list of edges in the network.
-  edges <- which(adj_matrix == 1, arr.ind = TRUE)
-  edges <- edges[edges[, 2] < edges[, 1], ]
+  edges <- edges_from_adjacency_cpp(x)
   weights <- weights[edges[, 1]] + weights[edges[, 2]]
   
   n_remove <- sum(runif(nrow(edges)) < prob_remove)
@@ -623,12 +582,12 @@ remove_connections.matrix <- function(adj_matrix,
     
     # Sample the edges to rewire.
     edge_index <- sample(1:nrow(edges), n_remove,
-                         prob = 1 - ecdf(weights)(weights)^exponent + 0.001)
+                         prob = 1 - ecdf_cpp(weights)^exponent + 0.001)
     
     # Remove connections
-    adj_matrix[matrix(edges[edge_index, ], ncol = 2)] <- 0
-    adj_matrix[matrix(edges[edge_index, 2:1], ncol = 2)] <- 0
+    x[matrix(edges[edge_index, ], ncol = 2)] <- 0
+    x[matrix(edges[edge_index, 2:1], ncol = 2)] <- 0
   }
   
-  return(adj_matrix)
+  return(x)
 }

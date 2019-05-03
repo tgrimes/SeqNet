@@ -4,10 +4,12 @@
 \alias{get_association_matrix.matrix}
 \title{Get association matrix}
 \usage{
-\method{get_association_matrix}{matrix}(m, ...)
+\method{get_association_matrix}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{A 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 Returns the matrix with diagonal elements set to zero.

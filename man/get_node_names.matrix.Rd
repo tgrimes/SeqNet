@@ -4,10 +4,12 @@
 \alias{get_node_names.matrix}
 \title{Get node names}
 \usage{
-\method{get_node_names}{matrix}(m, ...)
+\method{get_node_names}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{A 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A vector containing the node names or node indicies.

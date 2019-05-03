@@ -4,10 +4,12 @@
 \alias{remove_weights}
 \title{Removes the weights of all connections}
 \usage{
-remove_weights(...)
+remove_weights(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified object.

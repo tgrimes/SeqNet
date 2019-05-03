@@ -4,10 +4,12 @@
 \alias{get_node_names.network_module}
 \title{Get node names of a module}
 \usage{
-\method{get_node_names}{network_module}(module, ...)
+\method{get_node_names}{network_module}(x, ...)
 }
 \arguments{
-\item{module}{The 'network_module' object to get node names from.}
+\item{x}{The 'network_module' object to get node names from.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A vector containing the node indicies in the module

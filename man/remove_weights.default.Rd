@@ -4,10 +4,12 @@
 \alias{remove_weights.default}
 \title{Removes the weights of all connections}
 \usage{
-\method{remove_weights}{default}(...)
+\method{remove_weights}{default}(x, ...)
 }
 \arguments{
-\item{...}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 The modified object.

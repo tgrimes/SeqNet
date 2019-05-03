@@ -4,10 +4,12 @@
 \alias{get_adjacency_matrix.matrix}
 \title{Get adjacency matrix}
 \usage{
-\method{get_adjacency_matrix}{matrix}(m, ...)
+\method{get_adjacency_matrix}{matrix}(x, ...)
 }
 \arguments{
-\item{m}{A 'matrix' object.}
+\item{x}{A 'matrix' object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 An adjacency matrix with entry ij = 1 if node i and j are 
