@@ -112,27 +112,16 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
 #' 
 #' @param association_matrix The association matrix for the network. This is converted
 #' to a single module structure with partial correlations specified by the
-#' matrix.
-#' @param standardize If True, then 'association_matrix' will be standardized
-#' to obtain partial correlations.
+#' nonzero values in the matrix.
 #' @param ... Additional arguments passed to 
 #' create_module_from_association_matrix().
 #' @return A network object.
 #' @export 
 create_network_from_association_matrix <- function(association_matrix, 
-                                                   standardize = TRUE,
                                                    ...) {
   # TODO: Add check for 'association_matrix' as a precision matrix.
   
   p <- ncol(association_matrix)
-  if(all(diag(association_matrix) == 0)) {
-    diag(association_matrix) <- 1
-  }
-  
-  if(!all(diag(association_matrix) == 1) && standardize) {
-    cat("Standardizing association_matrix to obtain partial correlations.\n")
-    association_matrix <- cov2cor(association_matrix)
-  }
   
   # Use node names from association_matrix, if provided and no new nodes are added.
   if(!is.null(colnames(association_matrix))) {
@@ -178,15 +167,15 @@ random_network <- function(p,
   }
   
   # Check 'n_modules'.
-  if(!is.null(n_modules) && ((n_modules %% 1 != 0) || n_modules <= 0)) {
-    stop("Argument 'n_modules' must be apositive integer or NULL.")
+  if(!is.null(n_modules) && ((n_modules %% 1 != 0) || n_modules < 0)) {
+    stop("Argument 'n_modules' must be a non-negative integer or NULL.")
   }
   
   module_list <- create_modules_for_network(n_modules, p, ...)
   network <- create_network_from_modules(p, module_list = module_list)
   
   # If two genes are connected in one module, make them connected in all modules.
-  if(consistent_connections) {
+  if(consistent_connections && length(network$modules) > 0) {
     adj <- get_adjacency_matrix(network)
     module_list = lapply(network$modules, function(m) {
                            create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], 
