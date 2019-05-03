@@ -615,7 +615,6 @@ replace_module_in_network <- function(module_index, module, network) {
                 "' is not a 'network' object."))
   
   # Check 'module_index'.
-  check_positive_integer(module_index, checklist)
   if(!(module_index %in% 1:length(network$modules)))
     stop("Argument 'module_index' must be in 1:", length(network$modules), ".")
   
