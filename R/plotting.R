@@ -236,7 +236,6 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
                          node_scale = 4, edge_scale = 1,
                          node_color = adjustcolor("orange", 0.5),
                          group_color = RColorBrewer::brewer.pal(9, 'Set1'),
-                         coords =  NULL, 
                          generate_layout = igraph::nicely,
                          include_vertex_labels = TRUE, 
                          show_legend = FALSE,
@@ -352,12 +351,10 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   })
   
   # Initialize coordinates for graph layout.
-  if(is.null(coords)) {
-    if(is.null(compare_graph)) {
-      coords = get_layout_for_modules(g, modules)
-    } else {
-      coords = compare_graph$coords[index_subset_g_compare, ]
-    }
+  if(is.null(compare_graph)) {
+    coords = get_layout_for_modules(g, modules)
+  } else {
+    coords = compare_graph$coords[index_subset_g_compare, ]
   }
   if(nrow(coords) != igraph::vcount(g)) {
     stop("coords do not match number of verticies in the graph.")
@@ -662,7 +659,6 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' if coords is NULL. See ?igraph::layout_ for details. Other options include 
 #' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
 #' @param include_vertex_labels If TRUE, the verticies will be labeled.
-#' @param display_plot If TRUE (default), the plot will be generated and displayed.
 #' @param ... Additional arguments passed to plot.igraph().
 #' @return Creates a plot of the network and returns a graph object. 
 #' The graph object can be passed back into a future call of 'plot_network()',
