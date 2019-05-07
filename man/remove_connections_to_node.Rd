@@ -4,10 +4,12 @@
 \alias{remove_connections_to_node}
 \title{Remove connections to a node.}
 \usage{
-remove_connections_to_node(x, ...)
+remove_connections_to_node(x, node, ...)
 }
 \arguments{
 \item{x}{A 'network', 'network_module', or 'matrix' object to modify.}
+
+\item{node}{The node to rewire.}
 
 \item{...}{Additional parameters.}
 }

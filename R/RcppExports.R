@@ -53,6 +53,20 @@ edges_from_adjacency_cpp <- function(adj) {
     .Call('_SeqNet_edges_from_adjacency_cpp', PACKAGE = 'SeqNet', adj)
 }
 
+#' C++ implementation of qzinb
+#' 
+#' @param p A vector of probabilities
+#' @param mu The dispersion paramater used in dnbinom.
+#' @param size The distribution mean.
+#' @param rho The zero-inflation parameter.
+#' @param lower Logical; if TRUE, then probabilities are P(X <= x). 
+#' Otherwise, P(X > x).
+#' @param log Logical; if TRUE, then exp(p) is used.
+#' @export
+overwrite_with_qzinb_cpp <- function(p, size, mu, rho, lower = TRUE, log = FALSE) {
+    .Call('_SeqNet_overwrite_with_qzinb_cpp', PACKAGE = 'SeqNet', p, size, mu, rho, lower, log)
+}
+
 #' C++ implementation for creating a ring lattice
 #' 
 #' @param p The number of nodes in the lattice.

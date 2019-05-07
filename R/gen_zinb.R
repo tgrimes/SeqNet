@@ -32,7 +32,7 @@ qzinb <- function (p, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
   if (log.p) {
     p <- exp(p)
   }
-  x <- qnbinom(pmax(0, (p - rho)/(1 - rho)), size, mu = mu)
+  x <- qnbinom(pmax(0, (p - rho) / (1 - rho)), size, mu = mu)
   
   return(x)
 }
@@ -48,7 +48,7 @@ qzinb <- function (p, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
 #' @param log.p Logical; if TRUE, then log(p) is returned.
 #' @export 
 pzinb <- function (q, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
-  p <- rho * (q >= 0) + (1 - rho) * pnbinom(q, size, mu = mu)
+  p <- rho + (1 - rho) * pnbinom(q, size, mu = mu)
   if (!lower.tail) {
     p <- 1 - p
   }
@@ -182,11 +182,15 @@ gen_counts <- function(n,
   x <- pnorm(x) # Obtain n by p matrix of quantiles.
   
   # Convert quantiles to counts for each gene.
-  for(i in 1:p) {
-    x[, i] <- qzinb(x[, i], 
-                    size = params[1, i], 
-                    mu = params[2, i],
-                    rho = params[3, i])
+  if(p > 1) {
+    overwrite_with_qzinb_cpp(x, params[1, ], params[2, ], params[3, ])
+  } else {
+    for(i in 1:p) {
+      x[, i] <- qzinb(x[, i], 
+                      size = params[1, i], 
+                      mu = params[2, i],
+                      rho = params[3, i])
+    }
   }
   
   return(list(x = x,

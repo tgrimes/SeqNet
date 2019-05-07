@@ -4,10 +4,12 @@
 \alias{remove_connections_to_node.default}
 \title{Remove connections to a node.}
 \usage{
-\method{remove_connections_to_node}{default}(x, ...)
+\method{remove_connections_to_node}{default}(x, node, ...)
 }
 \arguments{
 \item{x}{A 'network', 'network_module', or 'matrix' object to modify.}
+
+\item{node}{The node to rewire.}
 
 \item{...}{Additional parameters.}
 }

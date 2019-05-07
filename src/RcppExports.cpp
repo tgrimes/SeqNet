@@ -61,6 +61,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// overwrite_with_qzinb_cpp
+NumericMatrix overwrite_with_qzinb_cpp(NumericMatrix p, NumericVector size, NumericVector mu, NumericVector rho, bool lower, bool log);
+RcppExport SEXP _SeqNet_overwrite_with_qzinb_cpp(SEXP pSEXP, SEXP sizeSEXP, SEXP muSEXP, SEXP rhoSEXP, SEXP lowerSEXP, SEXP logSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type p(pSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< bool >::type lower(lowerSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(overwrite_with_qzinb_cpp(p, size, mu, rho, lower, log));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ring_lattice_cpp
 NumericMatrix ring_lattice_cpp(int p, int neig_size);
 RcppExport SEXP _SeqNet_ring_lattice_cpp(SEXP pSEXP, SEXP neig_sizeSEXP) {
@@ -80,6 +96,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SeqNet_components_in_adjacency", (DL_FUNC) &_SeqNet_components_in_adjacency, 1},
     {"_SeqNet_ecdf_cpp", (DL_FUNC) &_SeqNet_ecdf_cpp, 1},
     {"_SeqNet_edges_from_adjacency_cpp", (DL_FUNC) &_SeqNet_edges_from_adjacency_cpp, 1},
+    {"_SeqNet_overwrite_with_qzinb_cpp", (DL_FUNC) &_SeqNet_overwrite_with_qzinb_cpp, 6},
     {"_SeqNet_ring_lattice_cpp", (DL_FUNC) &_SeqNet_ring_lattice_cpp, 2},
     {NULL, NULL, 0}
 };

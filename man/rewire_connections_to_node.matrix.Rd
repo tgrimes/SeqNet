@@ -26,7 +26,7 @@ is based on node weights.}
 \item{...}{Additional arguments.}
 }
 \value{
-The modified object m.
+The modified object x.
 }
 \description{
 Rewire connections to a node.

@@ -296,9 +296,18 @@ create_modules_for_network <- function(n_modules,
                                       ...)
     node_unselected[nodes] <- FALSE
     
+    # if(selection_weight < 0 && runif(1) < 0.2 && i > 1) {
+    #   selection_weight <- -selection_weight
+    # }
+    
     # Update degree distribution
     deg[nodes] <- deg[nodes] + colSums(get_adjacency_matrix(module_list[[i]]))
-    prob[!node_unselected] <- 1 / p * ecdf_cpp(deg[!node_unselected])^selection_weight
+    if(selection_weight < 0) {
+      prob[!node_unselected] <- 1 / p * (1 - ecdf_cpp(deg[!node_unselected]))^abs(selection_weight) + 10^-16
+    } else {
+      prob[!node_unselected] <- 1 / p * (ecdf_cpp(deg[!node_unselected]))^selection_weight + 10^-16
+      
+    }
     
     if(is.null(n_modules)) {
       need_more_modules <- any(node_unselected)
