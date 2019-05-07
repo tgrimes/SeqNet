@@ -377,11 +377,11 @@ get_sigma.network_module <- function(x, ...) {
     return(diag(1, nrow(precision_matrix)))
   }
   diag(precision_matrix) <- 1
-  if(any(eigen(precision_matrix)$values < 0)) {
+  
+  if(any(diag(chol(precision_matrix)) < 0)) {
     warning(paste("The edge weights in the module do not correspond to a", 
                   "positive definite precision matrix."))
   }
-  
   
   sigma <- solve(precision_matrix)
   return(sigma)
