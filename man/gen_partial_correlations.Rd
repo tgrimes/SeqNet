@@ -4,17 +4,19 @@
 \alias{gen_partial_correlations}
 \title{Generate partial correlations for a list of networks.}
 \usage{
-gen_partial_correlations(..., k = 2.1, rweights = function(n)
+gen_partial_correlations(..., k = 2.5, rweights = function(n)
   (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1))
 }
 \arguments{
 \item{...}{The 'network' objects to modify.}
 
 \item{k}{An integer that ensures the matrix inverse is numerically stable. 
-k = 1 is default; higher values will give less stable results.}
+k = 2.5 is default; higher values will allow for larger values of
+partial correlations (and will result in a wider distribution of 
+Pearson correlations).}
 
 \item{rweights}{A generator for initial weights in the network. By default, 
-values are generated uniformly from (-1, 0.5) U (0.5, 1). The weights will
+values are generated uniformly from (-1, -0.5) U (0.5, 1). The weights will
 be adjusted so that the sign of a generated weight and the sign of the
 corresponding partial correlation agree.}
 }

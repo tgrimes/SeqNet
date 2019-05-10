@@ -105,16 +105,18 @@ gen_gaussian <- function(n, ...) {
 #' partial correlation weight across networks.
 #' @param ... The 'network' objects to modify.
 #' @param k An integer that ensures the matrix inverse is numerically stable. 
-#' k = 1 is default; higher values will give less stable results.
+#' k = 2.5 is default; higher values will allow for larger values of
+#' partial correlations (and will result in a wider distribution of 
+#' Pearson correlations).
 #' @param rweights A generator for initial weights in the network. By default, 
-#' values are generated uniformly from (-1, 0.5) U (0.5, 1). The weights will
+#' values are generated uniformly from (-1, -0.5) U (0.5, 1). The weights will
 #' be adjusted so that the sign of a generated weight and the sign of the
 #' corresponding partial correlation agree.
 #' @return An updated network object containing random weights. If multiple
 #' networks were provided, then a list of network objects is returned.
 #' @export
 gen_partial_correlations <- function(...,
-                                     k = 2.1,
+                                     k = 2.5,
                                      rweights = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {
   # Check 'k'.
   if(k < 1) 
