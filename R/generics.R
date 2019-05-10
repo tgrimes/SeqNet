@@ -381,9 +381,17 @@ rewire_connections_to_node.matrix <- function(x,
           # Do not use sample() if only one neighbor.
           neighbors <- neighbors
         } else {
-          # Sample low weight neighbors with higher probability.
-          neighbors <- sample(neighbors, n_rewire,
-                              prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
+          # TODO: Consider sampling uniformly here.
+          neighbors <- sample(neighbors, n_rewire)
+          # if(exponent >= 0) {
+          #   # Sample low weight neighbors with higher probability.
+          #   neighbors <- sample(neighbors, n_rewire,
+          #                       prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
+          # } else {
+          #   # Sample high weight neighbors with higher probability.
+          #   neighbors <- sample(neighbors, n_rewire,
+          #                       prob = (ecdf_cpp(weights[neighbors]))^-exponent + 10^-16)
+          # }
         }
         
         # Rewire each connection.
@@ -393,9 +401,16 @@ rewire_connections_to_node.matrix <- function(x,
             # Do not use sample() if only one available.
             new_neighbor <- available
           } else {
-            # Sample high weight nodes with higher probability
-            new_neighbor <- sample(available, 1,
-                                   prob = ecdf_cpp(weights[available])^exponent + 10^-16)
+            if(exponent >= 0) {
+              # Sample high weight nodes with higher probability
+              new_neighbor <- sample(available, 1,
+                                     prob = ecdf_cpp(weights[available])^exponent + 10^-16)
+            } else {
+              # Sample low weight neighbors with higher probability.
+              new_neighbor <- sample(available, 1,
+                                     prob = (1 - ecdf_cpp(weights[available]))^-exponent + 10^-16)
+            }
+            
           }
           # Rewire connection to new node.
           x[old_neighbor, node_index] <- 0
@@ -552,9 +567,16 @@ remove_connections_to_node.matrix <- function(x,
           # Do not use sample() if only one neighbor.
           neighbors <- neighbors
         } else {
-          # Sample low weight neighbors with higher probability.
-          neighbors <- sample(neighbors, n_remove,
-                              prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
+          neighbors <- sample(neighbors, n_remove)
+          # if(exponent >= 0) {
+          #   # Sample low weight neighbors with higher probability.
+          #   neighbors <- sample(neighbors, n_remove,
+          #                       prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
+          # } else {
+          #   # Sample high weight neighbors with higher probability.
+          #   neighbors <- sample(neighbors, n_remove,
+          #                       prob = (ecdf_cpp(weights[neighbors]))^-exponent + 10^-16)
+          # }
         }
         
         # Remove connections
@@ -637,10 +659,17 @@ remove_connections.matrix <- function(x,
   n_remove <- sum(runif(nrow(edges)) < prob_remove)
   
   if(n_remove > 0) {
+    edge_index <- sample(1:nrow(edges), n_remove)
+    # if(exponent >= 0) {
+    #   # Sample high weight edges with higher probability.
+    #   edge_index <- sample(1:nrow(edges), n_remove,
+    #                        prob = (ecdf_cpp(weights))^exponent + 10^-16)
+    # } else {
+    #   # Sample low weight edges with higher probability.
+    #   edge_index <- sample(1:nrow(edges), n_remove,
+    #                        prob = (1 - ecdf_cpp(weights))^-exponent + 10^-16)
+    # }
     
-    # Sample high weight edges with higher probability.
-    edge_index <- sample(1:nrow(edges), n_remove,
-                         prob = (ecdf_cpp(weights))^exponent + 10^-16)
     
     # Remove connections
     x[matrix(edges[edge_index, ], ncol = 2)] <- 0

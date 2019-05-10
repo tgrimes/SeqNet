@@ -4,9 +4,10 @@
 \alias{create_modules_for_network}
 \title{Randomly sample subsets of genes for each module}
 \usage{
-create_modules_for_network(n_modules, p, avg_module_size = 20,
-  sd_module_size = 10, min_module_size = 5, max_module_size = 100,
-  selection_weight = 20, ...)
+create_modules_for_network(n_modules, p, avg_module_size = 50,
+  sd_module_size = 50, min_module_size = 10, max_module_size = 200,
+  sample_link_nodes_fn = sample_link_nodes,
+  sample_module_nodes_fn = sample_module_nodes, ...)
 }
 \arguments{
 \item{n_modules}{The number of modules to include in the network.}
@@ -23,7 +24,10 @@ create_modules_for_network(n_modules, p, avg_module_size = 20,
 value will be reduced to 'max_module_size'. Set to 'Inf' to avoid this 
 truncation.}
 
-\item{selection_weight}{A positive value used for sampling nodes for a new 
+\item{sample_link_nodes_fn}{A function used for sampling link nodes for a new 
+module.}
+
+\item{sample_module_nodes_fn}{A function used for sampling nodes for a new 
 module.}
 
 \item{...}{Additional arguments passed to random_module().}

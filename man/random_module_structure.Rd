@@ -4,9 +4,8 @@
 \alias{random_module_structure}
 \title{Create a random network structure for a module}
 \usage{
-random_module_structure(size, prob_rewire = 0.8, prob_remove = 0.5,
-  weights = NULL, neig_size = 1, neig_size_fn = NULL,
-  exponent = 100, ...)
+random_module_structure(size, prob_rewire = 7/10, prob_remove = 3/10,
+  weights = NULL, neig_size = 2, exponent = 1000, ...)
 }
 \arguments{
 \item{size}{The number of nodes to include in the graph.}
@@ -21,10 +20,6 @@ random_module_structure(size, prob_rewire = 0.8, prob_remove = 0.5,
 \item{neig_size}{The neighborhood size within which the nodes of the 
 ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 so long as 'size' >= (1 + 2 * 'neig_size')}
-
-\item{neig_size_fn}{(Optional) A function that takes as input 'size' and returns
-a neighborhood size to be used in place of 'neig_size'. This can be useful
-if it is desired to scale the ring lattice with the size of the module.}
 
 \item{exponent}{A positive value used for sampling nodes. See 
 ?rewire_connections_to_node and ?remove_connections_to_node for details.}

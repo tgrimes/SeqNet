@@ -201,18 +201,21 @@ random_network <- function(p,
 #' @param max_module_size A positive value. Any generated module sizes above this 
 #' value will be reduced to 'max_module_size'. Set to 'Inf' to avoid this 
 #' truncation.
-#' @param selection_weight A positive value used for sampling nodes for a new 
+#' @param sample_link_nodes_fn A function used for sampling link nodes for a new 
+#' module.
+#' @param sample_module_nodes_fn A function used for sampling nodes for a new 
 #' module.
 #' @param ... Additional arguments passed to random_module().
 #' @return A list containing the indicies for genes contained in each module.
 #' @export 
 create_modules_for_network <- function(n_modules, 
                                        p, 
-                                       avg_module_size = 20, 
-                                       sd_module_size = 10,
-                                       min_module_size = 5, 
-                                       max_module_size = 100, 
-                                       selection_weight = 20,
+                                       avg_module_size = 50, 
+                                       sd_module_size = 50,
+                                       min_module_size = 10, 
+                                       max_module_size = 200, 
+                                       sample_link_nodes_fn = sample_link_nodes,
+                                       sample_module_nodes_fn = sample_module_nodes,
                                        ...) {
   ############################################################
   # Check parameters for generating module size.
@@ -222,10 +225,10 @@ create_modules_for_network <- function(n_modules,
   }
   
   if(is.null(avg_module_size)) {
-    avg_module_size <- 15
+    avg_module_size <- 50
   }
   if(is.null(sd_module_size)) {
-    sd_module_size <- avg_module_size / 2
+    sd_module_size <- avg_module_size
   }
   
   if(avg_module_size <= min_module_size) {
@@ -235,7 +238,8 @@ create_modules_for_network <- function(n_modules,
   }
   
   mu = (avg_module_size - min_module_size)
-  if((sd_module_size^2 - mu) <= 0) {
+  # Adjust sd_module_size if it's too small, unless it's zero.
+  if((sd_module_size^2 - mu) <= 0 && sd_module_size != 0) {
     sd_module_size <- sqrt(mu) * 1.01
     warning(paste("Argument 'sd_module_size' is too small.",
                   "Setting to 1.01 * (avg_module_size - min_module_size) =", sd_module_size))
@@ -248,12 +252,18 @@ create_modules_for_network <- function(n_modules,
   # Generate module sizes.
   ############################################################
   if(is.null(n_modules)) {
-    # Generate extra modules sizes. Should not need more than p.
-    module_sizes <- min_module_size + rnbinom(p, size = size, 
-                                              mu = mu)
+    # Generate extra modules sizes. Should not need more than 2p.
+    if(sd_module_size == 0) {
+      module_sizes <- rep(avg_module_size, 2 * p)
+    } else {
+      module_sizes <- min_module_size + rnbinom(2 * p, size = size, mu = mu)
+    }
   } else {
-    module_sizes <- min_module_size + rnbinom(n_modules, size = size, 
-                                              mu = mu)
+    if(sd_module_size == 0) {
+      module_sizes <- rep(avg_module_size, n_modules)
+    } else {
+      module_sizes <- min_module_size + rnbinom(n_modules, size = size, mu = mu)
+    }
   }
   module_sizes <- sapply(module_sizes, min, max_module_size)
   
@@ -262,14 +272,13 @@ create_modules_for_network <- function(n_modules,
   ############################################################
   if(is.null(n_modules)) {
     # Generate extra modules sizes. Should not need more than p.
-    module_list <- vector("list", p)
+    module_list <- vector("list", 2 * p)
   } else {
     module_list <- vector("list", n_modules)
   }
   
   all_nodes <- 1:p
   nodes_available <- min(module_sizes[1], p)
-  prob <- rep(1/p, p) # Initial probability of selecting a node for a module.
   deg <- rep(0, p)
   node_unselected <- rep(TRUE, p)
   need_more_modules <- TRUE
@@ -282,32 +291,23 @@ create_modules_for_network <- function(n_modules,
     index_nodes_selected <- which(!node_unselected[index_nodes_available])
     nodes <- rep(0, m)
     if(i > 1) {
-      link_node <- sample(index_nodes_selected, 1, 
-                          prob = prob[index_nodes_selected])
-      nodes[-m] <- sample(index_nodes_available[-link_node], m - 1, 
-                          prob = prob[index_nodes_available][-link_node])
-      nodes[m] <- link_node
+      link_nodes <- sample_link_nodes_fn(index_nodes_selected, deg[index_nodes_selected])
+      nodes <- c(link_nodes,
+                 sample_module_nodes_fn(index_nodes_available,
+                                        m - length(link_nodes),
+                                        deg[index_nodes_available],
+                                        index_nodes_selected,
+                                        link_nodes))
     } else {
-      nodes <- sample(index_nodes_available, m, prob = prob[index_nodes_available])
+      # No modules exist; sample nodes uniformly
+      nodes <- sample(index_nodes_available, m)
     }
     nodes <- sort(nodes)
-    module_list[[i]] <- random_module(nodes, 
-                                      weights = deg[nodes], 
-                                      ...)
+    module_list[[i]] <- random_module(nodes, weights = deg[nodes], ...)
     node_unselected[nodes] <- FALSE
-    
-    # if(selection_weight < 0 && runif(1) < 0.2 && i > 1) {
-    #   selection_weight <- -selection_weight
-    # }
     
     # Update degree distribution
     deg[nodes] <- deg[nodes] + colSums(get_adjacency_matrix(module_list[[i]]))
-    if(selection_weight < 0) {
-      prob[!node_unselected] <- 1 / p * (1 - ecdf_cpp(deg[!node_unselected]))^abs(selection_weight) + 10^-16
-    } else {
-      prob[!node_unselected] <- 1 / p * (ecdf_cpp(deg[!node_unselected]))^selection_weight + 10^-16
-      
-    }
     
     if(is.null(n_modules)) {
       need_more_modules <- any(node_unselected)
@@ -320,6 +320,46 @@ create_modules_for_network <- function(n_modules,
   # i = n_modules
   module_list <- module_list[1:i] # Remove any extra nodes.
   return(module_list)
+}
+
+#' Sample link nodes for new module
+#' 
+#' @param nodes The nodes to sample from.
+#' @param degree The degree of each node.
+#' @return A vector of selected nodes (possibly of length 1).
+#' @export
+sample_link_nodes <- function(nodes, degree) {
+  return(sample(nodes, 1))
+  # n <- length(nodes)
+  # prob = abs(log(abs((2 * n / (n - 1) * 
+  #                       (ecdf_cpp(degree) - 0.5 - 1 / (2 * n))))))^1 + 10^-16
+  # link_nodes <- sample(nodes, 2, prob = prob)
+  # return(link_nodes)
+}
+
+#' Sample nodes for new module
+#' 
+#' @param nodes The nodes available to sample from.
+#' @param m The number of nodes to sample.
+#' @param degree The degree of each node.
+#' @param index_in_modules The indicies of nodes that already belong to other 
+#' modules. This is used to index into 'nodes' and 'degree'.
+#' @param index_link_nodes The indicies of link nodes already chosen to
+#' be in this module. This is used to index into 'nodes' and 'degree'.
+#' @return A vector of selected nodes of length m.
+#' @export
+sample_module_nodes <- function(nodes, m, degree, 
+                                index_in_modules, index_link_nodes) {
+  n <- length(nodes)
+  prob <- rep(1 / n, n)
+  # prob[index_in_modules] = 0.1 * prob[index_in_modules] *
+  #   abs(log(abs((2 * n / (n - 1) *
+  #                  (ecdf_cpp(degree[index_in_modules]) -
+  #                     0.5 - 1 / (2 * n))))) /
+  #         abs(log(1 / (n - 1))))^1 + 10^-16
+  prob[index_in_modules] = 0.01 * prob[index_in_modules]
+  module_nodes <- sample(nodes[-index_link_nodes], m, prob = prob[-index_link_nodes])
+  return(module_nodes)
 }
 
 ###########################################################################

@@ -443,21 +443,17 @@ get_node_names.network_module <- function(x, ...) {
 #' @param neig_size The neighborhood size within which the nodes of the 
 #' ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 #' so long as 'size' >= (1 + 2 * 'neig_size') 
-#' @param neig_size_fn (Optional) A function that takes as input 'size' and returns
-#' a neighborhood size to be used in place of 'neig_size'. This can be useful
-#' if it is desired to scale the ring lattice with the size of the module.
 #' @param exponent A positive value used for sampling nodes. See 
 #' ?rewire_connections_to_node and ?remove_connections_to_node for details.
 #' @param ... Additional arguments are ignored.
 #' @return An adjacency matrix representing the network structure.
 #' @export
 random_module_structure <- function(size, 
-                                    prob_rewire = 0.8,
-                                    prob_remove = 0.5,
+                                    prob_rewire = 7 / 10,
+                                    prob_remove = 3 / 10,
                                     weights = NULL,
-                                    neig_size = 1,
-                                    neig_size_fn = NULL,
-                                    exponent = 100,
+                                    neig_size = 2,
+                                    exponent = 1000,
                                     ...) {
   if(size < 1)
     stop("Argument 'size' must be positive.")
@@ -467,10 +463,6 @@ random_module_structure <- function(size,
     stop("Argument 'prob_remove' must be between 0 and 1.")
   if(neig_size < 0) 
     stop("'neig_size' must be positive.")
-  if(exponent < 0) 
-    stop("Argument 'exponent' must be positive.")
-  if(!is.null(neig_size_fn)) 
-    neig_size <- neig_size_fn(size)
   
   nodes <- 1:size
   
@@ -526,15 +518,26 @@ connect_module_structure <- function(adj,
       if(length(nodes_in_sub_component) == 1) {
         index_rep <- nodes_in_sub_component
       } else {
-        index_rep <- sample(nodes_in_sub_component, 1,
-                            prob = ecdf_cpp(weights[nodes_in_sub_component])^exponent + 0.001) 
+        if(exponent >= 0) {
+          index_rep <- sample(nodes_in_sub_component, 1,
+                              prob = ecdf_cpp(weights[nodes_in_sub_component])^exponent + 0.001)
+        } else {
+          index_rep <- sample(nodes_in_sub_component, 1,
+                              prob = (1 - ecdf_cpp(weights[nodes_in_sub_component]))^-exponent + 0.001)
+        }
+         
       }
       # Choose a representative for the main component.
       if(length(nodes_in_main_component) == 1) {
         index_main <- nodes_in_main_component
       } else {
-        index_main <- sample(nodes_in_main_component, 1, 
-                             prob = ecdf_cpp(weights[nodes_in_main_component])^exponent + 0.001)
+        if(exponent >= 0) {
+          index_main <- sample(nodes_in_main_component, 1,
+                               prob = ecdf_cpp(weights[nodes_in_main_component])^exponent + 0.001)
+        } else {
+          index_main <- sample(nodes_in_main_component, 1,
+                               prob = (1 - ecdf_cpp(weights[nodes_in_main_component]))^-exponent + 0.001)
+        }
       }
       
       adj[index_main, index_rep] <- 1
