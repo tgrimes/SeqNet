@@ -938,7 +938,7 @@ print.network <- function(x, ...) {
                 "' is not a 'network' object."))
   
   n_modules <- length(x$modules)
-  vals <- get_network_characteristics(x)
+  vals <- get_network_characteristics(x, global_only = TRUE)
   
   message <- paste0(ifelse(is_weighted(x), "A weighted", "An unweighted"), 
                     " network containing ", vals$p, " nodes, ", 
@@ -995,53 +995,96 @@ as_single_module <- function(network) {
 #' 
 #' The average degree, clustering coefficient, and average path length are calculated.
 #' @param network A 'network', 'network_module', or 'matrix' object.
+#' @param global_only If TRUE, only the global characteristics are calculated. 
 #' @return A list containing characteristics of the network.
 #' @export
-get_network_characteristics <- function(network) {
+get_network_characteristics <- function(network, global_only = FALSE) {
   adj <- get_adjacency_matrix(network)
   graph <- igraph::graph_from_adjacency_matrix(adj, mode = "undirected")
   # graph <- igraph::graph_from_edgelist(edges_from_adjacency_cpp(adj), directed = FALSE)  
   
-  # Calculate the degree distribution P(K).
   deg <- igraph::degree(graph)
   tab <- table(deg)
   
-  # Calculate the average clustering coefficient C(K) for nodes with each degree K.
-  ind <- which(deg > 1)
-  if(length(ind) == 0) {
-    # Store properties of K in a data.frame.
-    df <- data.frame(K = as.numeric(names(tab)), 
-                     P_K = as.numeric(tab / sum(tab)),
-                     C_K = NA)
-    
-  } else {
-    clustco <- igraph::transitivity(graph, type = "local")[ind]
-    deg_sub <- deg[ind]
-    clus <- rep(NA, max(deg_sub))
-    for(i in 2:(max(deg_sub))) {
-      coefs <- clustco[which(deg_sub == i)]
-      if(length(coefs) > 0) {
-        clus[i] <- mean(coefs)
-      }
-    }
-    
-    # Store properties of K in a data.frame.
-    if("0" %in% names(tab) && "1" %in% names(tab)) {
-      C_K <- c(NA, NA, clus[which(!is.na(clus))])
-    } else if("0" %in% names(tab) || "1" %in% names(tab)) {
-      C_K <- c(NA, clus[which(!is.na(clus))])
-    } else {
-      C_K <- clus[which(!is.na(clus))]
-    }
-    df <- data.frame(K = as.numeric(names(tab)), 
-                     P_K = as.numeric(tab / sum(tab)),
-                     C_K = C_K)
+  if(!global_only) {
+    # Calculate the emperical degree distribution.
+    K = as.numeric(names(tab))
+    P_K = as.numeric(tab / sum(tab))
   }
   
+  
+  if(!global_only) {
+    # Calculate the average clustering coefficient C(K) for nodes with each degree K.
+    ind <- which(deg > 1)
+    if(length(ind) == 0) {
+      # Store properties of K in a data.frame.
+      C_K <- rep(NA, length(K))
+    } else {
+      clustco <- igraph::transitivity(graph, type = "local")[ind]
+      deg_sub <- deg[ind]
+      clus <- rep(NA, max(deg_sub))
+      for(i in 2:(max(deg_sub))) {
+        coefs <- clustco[which(deg_sub == i)]
+        if(length(coefs) > 0) {
+          clus[i] <- mean(coefs)
+        }
+      }
+      
+      if("0" %in% names(tab) && "1" %in% names(tab)) {
+        C_K <- c(NA, NA, clus[which(!is.na(clus))])
+      } else if("0" %in% names(tab) || "1" %in% names(tab)) {
+        C_K <- c(NA, clus[which(!is.na(clus))])
+      } else {
+        C_K <- clus[which(!is.na(clus))]
+      }
+    }
+  }
+
+  
+  
+  # Calculate the average shortest path length L(K) for nodes with each degree K.
+  if(!global_only) {
+    ind <- which(deg > 0)
+    if(length(ind) == 0) {
+      # Store properties of L in a data.frame.
+      L_K <- rep(NA, length(K))
+    } else {
+      avgpath <- sapply(igraph::V(graph), function(v) {
+        mean(igraph::distances(graph, v)[-v])
+      })
+      deg_sub <- deg[ind]
+      L <- rep(NA, max(deg_sub))
+      for(i in 1:(max(deg_sub))) {
+        paths <- avgpath[which(deg_sub == i)]
+        if(length(paths) > 0) {
+          L[i] <- mean(paths)
+        }
+      }
+      
+      if("0" %in% names(tab)) {
+        L_K <- c(NA, L[which(!is.na(L))])
+      } else {
+        L_K <- L[which(!is.na(L))]
+      }
+    }
+    `avg path length` = mean(avgpath)
+  } else {
+    `avg path length` = igraph::mean_distance(graph)
+  }
+  
+  if(!global_only) {
+    df <- data.frame(K = K, 
+                     P_K = P_K,
+                     C_K = C_K,
+                     L_K = L_K)
+  } else {
+    df <- NULL
+  }
+   
   return(list(p = ncol(adj),
               n_edges = sum(adj[lower.tri(adj)]),
               `avg degree` = mean(deg), 
               `clustering coef` = igraph::transitivity(graph), 
-              `avg path length` = igraph::mean_distance(graph), 
+              `avg path length` = `avg path length`, 
               df = df))
 }

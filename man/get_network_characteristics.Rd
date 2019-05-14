@@ -4,10 +4,12 @@
 \alias{get_network_characteristics}
 \title{Characteristics of the network topology}
 \usage{
-get_network_characteristics(network)
+get_network_characteristics(network, global_only = FALSE)
 }
 \arguments{
 \item{network}{A 'network', 'network_module', or 'matrix' object.}
+
+\item{global_only}{If TRUE, only the global characteristics are calculated.}
 }
 \value{
 A list containing characteristics of the network.
