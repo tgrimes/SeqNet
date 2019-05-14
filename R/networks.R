@@ -1039,7 +1039,6 @@ get_network_characteristics <- function(network, global_only = FALSE) {
       }
     }
   }
-
   
   
   # Calculate the average shortest path length L(K) for nodes with each degree K.
@@ -1050,14 +1049,16 @@ get_network_characteristics <- function(network, global_only = FALSE) {
       L_K <- rep(NA, length(K))
     } else {
       avgpath <- sapply(igraph::V(graph), function(v) {
-        mean(igraph::distances(graph, v)[-v])
+        d <- igraph::distances(graph, v)[-v]
+        d <- d[d != Inf] # Subset on distances within component
+        mean(d)
       })
       deg_sub <- deg[ind]
       L <- rep(NA, max(deg_sub))
       for(i in 1:(max(deg_sub))) {
         paths <- avgpath[which(deg_sub == i)]
         if(length(paths) > 0) {
-          L[i] <- mean(paths)
+          L[i] <- mean(paths, na.rm = TRUE)
         }
       }
       
@@ -1067,7 +1068,7 @@ get_network_characteristics <- function(network, global_only = FALSE) {
         L_K <- L[which(!is.na(L))]
       }
     }
-    `avg path length` = mean(avgpath)
+    `avg path length` = mean(avgpath, na.rm = TRUE)
   } else {
     `avg path length` = igraph::mean_distance(graph)
   }
