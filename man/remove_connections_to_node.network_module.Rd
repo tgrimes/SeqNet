@@ -12,8 +12,8 @@
 
 \item{node}{The node to unwire.}
 
-\item{prob_remove}{A value between 0 and 1. Each connection to 'node_index' 
-will be removed with probability equal to 'remove_prob'.}
+\item{prob_remove}{A value between 0 and 1. Each connection to 'node' 
+will be removed with probability equal to 'prob_remove'.}
 
 \item{weights}{(Optional) A vector of weights for each node. These are used
 in addition to the degree of each node when sampling neighbors to unwire from.}
