@@ -642,7 +642,13 @@ add_modules_to_network <- function(network, module_list) {
       module_list[[i]] <- set_module_name(module_list[[i]], module_names[i])
     }
   }
-  network$modules <- c(network$modules, module_list)
+  
+  new_module_list <- c(network$modules, module_list)
+  if(!is.null(new_module_list)) {
+    # If new_module_list were NULL, this assignment would remove the 'modules'
+    # element from the network. So, 
+    network$modules <- new_module_list
+  }
   
   return(network)
 }
@@ -1043,20 +1049,20 @@ get_network_characteristics <- function(network, global_only = FALSE) {
   
   # Calculate the average shortest path length L(K) for nodes with each degree K.
   if(!global_only) {
-    ind <- which(deg > 0)
     if(length(ind) == 0) {
       # Store properties of L in a data.frame.
       L_K <- rep(NA, length(K))
+      `avg path length` = NaN
     } else {
       avgpath <- sapply(igraph::V(graph), function(v) {
         d <- igraph::distances(graph, v)[-v]
         d <- d[d != Inf] # Subset on distances within component
         mean(d)
       })
-      deg_sub <- deg[ind]
-      L <- rep(NA, max(deg_sub))
+      L <- rep(NA, max(deg))
+      # Loop over nodes with positive degree (i.e. start at i = 1).
       for(i in 1:(max(deg_sub))) {
-        paths <- avgpath[which(deg_sub == i)]
+        paths <- avgpath[which(deg == i)]
         if(length(paths) > 0) {
           L[i] <- mean(paths, na.rm = TRUE)
         }
@@ -1067,8 +1073,8 @@ get_network_characteristics <- function(network, global_only = FALSE) {
       } else {
         L_K <- L[which(!is.na(L))]
       }
+      `avg path length` = mean(avgpath, na.rm = TRUE)
     }
-    `avg path length` = mean(avgpath, na.rm = TRUE)
   } else {
     `avg path length` = igraph::mean_distance(graph)
   }
