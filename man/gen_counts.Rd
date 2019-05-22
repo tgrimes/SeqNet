@@ -4,8 +4,7 @@
 \alias{gen_counts}
 \title{Generate RNA-seq counts}
 \usage{
-gen_counts(n, network, reference = NULL, params = NULL,
-  verbose = TRUE)
+gen_counts(n, network, reference = NULL, verbose = TRUE)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
@@ -16,9 +15,6 @@ gen_counts(n, network, reference = NULL, params = NULL,
 gene expression profile. If a data.frame is provided, each column should
 correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
 are estimated from the kidney dataset.}
-
-\item{params}{A matrix of ZINB parameter values; each column should contain 
-the size, mu, and rho parameters for a gene.}
 
 \item{verbose}{Boolean indicator for message output.}
 }
