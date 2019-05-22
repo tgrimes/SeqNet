@@ -11,8 +11,10 @@ setClass(Class = "network_module")
 create_empty_module <- function(nodes) {
   if(any(nodes <= 0)) 
     stop("Argument 'nodes' must contain positive integers.")
-
-  n_nodes = length(nodes)
+  
+  if(length(nodes) != length(unique(nodes))) {
+    stop("Duplicate nodes are present in the module.")
+  }
   
   if(is.unsorted(nodes)) {
     nodes <- sort(nodes)
@@ -125,6 +127,16 @@ create_module_from_association_matrix <- function(association_matrix,
       nodes <- 1:ncol(association_matrix)
     }
   }
+  
+  # Adjust association matrix to guaruntee the precision matrix will be pos. def.
+  if(!isSymmetric(association_matrix))
+    association_matrix <- (association_matrix + t(association_matrix)) / 2
+  diag(association_matrix) <- 0
+  lambda <- as.numeric(eigen(-association_matrix)$values)
+  adjustment <- (max(lambda) * 10^-2.5 - min(lambda))
+  diag(association_matrix) <- -diag(association_matrix) + adjustment
+  association_matrix <- cov2cor(association_matrix)
+  diag(association_matrix) <- 0
   
   adjacency_matrix <- (association_matrix != 0) * 1
   
@@ -618,8 +630,8 @@ rewire_connections_to_node.network_module <- function(x,
 #' 
 #' @param x A 'network_module' object to modify. 
 #' @param node The node to unwire.
-#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
-#' will be removed with probability equal to 'remove_prob'.
+#' @param prob_remove A value between 0 and 1. Each connection to 'node' 
+#' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
 #' @param exponent The exponent used for weighted sampling. When exponent = 0,
@@ -694,4 +706,31 @@ is_weighted.network_module <- function(x, ...) {
     return(TRUE)
   } 
   return(FALSE)
+}
+
+
+
+#' Rewire connections.
+#' 
+#' @param x A 'network_module' object.
+#' @param prob_rewire A value between 0 and 1. The connections to each node 
+#' will be rewired with probability equal to 'prob_rewire'. 
+#' @param weights (Optional) A vector of weights for each node. These are used
+#' in addition to the degree of each node when sampling a node to rewire to.
+#' @param exponent The exponent used for weighted sampling. When exponent = 0,
+#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' is based on node weights.
+#' @param ... Additional arguments.
+#' @return The modified module.
+#' @export
+rewire_connections.network_module <- function(x,
+                                              prob_rewire,
+                                              weights = NULL,
+                                              exponent = 0,
+                                              ...) {
+  nodes <- x$nodes
+  x <- get_adjacency_matrix(x)
+  x <- rewire_connections(x, prob_rewire, weights, exponent, ...)
+  x <- create_module_from_adjacency_matrix(x, nodes)
+  return(x)
 }
