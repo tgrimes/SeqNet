@@ -129,7 +129,7 @@ get_sigma <- function(x, ...) {
 #' @return A covariance matrix.
 #' @export
 get_sigma.default <- function(x, ...) {
-  cat("get_sigma() is defined for 'network' and 'network_module' objects.\n")
+  # cat("get_sigma() is defined for 'network' and 'network_module' objects.\n")
 }
 
 #' Get the covariance matrix
@@ -453,7 +453,7 @@ rewire_connections <- function(x, ...) {
 #' @return The modified object.
 #' @export
 rewire_connections.default <- function(x, ...) {
-  cat("rewire_connections() is defined for 'network', 'network_module'",
+  cat("rewire_connections() is defined for 'network_module'",
       " and 'matrix' objects.\n")
 }
 
@@ -475,7 +475,7 @@ rewire_connections.matrix <- function(x,
                                       weights = NULL,
                                       exponent = 0,
                                       ...) {
-  for(i in 1:ncol(x)) {
+  for(i in get_node_names(x)) {
     x <- rewire_connections_to_node(x, i, prob_rewire = prob_rewire,
                                     weights = weights, exponent = exponent, ...)
   }
