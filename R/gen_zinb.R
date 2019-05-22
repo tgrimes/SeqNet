@@ -85,8 +85,6 @@ rzinb <- function (n, size, mu, rho) {
 #' gene expression profile. If a data.frame is provided, each column should
 #' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
 #' are estimated from the kidney dataset.
-#' @param params A matrix of ZINB parameter values; each column should contain 
-#' the size, mu, and rho parameters for a gene. 
 #' @param verbose Boolean indicator for message output.
 #' @return A list containing the generated counts and the ZINB parameters used
 #' to create them. If a list of networks were provided, then the results for
@@ -95,8 +93,117 @@ rzinb <- function (n, size, mu, rho) {
 gen_counts <- function(n, 
                        network,
                        reference = NULL,
-                       params = NULL,
                        verbose = TRUE) {
+  if(n <= 0) {
+    stop("Argument 'n' must be positive.")
+  }
+  
+  single_network <- TRUE
+  if(!(class(network) == "network")) {
+    if(is.list(network) && all(sapply(network, function(nw) class(nw) == "network"))) {
+      p <- network[[1]]$p
+      if(length(network) > 1 && !all(sapply(network[-1], function(nw) nw$p == p))) {
+        stop(paste0("'", deparse(substitute(network)), 
+                    "' is a list but does not contain networks of the same size."))
+      }
+      single_network <- FALSE
+    } else {
+      stop(paste0("'", deparse(substitute(network)), 
+                  "' is not a 'network' object or list of 'network' objects."))
+    }
+  } else {
+    p <- network$p
+  }
+  
+  if(is.null(reference)) {
+    warning("Using kidney data as reference dataset.")
+    reference <- get_kidney_reference_data()
+    df_ref <- reference$expression
+    df_ref <- sample_reference_data(df_ref, p)
+  } else {
+    df_ref <- sample_reference_data(reference, p)
+  }
+  
+  if(!single_network) {
+    return(lapply(network, function(nw) {
+        gen_counts(n, nw, df_ref, verbose = verbose)
+      }))
+  }
+  
+  round_to_counts <- FALSE
+  if(all((df_ref %% 1) == 0)) {
+    round_to_counts <- TRUE
+  }
+  
+  # library_size <- rowSums(df_ref) / 10^6
+  # df_ref <- df_ref / library_size
+  
+  x <- gen_gaussian(n, network)$x
+  x <- pnorm(x) # Obtain n by p matrix of percentiles.
+  # Convert percentiles to tpm's using empirical distribution for each gene.
+  for(i in 1:p) {
+    # Setting type = 1 gives inverse of empirical distribution function.
+    x[, i] <- quantile(df_ref[, i], x[, i], type = 1)
+  }
+  
+  # x <- x / rowSums(x) * 10^6 # Ensure x's are in TPM
+  
+  # vars_df_ref <- apply(df_ref, 1, function(val) median(abs(val - median(val))))
+  # vars_df_ref <- (vars_df_ref - mean(vars_df_ref)) / sd(vars_df_ref)
+  # vars_x <- apply(x, 1, function(val) median(abs(val - median(val))))
+  # vars_x <- (vars_x - mean(vars_x)) / sd(vars_x)
+  # 
+  # fit <- lm(library_size ~ vars_df_ref)
+  # 
+  # x <- x * (fit$coefficients[1] + 
+  #             fit$coefficients[2] * vars_x + 
+  #             sample(fit$residuals, nrow(x), replace = TRUE))
+  if(round_to_counts)
+    x <- round(x)
+  
+  # df_ref <- df_ref * library_size # Undo TPM conversion.
+  if(round_to_counts)
+    df_ref <- round(df_ref)
+  
+  return(list(x = x,
+              reference = df_ref))
+}
+
+
+
+#' Generate RNA-seq counts
+#' 
+#' The count data are generated based on the gene-gene associations of an
+#' udnerlying network. An association structure is imposed by first generating 
+#' data from a multivariate Gaussian distribution, and counts are then obtained
+#' through the inverse tranformation method. To generate realistic counts, either 
+#' a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
+#' @param n The number of samples to generate.
+#' @param network A 'network' object or list of 'network' objects.
+#' @param reference Either a vector or data.frame of counts from a reference
+#' gene expression profile. If a data.frame is provided, each column should
+#' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
+#' are estimated from the kidney dataset.
+#' @param params A matrix of ZINB parameter values; each column should contain 
+#' the size, mu, and rho parameters for a gene.
+#' @param library_sizes A vector of library sizes. Used only if 'reference' is 
+#' NULL.
+#' @param adjust_library_size A boolean value. If TRUE, the library size of 
+#' generated counts are adjusted based on the reference library sizes. If both 
+#' 'reference' and 'library_size' is NULL, then no adjustment is made. 
+#' By default, this adjustment is made if the necessary information is provided.
+#' @param verbose Boolean indicator for message output.
+#' @return A list containing the generated counts and the ZINB parameters used
+#' to create them. If a list of networks were provided, then the results for
+#' each network are returned as a list.
+#' @export 
+gen_counts_zinb <- function(n, 
+                            network,
+                            reference = NULL,
+                            params = NULL,
+                            library_sizes = NULL,
+                            adjust_library_size = NULL,
+                            verbose = TRUE) {
   if(n <= 0) {
     stop("Argument 'n' must be positive.")
   }
@@ -123,7 +230,7 @@ gen_counts <- function(n,
     reference <- get_kidney_reference_data()
     reference <- sample_reference_data(reference, p)
   }
-
+  
   # Estimate model paramters from reference dataset
   if(is.null(params)) {
     index <- 1:p # Default: use all p columns in the reference dataset.
@@ -174,8 +281,8 @@ gen_counts <- function(n,
   
   if(!single_network) {
     return(lapply(network, function(nw) {
-        gen_counts(n, nw, params = params, verbose = verbose)
-      }))
+      gen_counts(n, nw, params = params, verbose = verbose)
+    }))
   }
   
   x <- gen_gaussian(n, network)$x
@@ -193,10 +300,32 @@ gen_counts <- function(n,
     }
   }
   
+  # Adjust library size by default (arg is null) or if requested (arg is TRUE).
+  if(is.null(adjust_library_size) || adjust_library_size) {
+    # Check if reference library sizes are provided.
+    if(is.null(library_sizes)) {
+      if(is.null(reference)) {
+        # Give warning if adjustment was requested.
+        if(!is.null(adjust_library_size) && adjust_library_size) 
+          warning("Cannot adjust library size; must provide 'reference' or 'library_sizes'.")
+      } else {
+        library_sizes <- rowSums(reference)
+      }
+    }
+    # Adjust x if library sizes are available.
+    if(!is.null(library_sizes)) {
+      # Adjust library sizes
+      library_sizes_x <- rowSums(x)
+      factors <- quantile(library_sizes, runif(n), type = 1) / 
+        library_sizes_x
+      x <- apply(x, 2, function(vals) floor(vals * factors))
+      rownames(x) <- NULL
+    }
+  }
+  
   return(list(x = x,
               params = params))
 }
-
 
 
 
@@ -317,135 +446,4 @@ est_params_from_reference <- function(reference = NULL,
   
   return(list(params = params,
               reference = reference))
-}
-
-
-#' Get reference data from kidney dataset
-#' 
-#' @return A data.frame containing a reference dataset with each column 
-#' containing an observed expression profile for a gene.
-#' @export 
-get_kidney_reference_data <- function() {
-  data("kidney")
-  # reference <- t(kidney$counts)
-  # Only use samples from non-tumor tissue. This avoids differential expression.
-  kidney <- kidney$tumor
-  
-  # Remove any genes that have zero variation or have extremely low expression.
-  has_variation <- apply(kidney, 2, function(x) length(unique(x)) != 1)
-  kidney <- kidney[, has_variation]
-  has_expression <- apply(kidney, 2, function(x) mean(x) > 5)
-  kidney <- kidney[, has_expression]
-  
-  return(kidney)
-}
-
-
-#' Sample genes from reference dataset
-#' 
-#' @param reference_data The reference data.frame to use.
-#' @param p The number of genes (columns) to sample
-#' @param percent_ZI The percentage of genes to be zero inflated. If
-#' NULL, the genes are sampled at random; in this case, the empirical 
-#' distribution of gene expression profiles will determine the probablility
-#' that a sampled gene is zero inflated.
-#' @param min_mean Genes with mean expression below this value are removed.
-#' @param max_mean_percentile A value between 0 and 1. All genes with mean 
-#' expression above this percentile are removed.
-#' @param threshold_ZI The minimum proportion of zero counts for a gene to be
-#' considered as zero inflated.
-#' @export 
-sample_reference_data <- function(reference_data,
-                                  p,
-                                  percent_ZI = NULL,
-                                  min_mean = 30,
-                                  max_mean_percentile = 0.99,
-                                  threshold_ZI = 0.2) {
-  if(p <= 0) 
-    stop("p must be greater than 0.")
-  if(min_mean < 0) 
-    stop("min_mean must be greater than 0.")
-  if(max_mean_percentile < 0 || max_mean_percentile > 1)
-    stop("max_mean_percentile must be between 0 and 1.")
-  
-  means <- apply(reference_data, 2, mean)
-  max_mean <- quantile(means, max_mean_percentile)
-  reference_data <- reference_data[, (means >= min_mean) & (means <= max_mean)]
-
-  index_zero <- NULL
-  index_ZI_genes <- NULL
-  if(!is.null(percent_ZI)) {
-    if(percent_ZI > 1 || percent_ZI < 0) {
-      stop("percent_ZI must be between 0 and 1.")
-    }
-    # index_ZI_genes <- which(apply(reference_data, 2, 
-    #                               function(x) mean(x == 0) > threshold_ZI))
-    index_ZI_genes <- which(apply(reference_data, 2, function(x) {
-      perc_zero <- mean(x == 0)
-      if(perc_zero < 0.05) {
-        return(FALSE)
-      } else if(mean(x) < 30) {
-        return(FALSE) 
-      } else if(var(x) == 0){
-        return(FALSE)
-      }
-      tryCatch(
-        {
-          m <- mean(x[x != 0]) # Used to calculate initial value.
-          fit_zinb <- fitdistrplus::fitdist(x, dzinb, 
-                                            start = list(size = m^2 / (var(x) - m), 
-                                                         mu = m, 
-                                                         rho = perc_zero / 2),
-                                            lower = c(1, 0, 0))
-          fit_nb <- fitdistrplus::fitdist(x, dzinb, 
-                                          start = list(size = m^2 / (var(x) - m), 
-                                                       mu = m),
-                                          lower = c(0, 0))
-          L <- dzinb(x, fit_zinb$estimate[1], fit_zinb$estimate[2], fit_zinb$estimate[3])
-          bic_zinb <- -2 * sum(log(L)) + log(length(x)) * 3 # Three parameters in model.
-          L <- dzinb(x, fit_nb$estimate[1], fit_nb$estimate[2])
-          bic_nb <- -2 * sum(log(L)) + log(length(x)) * 2 # Two parameters in model.
-          return(bic_zinb < bic_nb)
-        },
-        error = function(e) {
-          return(FALSE)
-        })
-    }))
-    index_ZI_genes <- unname(index_ZI_genes)
-    p_0 <- ceiling(p * percent_ZI)
-    if(p_0 > 0) {
-      if(length(index_ZI_genes) == 0) {
-        stop("None of the genes in the reference dataset are zero inflated.")
-      } else if(length(index_ZI_genes) < p_0) {
-        warning(paste("Not enough zero-inflated genes in reference dataset.",
-                      "Sampling with replacement will be used."))
-        index_zero <- sample(index_ZI_genes, p_0, replace = TRUE)
-      } else {
-        index_zero <- sample(index_ZI_genes, p_0)
-      }
-    }
-    p <- p - p_0
-  }
-  
-  index_nonzero <- NULL
-  if(p > 0) {
-    # If percent_zero_inflated is NULL, then index_genes will contain all genes.
-    # Otherwise, the zero inflated genes will be removed.
-    index_genes <- setdiff(1:ncol(reference_data), index_ZI_genes)
-    # Note, p will be zero if ceiling(p * percent_zero_inflated) is 1.
-    if(p > 0)
-      if(length(index_genes) == 0) {
-        stop("None of the genes in the reference dataset are non-zero-inflated.")
-      } else if(length(index_genes) < p) {
-        warning(paste("Not enough genes in reference dataset.",
-                      "Sampling with replacement will be used."))
-        index_nonzero <- sample(index_genes, p, replace = TRUE)
-      } else {
-        index_nonzero <- sample(index_genes, p)
-      }
-  }
-  
-  index <- c(index_zero, index_nonzero)
-  
-  return(reference_data[, index])
 }
