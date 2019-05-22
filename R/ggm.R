@@ -45,13 +45,19 @@ gen_gaussian <- function(n, ...) {
     # Number of modules containing each node - updated after each iteration below.
     m <- rep(0, network_list[[i]]$p)
     
-    for(j in 1:length(network_list[[i]]$modules)) {
-      nodes <- network_list[[i]]$modules[[j]]$nodes
-      sigma <- get_sigma(network_list[[i]]$modules[[j]])
-      
-      x[, nodes] <- x[, nodes] + mvtnorm::rmvnorm(n, sigma = sigma)
-      m[nodes] <- m[nodes] + 1
+    if(length(network_list[[i]]$modules) > 0) {
+      for(j in 1:length(network_list[[i]]$modules)) {
+        nodes <- network_list[[i]]$modules[[j]]$nodes
+        sigma <- get_sigma(network_list[[i]]$modules[[j]])
+        
+        x[, nodes] <- x[, nodes] + mvtnorm::rmvnorm(n, sigma = sigma)
+        m[nodes] <- m[nodes] + 1
+      }
+    } else {
+      x <- mvtnorm::rmvnorm(n, sigma = diag(1, ncol(x)))
+      m <- m + 1
     }
+    
     
     # Generate observations for nodes not in any module
     index <- which(m == 0)
@@ -150,58 +156,60 @@ gen_partial_correlations <- function(...,
   n_networks <- length(network_list)
   n_modules <- length(network_list[[1]]$modules)
   
-  for(i in 1:n_modules) {
-    module_list <- lapply(network_list, function(network) network$modules[[i]])
-    node_names <- module_list[[1]]$nodes
-    p <- length(node_names)
-    
-    # Generate association weights for every possible connection in the module.
-    # Associations along diagonal are zero; these are adjusted later.
-    weights <- matrix(0, p, p)
-    m <- p * (p - 1) / 2
-    # Use negative weight so that partial correlations have same sign as
-    # the generated weight.
-    weights[lower.tri(weights)] <- -rweights(m)
-    weights <- weights + t(weights)
-    
-    # Obtain an association matrix for each network using the generated values.
-    weight_matrix_list <- lapply(module_list, function(module) {
-      weight_matrix <- weights * get_adjacency_matrix(module)
-      weight_matrix
-    })
-    
-    # Ensure each association matrix is invertible by adjusting the diagonal.
-    eigen_val_list <- lapply(weight_matrix_list, function(m) eigen(m)$values)
-    adjustment_list <- lapply(eigen_val_list, function(lambda) {
-      (max(lambda) * 10^-k - min(lambda))
-    })
-    
-    # Find the maximum adjustment and apply to each association matrix.
-    # Each matrix is now invertible and is interpreted as the precision matrix
-    adjustment <- diag(max(unlist(adjustment_list)), p)
-    precision_list <- lapply(weight_matrix_list, function(m) m + adjustment)
-    
-    # Standardize with 1s along diagonal.
-    # Note: the precision matrix is related to negative partial correlations.
-    # pcor_ij = -precision_ij/sqrt(precision_ii*precision_jj), for i != j.
-    pcor_matrix_list <- lapply(precision_list, function(Omega) {
-      if(all(Omega[lower.tri(Omega)] == 0)) {
-        # If the module has no connections, set diagonal matrix.
-        pcor_matrix <- diag(1, nrow(Omega))
-      } else {
-        pcor_matrix <- -cov2cor(Omega)
-        diag(pcor_matrix) <- 1 # -diag(-cov2cor(Omega)) = 1
-      }
-      colnames(pcor_matrix) <- node_names
-      return(pcor_matrix)
-    })
-    
-    for(j in 1:n_networks) {
-      # If the module contains edges, then set the edge weights.
-      if(!is.null(network_list[[j]]$modules[[i]]$edges)) {
-        network_list[[j]]$modules[[i]] <- 
-          set_module_weights(network_list[[j]]$modules[[i]],
-                             pcor_matrix_list[[j]])
+  if(n_modules > 0) {
+    for(i in 1:n_modules) {
+      module_list <- lapply(network_list, function(network) network$modules[[i]])
+      node_names <- module_list[[1]]$nodes
+      p <- length(node_names)
+      
+      # Generate association weights for every possible connection in the module.
+      # Associations along diagonal are zero; these are adjusted later.
+      weights <- matrix(0, p, p)
+      m <- p * (p - 1) / 2
+      # Use negative weight so that partial correlations have same sign as
+      # the generated weight.
+      weights[lower.tri(weights)] <- -rweights(m)
+      weights <- weights + t(weights)
+      
+      # Obtain an association matrix for each network using the generated values.
+      weight_matrix_list <- lapply(module_list, function(module) {
+        weight_matrix <- weights * get_adjacency_matrix(module)
+        weight_matrix
+      })
+      
+      # Ensure each association matrix is invertible by adjusting the diagonal.
+      eigen_val_list <- lapply(weight_matrix_list, function(m) eigen(m)$values)
+      adjustment_list <- lapply(eigen_val_list, function(lambda) {
+        (max(lambda) * 10^-k - min(lambda))
+      })
+      
+      # Find the maximum adjustment and apply to each association matrix.
+      # Each matrix is now invertible and is interpreted as the precision matrix
+      adjustment <- diag(max(unlist(adjustment_list)), p)
+      precision_list <- lapply(weight_matrix_list, function(m) m + adjustment)
+      
+      # Standardize with 1s along diagonal.
+      # Note: the precision matrix is related to negative partial correlations.
+      # pcor_ij = -precision_ij/sqrt(precision_ii*precision_jj), for i != j.
+      pcor_matrix_list <- lapply(precision_list, function(Omega) {
+        if(all(Omega[lower.tri(Omega)] == 0)) {
+          # If the module has no connections, set diagonal matrix.
+          pcor_matrix <- diag(1, nrow(Omega))
+        } else {
+          pcor_matrix <- -cov2cor(Omega)
+          diag(pcor_matrix) <- 1 # -diag(-cov2cor(Omega)) = 1
+        }
+        colnames(pcor_matrix) <- node_names
+        return(pcor_matrix)
+      })
+      
+      for(j in 1:n_networks) {
+        # If the module contains edges, then set the edge weights.
+        if(!is.null(network_list[[j]]$modules[[i]]$edges)) {
+          network_list[[j]]$modules[[i]] <- 
+            set_module_weights(network_list[[j]]$modules[[i]],
+                               pcor_matrix_list[[j]])
+        }
       }
     }
   }
