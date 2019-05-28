@@ -85,105 +85,6 @@ rzinb <- function (n, size, mu, rho) {
 #' gene expression profile. If a data.frame is provided, each column should
 #' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
 #' are estimated from the kidney dataset.
-#' @param verbose Boolean indicator for message output.
-#' @return A list containing the generated counts and the ZINB parameters used
-#' to create them. If a list of networks were provided, then the results for
-#' each network are returned as a list.
-#' @export 
-gen_counts <- function(n, 
-                       network,
-                       reference = NULL,
-                       verbose = TRUE) {
-  if(n <= 0) {
-    stop("Argument 'n' must be positive.")
-  }
-  
-  single_network <- TRUE
-  if(!(class(network) == "network")) {
-    if(is.list(network) && all(sapply(network, function(nw) class(nw) == "network"))) {
-      p <- network[[1]]$p
-      if(length(network) > 1 && !all(sapply(network[-1], function(nw) nw$p == p))) {
-        stop(paste0("'", deparse(substitute(network)), 
-                    "' is a list but does not contain networks of the same size."))
-      }
-      single_network <- FALSE
-    } else {
-      stop(paste0("'", deparse(substitute(network)), 
-                  "' is not a 'network' object or list of 'network' objects."))
-    }
-  } else {
-    p <- network$p
-  }
-  
-  if(is.null(reference)) {
-    warning("Using kidney data as reference dataset.")
-    reference <- get_kidney_reference_data()
-    df_ref <- reference$expression
-    df_ref <- sample_reference_data(df_ref, p)
-  } else {
-    df_ref <- sample_reference_data(reference, p)
-  }
-  
-  if(!single_network) {
-    return(lapply(network, function(nw) {
-        gen_counts(n, nw, df_ref, verbose = verbose)
-      }))
-  }
-  
-  round_to_counts <- FALSE
-  if(all((df_ref %% 1) == 0)) {
-    round_to_counts <- TRUE
-  }
-  
-  # library_size <- rowSums(df_ref) / 10^6
-  # df_ref <- df_ref / library_size
-  
-  x <- gen_gaussian(n, network)$x
-  x <- pnorm(x) # Obtain n by p matrix of percentiles.
-  # Convert percentiles to tpm's using empirical distribution for each gene.
-  for(i in 1:p) {
-    # Setting type = 1 gives inverse of empirical distribution function.
-    x[, i] <- quantile(df_ref[, i], x[, i], type = 1)
-  }
-  
-  # x <- x / rowSums(x) * 10^6 # Ensure x's are in TPM
-  
-  # vars_df_ref <- apply(df_ref, 1, function(val) median(abs(val - median(val))))
-  # vars_df_ref <- (vars_df_ref - mean(vars_df_ref)) / sd(vars_df_ref)
-  # vars_x <- apply(x, 1, function(val) median(abs(val - median(val))))
-  # vars_x <- (vars_x - mean(vars_x)) / sd(vars_x)
-  # 
-  # fit <- lm(library_size ~ vars_df_ref)
-  # 
-  # x <- x * (fit$coefficients[1] + 
-  #             fit$coefficients[2] * vars_x + 
-  #             sample(fit$residuals, nrow(x), replace = TRUE))
-  if(round_to_counts)
-    x <- round(x)
-  
-  # df_ref <- df_ref * library_size # Undo TPM conversion.
-  if(round_to_counts)
-    df_ref <- round(df_ref)
-  
-  return(list(x = x,
-              reference = df_ref))
-}
-
-
-
-#' Generate RNA-seq counts
-#' 
-#' The count data are generated based on the gene-gene associations of an
-#' udnerlying network. An association structure is imposed by first generating 
-#' data from a multivariate Gaussian distribution, and counts are then obtained
-#' through the inverse tranformation method. To generate realistic counts, either 
-#' a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
-#' @param n The number of samples to generate.
-#' @param network A 'network' object or list of 'network' objects.
-#' @param reference Either a vector or data.frame of counts from a reference
-#' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
-#' are estimated from the kidney dataset.
 #' @param params A matrix of ZINB parameter values; each column should contain 
 #' the size, mu, and rho parameters for a gene.
 #' @param library_sizes A vector of library sizes. Used only if 'reference' is 
@@ -197,13 +98,13 @@ gen_counts <- function(n,
 #' to create them. If a list of networks were provided, then the results for
 #' each network are returned as a list.
 #' @export 
-gen_counts_zinb <- function(n, 
-                            network,
-                            reference = NULL,
-                            params = NULL,
-                            library_sizes = NULL,
-                            adjust_library_size = NULL,
-                            verbose = TRUE) {
+gen_zinb <- function(n, 
+                     network,
+                     reference = NULL,
+                     params = NULL,
+                     library_sizes = NULL,
+                     adjust_library_size = NULL,
+                     verbose = TRUE) {
   if(n <= 0) {
     stop("Argument 'n' must be positive.")
   }
@@ -281,7 +182,7 @@ gen_counts_zinb <- function(n,
   
   if(!single_network) {
     return(lapply(network, function(nw) {
-      gen_counts(n, nw, params = params, verbose = verbose)
+      gen_counts_zinb(n, nw, params = params, verbose = verbose)
     }))
   }
   
