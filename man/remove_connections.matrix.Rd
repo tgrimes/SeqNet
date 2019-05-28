@@ -4,21 +4,13 @@
 \alias{remove_connections.matrix}
 \title{Remove connections in a network.}
 \usage{
-\method{remove_connections}{matrix}(x, prob_remove, weights = NULL,
-  exponent = 0, ...)
+\method{remove_connections}{matrix}(x, prob_remove, ...)
 }
 \arguments{
 \item{x}{An adjacency matrix to modify.}
 
 \item{prob_remove}{A value between 0 and 1. Each edge will be removed with 
 probability equal to 'prob_remove'.}
-
-\item{weights}{(Optional) A vector of weights for each node. These are used,
-in addition to the degree of each node, when sampling edges to remove.}
-
-\item{exponent}{The exponent used for weighted sampling. When exponent = 0,
-edges are sampled uniformly. When exponent > 0, the sampling probability is
-based on the connected node weights.}
 
 \item{...}{Additional arguments.}
 }
