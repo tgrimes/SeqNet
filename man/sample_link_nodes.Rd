@@ -4,12 +4,23 @@
 \alias{sample_link_nodes}
 \title{Sample link nodes for new module}
 \usage{
-sample_link_nodes(nodes, degree)
+sample_link_nodes(n, nodes, degree, alpha0 = 100, beta0 = 1,
+  epsilon = 10^-5, ...)
 }
 \arguments{
+\item{n}{The number of link nodes to sample.}
+
 \item{nodes}{The nodes to sample from.}
 
 \item{degree}{The degree of each node.}
+
+\item{epsilon}{Added to sampling probability.}
+
+\item{eta}{Exponent for empirical CDF.}
+
+\item{eta0}{Used when sampling link nodes.}
+
+\item{epsilon}{Used when sampling link nodes.}
 }
 \value{
 A vector of selected nodes (possibly of length 1).

@@ -4,8 +4,9 @@
 \alias{random_module_structure}
 \title{Create a random network structure for a module}
 \usage{
-random_module_structure(size, prob_rewire = 7/10, prob_remove = 3/10,
-  weights = NULL, neig_size = 2, exponent = 1000, ...)
+random_module_structure(size, prob_rewire = 1, prob_remove = 0.5,
+  weights = NULL, neig_size = 2, alpha = 100, beta = 1,
+  epsilon = 10^-5, ...)
 }
 \arguments{
 \item{size}{The number of nodes to include in the graph.}
@@ -21,10 +22,12 @@ random_module_structure(size, prob_rewire = 7/10, prob_remove = 3/10,
 ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 so long as 'size' >= (1 + 2 * 'neig_size')}
 
-\item{exponent}{A positive value used for sampling nodes. See 
-?rewire_connections_to_node and ?remove_connections_to_node for details.}
+\item{epsilon}{A small constant added to the sampling probability of each node.}
 
 \item{...}{Additional arguments are ignored.}
+
+\item{eta}{A positive value used for sampling nodes. See 
+?rewire_connections_to_node and ?remove_connections_to_node for details.}
 }
 \value{
 An adjacency matrix representing the network structure.

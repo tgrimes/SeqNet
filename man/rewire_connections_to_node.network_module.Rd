@@ -5,7 +5,7 @@
 \title{Rewire connections to a node.}
 \usage{
 \method{rewire_connections_to_node}{network_module}(x, node, prob_rewire,
-  weights = NULL, exponent = 100, ...)
+  weights = NULL, alpha = 100, beta = 1, epsilon = 10^-5, ...)
 }
 \arguments{
 \item{x}{A 'network_module' object to modify.}
@@ -19,11 +19,11 @@ will be rewired with probability equal to 'prob_rewire'. Note, the degree of
 \item{weights}{(Optional) A vector of weights for each node. These are used
 in addition to the degree of each node when sampling nodes to rewire.}
 
-\item{exponent}{The exponent used for weighted sampling. When exponent = 0,
-nodes are sampled uniformly. When exponent > 0, the sampling probability
-is based on node weights.}
-
 \item{...}{Additional arguments.}
+
+\item{eta}{The exponent used for weighted sampling. When eta = 0,
+nodes are sampled uniformly. When eta > 0, the sampling probability
+is based on node weights.}
 }
 \value{
 The modified module.

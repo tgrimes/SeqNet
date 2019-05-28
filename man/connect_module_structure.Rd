@@ -4,14 +4,17 @@
 \alias{connect_module_structure}
 \title{Connect disconnected components in an adjacency matrix}
 \usage{
-connect_module_structure(adj, weights = NULL, exponent = 0)
+connect_module_structure(adj, weights = NULL, alpha = 100, beta = 1,
+  epsilon = 10^-5)
 }
 \arguments{
 \item{adj}{An adjacency matrix to modify.}
 
 \item{weights}{(Optional) weights used for sampling nodes.}
 
-\item{exponent}{A positive value used for sampling nodes.}
+\item{epsilon}{A small constant added to the sampling probability of each node.}
+
+\item{eta}{A positive value used for sampling nodes.}
 }
 \value{
 A modified adjacency matrix
@@ -21,9 +24,9 @@ Connect disconnected components in an adjacency matrix
 }
 \note{
 When connecting two components, a node is sampled from each with
-probability proportional to ecdf(weights)(weights)^exponent + 0.001,
+probability proportional to ecdf(weights)(weights)^eta + epsilon,
 where 'weights' are subset to only those nodes in the corresponding component.
-When 'exponent' = 0, this results in uniform sampling. When 'exponent' > 0, 
+When 'eta' = 0, this results in uniform sampling. When 'eta' > 0, 
 nodes having larger 'weight' are more likely to be selected, where 'weight'
 is equal to 'weights' + degree. (If Arugment 'weights' is NULL, then 'weight'
 is simply the node degree).

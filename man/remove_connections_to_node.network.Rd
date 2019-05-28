@@ -5,7 +5,7 @@
 \title{Remove connections to a node.}
 \usage{
 \method{remove_connections_to_node}{network}(x, node, prob_remove,
-  weights = NULL, exponent = 0, ...)
+  weights = NULL, ...)
 }
 \arguments{
 \item{x}{A 'network' object to modify.}
@@ -17,10 +17,6 @@ will be removed with probability equal to 'prob_remove'.}
 
 \item{weights}{(Optional) A vector of weights for each node. These are used
 in addition to the degree of each node when sampling neighbors to unwire from.}
-
-\item{exponent}{The exponent used for weighted sampling. When exponent = 0,
-neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
-probability is based on node weights.}
 
 \item{...}{Additional arguments.}
 }

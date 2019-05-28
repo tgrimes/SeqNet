@@ -5,7 +5,7 @@
 \title{Sample genes from reference dataset}
 \usage{
 sample_reference_data(reference_data, p, percent_ZI = NULL,
-  min_mean = 30, max_mean_percentile = 0.99, threshold_ZI = 0.2)
+  threshold_ZI = 0.2)
 }
 \arguments{
 \item{reference_data}{The reference data.frame to use.}
@@ -16,11 +16,6 @@ sample_reference_data(reference_data, p, percent_ZI = NULL,
 NULL, the genes are sampled at random; in this case, the empirical 
 distribution of gene expression profiles will determine the probablility
 that a sampled gene is zero inflated.}
-
-\item{min_mean}{Genes with mean expression below this value are removed.}
-
-\item{max_mean_percentile}{A value between 0 and 1. All genes with mean 
-expression above this percentile are removed.}
 
 \item{threshold_ZI}{The minimum proportion of zero counts for a gene to be
 considered as zero inflated.}

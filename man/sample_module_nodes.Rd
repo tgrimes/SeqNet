@@ -4,20 +4,16 @@
 \alias{sample_module_nodes}
 \title{Sample nodes for new module}
 \usage{
-sample_module_nodes(nodes, m, degree, index_in_modules, index_link_nodes)
+sample_module_nodes(n, nodes, degree, nu = 0.01, ...)
 }
 \arguments{
-\item{nodes}{The nodes available to sample from.}
+\item{n}{The number of nodes to sample.}
 
-\item{m}{The number of nodes to sample.}
+\item{nodes}{The nodes available to sample from.}
 
 \item{degree}{The degree of each node.}
 
-\item{index_in_modules}{The indicies of nodes that already belong to other 
-modules. This is used to index into 'nodes' and 'degree'.}
-
-\item{index_link_nodes}{The indicies of link nodes already chosen to
-be in this module. This is used to index into 'nodes' and 'degree'.}
+\item{nu}{Multiplier for nodes that are already in one or more modules.}
 }
 \value{
 A vector of selected nodes of length m.

@@ -17,7 +17,9 @@ then modules are created until all nodes in the network have positive degree.}
 if two genes are connected in one module, then they are connected in 
 every module.}
 
-\item{...}{Additional arguments passed to 'create_modules_for_network()'.}
+\item{...}{Additional arguments passed to 'create_modules_for_network()',
+which uses 'sample_link_nodes_fn()', 'sample_module_nodes_fn()', and
+'random_module()'.}
 }
 \value{
 An unweighted network object.
