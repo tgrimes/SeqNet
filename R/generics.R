@@ -36,7 +36,7 @@ get_adjacency_matrix.matrix <- function(x, ...) {
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   if(dim(x)[1] != dim(x)[2])
     stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
-  if(max(abs(x - t(x))) > 10^-13)   
+  if(!is_symmetric_cpp(x))   
     stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
   # Set any values that are near zero to exactly zero.
@@ -86,7 +86,7 @@ get_association_matrix.matrix <- function(x, tol = 10^-13, ...) {
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   if(dim(x)[1] != dim(x)[2])
     stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
-  if(max(abs(x - t(x))) > 10^-13)   
+  if(!is_symmetric_cpp(x))   
     stop(paste0("'", deparse(substitute(x)),  "' is not a symmetric matrix."))
   if(!is_weighted(x)) 
     stop(paste0("'", deparse(substitute(x)), "' is not a weighted matrix."))
@@ -158,17 +158,14 @@ get_sigma.matrix <- function(x, ...) {
   }
   diag(precision_matrix) <- 1
   
-  if(any(diag(chol(precision_matrix)) < 0)) {
-    warning(paste("The edge weights in the module do not correspond to a", 
-                  "positive definite precision matrix."))
+  if(!is_PD(precision_matrix)) {
+    stop(paste("The edge weights in the module do not correspond to a", 
+               "positive definite precision matrix."))
   }
   sigma <- solve(precision_matrix)
   
   return(sigma)
 }
- 
-
-
 
 #' Check if an object is weighted
 #' 
@@ -206,7 +203,7 @@ is_weighted.matrix <- function(x, ...) {
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   if(dim(x)[1] != dim(x)[2])
     stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
-  if(max(abs(x - t(x))) > 10^-13)   
+  if(!is_symmetric_cpp(x))   
     stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
   x <- x[lower.tri(x)]
@@ -251,7 +248,7 @@ remove_weights.matrix <- function(x, ...) {
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
   if(dim(x)[1] != dim(x)[2])
     stop(paste0("'", deparse(substitute(x)), "' is not a square matrix."))
-  if(max(abs(x - t(x))) > 10^-13)   
+  if(!is_symmetric_cpp(x))   
     stop(paste0("'", deparse(substitute(x)), "' is not a symmetric matrix."))
   
   x[x != 0] <- 1
@@ -329,9 +326,10 @@ rewire_connections_to_node.default <- function(x, node, ...) {
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' @param eta The exponent used for weighted sampling. When eta = 0,
+#' nodes are sampled uniformly. When eta > 0, the sampling probability
 #' is based on node weights.
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified object x.
 #' @export
@@ -339,7 +337,9 @@ rewire_connections_to_node.matrix <- function(x,
                                               node,
                                               prob_rewire,
                                               weights = NULL,
-                                              exponent = 0,
+                                              alpha = 100,
+                                              beta = 1,
+                                              epsilon = 10^-5,
                                               ...) {
   if(!(class(x) == "matrix")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
@@ -354,9 +354,6 @@ rewire_connections_to_node.matrix <- function(x,
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
     stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
          " equal to the number of nodes in m.")
-  if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
-  
   
   if(is.null(weights)) {
     weights <- rep(0, p)
@@ -381,17 +378,7 @@ rewire_connections_to_node.matrix <- function(x,
           # Do not use sample() if only one neighbor.
           neighbors <- neighbors
         } else {
-          # TODO: Consider sampling uniformly here.
           neighbors <- sample(neighbors, n_rewire)
-          # if(exponent >= 0) {
-          #   # Sample low weight neighbors with higher probability.
-          #   neighbors <- sample(neighbors, n_rewire,
-          #                       prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
-          # } else {
-          #   # Sample high weight neighbors with higher probability.
-          #   neighbors <- sample(neighbors, n_rewire,
-          #                       prob = (ecdf_cpp(weights[neighbors]))^-exponent + 10^-16)
-          # }
         }
         
         # Rewire each connection.
@@ -401,15 +388,12 @@ rewire_connections_to_node.matrix <- function(x,
             # Do not use sample() if only one available.
             new_neighbor <- available
           } else {
-            if(exponent >= 0) {
-              # Sample high weight nodes with higher probability
-              new_neighbor <- sample(available, 1,
-                                     prob = ecdf_cpp(weights[available])^exponent + 10^-16)
-            } else {
-              # Sample low weight neighbors with higher probability.
-              new_neighbor <- sample(available, 1,
-                                     prob = (1 - ecdf_cpp(weights[available]))^-exponent + 10^-16)
-            }
+            # Sample high weight nodes with higher probability
+            # new_neighbor <- sample(available, 1, prob = weights[available]^eta + epsilon)
+            # new_neighbor <- sample(available, 1,
+            #                        prob = ecdf_cpp(weights[available])^eta + epsilon)
+            new_neighbor <- sample(available, 1,
+                                   prob = pbeta(ecdf_cpp(weights[available]), alpha, beta) + epsilon)
             
           }
           # Rewire connection to new node.
@@ -464,20 +448,24 @@ rewire_connections.default <- function(x, ...) {
 #' will be rewired with probability equal to 'prob_rewire'. 
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling a node to rewire to.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' @param eta The exponent used for weighted sampling. When eta = 0,
+#' nodes are sampled uniformly. When eta > 0, the sampling probability
 #' is based on node weights.
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified object x.
 #' @export
 rewire_connections.matrix <- function(x,
                                       prob_rewire,
                                       weights = NULL,
-                                      exponent = 0,
+                                      alpha = 100,
+                                      beta = 1,
+                                      epsilon = 10^-5,
                                       ...) {
   for(i in get_node_names(x)) {
     x <- rewire_connections_to_node(x, i, prob_rewire = prob_rewire,
-                                    weights = weights, exponent = exponent, ...)
+                                    weights = weights, alpha = alpha, beta = beta, 
+                                    epsilon = epsilon, ...)
   }
   
   return(x)
@@ -516,9 +504,6 @@ remove_connections_to_node.default <- function(x, node, ...) {
 #' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
-#' probability is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified adjacency matrix.
 #' @export
@@ -526,7 +511,6 @@ remove_connections_to_node.matrix <- function(x,
                                               node,
                                               prob_remove,
                                               weights = NULL,
-                                              exponent = 0,
                                               ...) {
   if(!(class(x) == "matrix")) 
     stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
@@ -541,10 +525,6 @@ remove_connections_to_node.matrix <- function(x,
   if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
     stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
          " equal to the number of nodes in 'x'.")
-  if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
-  
-  
   
   if(is.null(weights)) {
     weights <- rep(0, p)
@@ -568,15 +548,6 @@ remove_connections_to_node.matrix <- function(x,
           neighbors <- neighbors
         } else {
           neighbors <- sample(neighbors, n_remove)
-          # if(exponent >= 0) {
-          #   # Sample low weight neighbors with higher probability.
-          #   neighbors <- sample(neighbors, n_remove,
-          #                       prob = (1 - ecdf_cpp(weights[neighbors]))^exponent + 10^-16)
-          # } else {
-          #   # Sample high weight neighbors with higher probability.
-          #   neighbors <- sample(neighbors, n_remove,
-          #                       prob = (ecdf_cpp(weights[neighbors]))^-exponent + 10^-16)
-          # }
         }
         
         # Remove connections
@@ -619,18 +590,11 @@ remove_connections.default <- function(x, ...) {
 #' @param x An adjacency matrix to modify.
 #' @param prob_remove A value between 0 and 1. Each edge will be removed with 
 #' probability equal to 'prob_remove'.
-#' @param weights (Optional) A vector of weights for each node. These are used,
-#' in addition to the degree of each node, when sampling edges to remove.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' edges are sampled uniformly. When exponent > 0, the sampling probability is
-#' based on the connected node weights.
 #' @param ... Additional arguments.
 #' @return The modified adjacency matrix.
 #' @export
 remove_connections.matrix <- function(x,
                                       prob_remove,
-                                      weights = NULL,
-                                      exponent = 0,
                                       ...) {
   if(!(class(x) == "matrix")) 
     stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
@@ -639,41 +603,23 @@ remove_connections.matrix <- function(x,
   
   if(prob_remove < 0 || prob_remove > 1) 
     stop("Argument 'prob_remove' must be in [0, 1].")
-  if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
-    stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
-         " equal to the number of nodes in m.")
-  if(length(exponent) != 1 || !is.numeric(exponent)) 
-    stop("'", deparse(substitute(exponent)), "' is not positive numeric value.")
-  
-  
-  if(is.null(weights)) {
-    weights <- rep(0, p)
-  }
-  weights <- weights + colSums(x)
-  weights <- unname(weights)
   
   # Obtain list of edges in the network.
   edges <- edges_from_adjacency_cpp(x)
-  weights <- weights[edges[, 1]] + weights[edges[, 2]]
   
   n_remove <- sum(runif(nrow(edges)) < prob_remove)
-  
   if(n_remove > 0) {
     edge_index <- sample(1:nrow(edges), n_remove)
-    # if(exponent >= 0) {
-    #   # Sample high weight edges with higher probability.
-    #   edge_index <- sample(1:nrow(edges), n_remove,
-    #                        prob = (ecdf_cpp(weights))^exponent + 10^-16)
-    # } else {
-    #   # Sample low weight edges with higher probability.
-    #   edge_index <- sample(1:nrow(edges), n_remove,
-    #                        prob = (1 - ecdf_cpp(weights))^-exponent + 10^-16)
-    # }
-    
     
     # Remove connections
-    x[matrix(edges[edge_index, ], ncol = 2)] <- 0
-    x[matrix(edges[edge_index, 2:1], ncol = 2)] <- 0
+    if(length(edge_index) == 1) {
+      x[edges[edge_index, 1], edges[edge_index, 2]] <- 0
+      x[edges[edge_index, 2], edges[edge_index, 1]] <- 0
+    } else {
+      x[edges[edge_index, 1:2]] <- 0
+      x[edges[edge_index, 2:1]] <- 0
+    }
+
   }
   
   return(x)

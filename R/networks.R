@@ -154,7 +154,9 @@ create_network_from_association_matrix <- function(association_matrix,
 #' @param consistent_connections If TRUE, then each module is modified so that,
 #' if two genes are connected in one module, then they are connected in 
 #' every module.
-#' @param ... Additional arguments passed to 'create_modules_for_network()'.
+#' @param ... Additional arguments passed to 'create_modules_for_network()',
+#' which uses 'sample_link_nodes_fn()', 'sample_module_nodes_fn()', and
+#' 'random_module()'.
 #' @return An unweighted network object.
 #' @export 
 random_network <- function(p,
@@ -291,13 +293,16 @@ create_modules_for_network <- function(n_modules,
     index_nodes_selected <- which(!node_unselected[index_nodes_available])
     nodes <- rep(0, m)
     if(i > 1) {
-      link_nodes <- sample_link_nodes_fn(index_nodes_selected, deg[index_nodes_selected])
+      link_nodes <- sample_link_nodes_fn(1,
+                                         index_nodes_selected, 
+                                         deg[index_nodes_selected],
+                                         ...)
+      index_nodes_available <- setdiff(index_nodes_available, link_nodes)
       nodes <- c(link_nodes,
-                 sample_module_nodes_fn(index_nodes_available,
-                                        m - length(link_nodes),
+                 sample_module_nodes_fn(m - length(link_nodes),
+                                        index_nodes_available,
                                         deg[index_nodes_available],
-                                        index_nodes_selected,
-                                        link_nodes))
+                                        ...))
     } else {
       # No modules exist; sample nodes uniformly
       nodes <- sample(index_nodes_available, m)
@@ -324,41 +329,44 @@ create_modules_for_network <- function(n_modules,
 
 #' Sample link nodes for new module
 #' 
+#' @param n The number of link nodes to sample.
 #' @param nodes The nodes to sample from.
 #' @param degree The degree of each node.
+#' @param eta Exponent for empirical CDF.
+#' @param epsilon Added to sampling probability.
+#' @param eta0 Used when sampling link nodes.
+#' @param epsilon Used when sampling link nodes.
 #' @return A vector of selected nodes (possibly of length 1).
 #' @export
-sample_link_nodes <- function(nodes, degree) {
-  return(sample(nodes, 1))
-  # n <- length(nodes)
-  # prob = abs(log(abs((2 * n / (n - 1) * 
-  #                       (ecdf_cpp(degree) - 0.5 - 1 / (2 * n))))))^1 + 10^-16
-  # link_nodes <- sample(nodes, 2, prob = prob)
-  # return(link_nodes)
+sample_link_nodes <- function(n, nodes, degree, alpha0 = 100, beta0 = 1, epsilon = 10^-5, ...) {
+  # if(FALSE && eta0 < 0) {
+  #   prob <- (1 - ecdf_cpp(degree))^-eta0 + epsilon
+  # } else {
+  #   prob <- pbeta(ecdf_cpp(degree), alpha, beta) + epsilon
+  # }
+  # prob <- degree^eta0 + epsilon
+  prob <- pbeta(ecdf_cpp(degree), alpha0, beta0) + epsilon
+  
+  link_nodes <- sample(nodes, n, prob = prob)
+  return(link_nodes)
 }
 
 #' Sample nodes for new module
 #' 
+#' @param n The number of nodes to sample.
 #' @param nodes The nodes available to sample from.
-#' @param m The number of nodes to sample.
 #' @param degree The degree of each node.
-#' @param index_in_modules The indicies of nodes that already belong to other 
-#' modules. This is used to index into 'nodes' and 'degree'.
-#' @param index_link_nodes The indicies of link nodes already chosen to
-#' be in this module. This is used to index into 'nodes' and 'degree'.
+#' @param nu Multiplier for nodes that are already in one or more modules.
 #' @return A vector of selected nodes of length m.
 #' @export
-sample_module_nodes <- function(nodes, m, degree, 
-                                index_in_modules, index_link_nodes) {
-  n <- length(nodes)
-  prob <- rep(1 / n, n)
-  # prob[index_in_modules] = 0.1 * prob[index_in_modules] *
-  #   abs(log(abs((2 * n / (n - 1) *
-  #                  (ecdf_cpp(degree[index_in_modules]) -
-  #                     0.5 - 1 / (2 * n))))) /
-  #         abs(log(1 / (n - 1))))^1 + 10^-16
-  prob[index_in_modules] = 0.01 * prob[index_in_modules]
-  module_nodes <- sample(nodes[-index_link_nodes], m, prob = prob[-index_link_nodes])
+sample_module_nodes <- function(n, nodes, degree, nu = 0.01, ...) {
+  if(nu <= 0) {
+    stop("nu must be positive.")
+  }
+  m <- length(nodes)
+  prob <- rep(1 / m, m)
+  prob[degree > 0] = nu * prob[degree > 0]
+  module_nodes <- sample(nodes, n, prob = prob)
   return(module_nodes)
 }
 
@@ -766,8 +774,8 @@ set_node_names <- function(network, node_names) {
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' @param eta The exponent used for weighted sampling. When eta = 0,
+#' nodes are sampled uniformly. When eta > 0, the sampling probability
 #' is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified network.
@@ -776,7 +784,9 @@ rewire_connections_to_node.network <- function(x,
                                                node,
                                                prob_rewire,
                                                weights = NULL,
-                                               exponent = 0,
+                                               alpha = 100,
+                                               beta = 1,
+                                               epsilon = 10^-5,
                                                ...) {
   if(!(class(x) == "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
@@ -786,7 +796,7 @@ rewire_connections_to_node.network <- function(x,
       if(node %in% x$modules[[i]]$nodes) {
         x$modules[[i]] <- 
           rewire_connections_to_node(x$modules[[i]], node,
-                                     prob_rewire, weights, exponent)
+                                     prob_rewire, weights, alpha, beta, epsilon, ...)
       }
     }
   } else {
@@ -806,9 +816,6 @@ rewire_connections_to_node.network <- function(x,
 #' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
-#' probability is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified network.
 #' @export
@@ -816,7 +823,6 @@ remove_connections_to_node.network <- function(x,
                                                node,
                                                prob_remove,
                                                weights = NULL,
-                                               exponent = 0,
                                                ...) {
   if(!(class(x) == "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
@@ -826,7 +832,7 @@ remove_connections_to_node.network <- function(x,
       if(node %in% x$modules[[i]]$nodes) {
         x$modules[[i]] <- 
           remove_connections_to_node(x$modules[[i]], node,
-                                     prob_remove, weights, exponent)
+                                     prob_remove, weights, ...)
       }
     }
   } else {

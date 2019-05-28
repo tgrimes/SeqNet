@@ -129,13 +129,36 @@ create_module_from_association_matrix <- function(association_matrix,
   }
   
   # Adjust association matrix to guaruntee the precision matrix will be pos. def.
-  if(!isSymmetric(association_matrix))
-    association_matrix <- (association_matrix + t(association_matrix)) / 2
-  diag(association_matrix) <- 0
-  lambda <- as.numeric(eigen(-association_matrix)$values)
-  adjustment <- (max(lambda) * 10^-2.5 - min(lambda))
-  diag(association_matrix) <- -diag(association_matrix) + adjustment
-  association_matrix <- cov2cor(association_matrix)
+  if(!is_symmetric_cpp(association_matrix)) {
+    warning(paste("The association weights is not symmetric. Using lower triangle."))
+    association_matrix[upper.tri(association_matrix)] <- 0
+    association_matrix <- (association_matrix + t(association_matrix))
+    # Diagonal is doubled, but will be set to 1 later regardless.
+  }
+  
+  # Set diagonal to 1 when checking for positive definiteness. 
+  diag(association_matrix) <- 1
+  
+  make_adjustments <- FALSE
+  if(any(abs(association_matrix[lower.tri(association_matrix)]) >= 1)) {
+    warning(paste("The association weights are not in (-1, 1). Adjusting..."))
+    make_adjustments <- TRUE
+  } else if(!is_PD(association_matrix)) {
+    warning(paste("The association matrix does not correspond to a", 
+                  "positive definite precision matrix. Adjusting..."))
+    make_adjustments <- TRUE
+  }
+  
+  if(make_adjustments) {
+    diag(association_matrix) <- 0
+    lambda <- as.numeric(eigen(-association_matrix, symmetric = TRUE, 
+                               only.values = TRUE)$values)
+    adjustment <- (max(lambda) * 10^-2.5 - min(lambda))
+    diag(association_matrix) <- adjustment
+    association_matrix <- cov2cor(association_matrix)
+  }
+  
+  # Set diagonal to 0 when creating the module.
   diag(association_matrix) <- 0
   
   adjacency_matrix <- (association_matrix != 0) * 1
@@ -263,13 +286,25 @@ set_module_weights <- function(module, weights) {
       stop("Argument 'weights' is a square matrix, but the number of", 
            "columns does not match number of nodes in the module.")
     # Get values in lower-triangle that correspond to connections in the module.
-    weights <- weights[module$edges[, 2:1]]
+    if(n_edges == 1) {
+      # If only 1 edge, index the weight matrix idrectly.
+      weights <- weights[module$edges[1, 2], module$edges[1, 1]]
+    } else {
+      # Otherwise, index using the 2-column matrix of indicies.
+      weights <- weights[module$edges[, 2:1]]
+    }
   } else {
     stop("Argument 'weights' must be a vector or matrix.")
   }
   
   # Update edges with weights.
-  module$edges <- cbind(module$edges, weights)
+  if(ncol(module$edges) == 2) {
+    # If module is currently unweighted, add a new column for weights.
+    module$edges <- cbind(module$edges, weights = unname(weights))
+  } else {
+    # Otherwise, update the weights.
+    module$edges[, 3] <- unname(weights)
+  }
   
   return(module)
 }
@@ -289,7 +324,12 @@ remove_weights.network_module <- function(x, ...) {
     return(x)
   
   # Reset edges with only first two columns.
-  x$edges <- x$edges[, 1:2]
+  if(nrow(x$edges) == 1) {
+    x$edges <- matrix(x$edges[, 1:2], nrow = 1)
+  } else {
+    x$edges <- x$edges[, 1:2]
+  }
+  
   return(x)
 }
 
@@ -335,8 +375,13 @@ get_adjacency_matrix.network_module <- function(x, ...) {
   n_nodes <- length(x$nodes)
   adj_matrix <- matrix(0, nrow = n_nodes, ncol = n_nodes)
   if(!is.null(x$edges)) {
-    adj_matrix[x$edges[, 1:2]] <- 1
-    adj_matrix[x$edges[, 2:1]] <- 1
+    if(nrow(x$edges) == 1) {
+      adj_matrix[x$edges[, 1], x$edges[, 2]] <- 1
+      adj_matrix[x$edges[, 2], x$edges[, 2]] <- 1
+    } else {
+      adj_matrix[x$edges[, 1:2]] <- 1
+      adj_matrix[x$edges[, 2:1]] <- 1
+    }
   }
   
   colnames(adj_matrix) <- x$nodes
@@ -365,8 +410,13 @@ get_association_matrix.network_module <- function(x, ...) {
     } else {
       weights <- rep(1, nrow(x$edges))
     }
-    assoc_matrix[x$edges[, 1:2]] <- weights
-    assoc_matrix[x$edges[, 2:1]] <- weights
+    if(nrow(x$edges) == 1) {
+      assoc_matrix[x$edges[, 1], x$edges[, 2]] <- weights
+      assoc_matrix[x$edges[, 2], x$edges[, 1]] <- weights
+    } else {
+      assoc_matrix[x$edges[, 1:2]] <- weights
+      assoc_matrix[x$edges[, 2:1]] <- weights
+    }
   }
   
   colnames(assoc_matrix) <- x$nodes
@@ -390,8 +440,8 @@ get_sigma.network_module <- function(x, ...) {
   }
   diag(precision_matrix) <- 1
   
-  if(any(diag(chol(precision_matrix)) < 0)) {
-    warning(paste("The edge weights in the module do not correspond to a", 
+  if(!is_PD(precision_matrix)) {
+    stop(paste("The edge weights in the module do not correspond to a", 
                   "positive definite precision matrix."))
   }
   
@@ -455,17 +505,20 @@ get_node_names.network_module <- function(x, ...) {
 #' @param neig_size The neighborhood size within which the nodes of the 
 #' ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 #' so long as 'size' >= (1 + 2 * 'neig_size') 
-#' @param exponent A positive value used for sampling nodes. See 
+#' @param eta A positive value used for sampling nodes. See 
 #' ?rewire_connections_to_node and ?remove_connections_to_node for details.
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments are ignored.
 #' @return An adjacency matrix representing the network structure.
 #' @export
 random_module_structure <- function(size, 
-                                    prob_rewire = 7 / 10,
-                                    prob_remove = 3 / 10,
+                                    prob_rewire = 1,
+                                    prob_remove = 0.5,
                                     weights = NULL,
                                     neig_size = 2,
-                                    exponent = 1000,
+                                    alpha = 100,
+                                    beta = 1,
+                                    epsilon = 10^-5,
                                     ...) {
   if(size < 1)
     stop("Argument 'size' must be positive.")
@@ -482,13 +535,13 @@ random_module_structure <- function(size,
   
   # Go through each node, in random order, and rewire its edges.
   for(i in sample(nodes)) {
-    adj <- rewire_connections_to_node(adj, i, prob_rewire, weights, exponent, ...)
+    adj <- rewire_connections_to_node(adj, i, prob_rewire, weights, alpha, beta, epsilon, ...)
   }
   # Remove edges from the network.
-  adj <- remove_connections(adj, prob_remove, weights, exponent, ...)
+  adj <- remove_connections(adj, prob_remove, weights, ...)
   
   # Connect any disconnected components in the module.
-  adj <- connect_module_structure(adj, weights, exponent)
+  adj <- connect_module_structure(adj, weights, alpha, beta, epsilon)
   
   return(adj)
 }
@@ -497,19 +550,22 @@ random_module_structure <- function(size,
 #' 
 #' @param adj An adjacency matrix to modify.
 #' @param weights (Optional) weights used for sampling nodes.
-#' @param exponent A positive value used for sampling nodes.
+#' @param eta A positive value used for sampling nodes.
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @return A modified adjacency matrix
 #' @note When connecting two components, a node is sampled from each with
-#' probability proportional to ecdf(weights)(weights)^exponent + 0.001,
+#' probability proportional to ecdf(weights)(weights)^eta + epsilon,
 #' where 'weights' are subset to only those nodes in the corresponding component.
-#' When 'exponent' = 0, this results in uniform sampling. When 'exponent' > 0, 
+#' When 'eta' = 0, this results in uniform sampling. When 'eta' > 0, 
 #' nodes having larger 'weight' are more likely to be selected, where 'weight'
 #' is equal to 'weights' + degree. (If Arugment 'weights' is NULL, then 'weight'
 #' is simply the node degree).
 #' @export
 connect_module_structure <- function(adj,
                                      weights = NULL,
-                                     exponent = 0) {
+                                     alpha = 100,
+                                     beta = 1,
+                                     epsilon = 10^-5) {
   nodes <- 1:ncol(adj)
   if(is.null(weights)) {
     weights <- rep(0, ncol(adj))
@@ -530,26 +586,21 @@ connect_module_structure <- function(adj,
       if(length(nodes_in_sub_component) == 1) {
         index_rep <- nodes_in_sub_component
       } else {
-        if(exponent >= 0) {
-          index_rep <- sample(nodes_in_sub_component, 1,
-                              prob = ecdf_cpp(weights[nodes_in_sub_component])^exponent + 0.001)
-        } else {
-          index_rep <- sample(nodes_in_sub_component, 1,
-                              prob = (1 - ecdf_cpp(weights[nodes_in_sub_component]))^-exponent + 0.001)
-        }
-         
+        # index_rep <- sample(nodes_in_sub_component, 1, prob = weights[nodes_in_sub_component]^eta + epsilon)
+        # index_rep <- sample(nodes_in_sub_component, 1,
+        #                     prob = ecdf_cpp(weights[nodes_in_sub_component])^eta + epsilon)
+        index_rep <- sample(nodes_in_sub_component, 1,
+                            prob = pbeta(ecdf_cpp(weights[nodes_in_sub_component]), alpha, beta) + epsilon)
       }
       # Choose a representative for the main component.
       if(length(nodes_in_main_component) == 1) {
         index_main <- nodes_in_main_component
       } else {
-        if(exponent >= 0) {
-          index_main <- sample(nodes_in_main_component, 1,
-                               prob = ecdf_cpp(weights[nodes_in_main_component])^exponent + 0.001)
-        } else {
-          index_main <- sample(nodes_in_main_component, 1,
-                               prob = (1 - ecdf_cpp(weights[nodes_in_main_component]))^-exponent + 0.001)
-        }
+        # index_main <- sample(nodes_in_main_component, 1, prob = weights[nodes_in_main_component]^eta + epsilon)
+        # index_main <- sample(nodes_in_main_component, 1,
+        #                      prob = ecdf_cpp(weights[nodes_in_main_component])^eta + epsilon)
+        index_main <- sample(nodes_in_main_component, 1,
+                             prob = pbeta(ecdf_cpp(weights[nodes_in_main_component]), alpha, beta) + epsilon)
       }
       
       adj[index_main, index_rep] <- 1
@@ -602,8 +653,8 @@ update_module_with_random_weights <- function(module,
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' @param eta The exponent used for weighted sampling. When eta = 0,
+#' nodes are sampled uniformly. When eta > 0, the sampling probability
 #' is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified module.
@@ -612,14 +663,16 @@ rewire_connections_to_node.network_module <- function(x,
                                                       node,
                                                       prob_rewire,
                                                       weights = NULL,
-                                                      exponent = 100,
+                                                      alpha = 100,
+                                                      beta = 1,
+                                                      epsilon = 10^-5,
                                                       ...) {
   if(!(class(x) == "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   adj_matrix <- get_adjacency_matrix(x)
   adj_matrix <- rewire_connections_to_node(adj_matrix, node, 
-                                           prob_rewire, weights, exponent, ...)
+                                           prob_rewire, weights, alpha, beta, epsilon, ...)
   x <- set_module_edges(x, adj_matrix)
   
   return(x)
@@ -634,9 +687,6 @@ rewire_connections_to_node.network_module <- function(x,
 #' will be removed with probability equal to 'prob_remove'.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling neighbors to unwire from.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' neighboring nodes are sampled uniformly. When exponent > 0, the sampling 
-#' probability is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified module.
 #' @export
@@ -644,14 +694,13 @@ remove_connections_to_node.network_module <- function(x,
                                                       node,
                                                       prob_remove,
                                                       weights = NULL,
-                                                      exponent = 0,
                                                       ...) {
   if(!(class(x) == "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   adj_matrix <- get_adjacency_matrix(x)
   adj_matrix <- remove_connections_to_node(adj_matrix, node, 
-                                           prob_remove, weights, exponent, ...)
+                                           prob_remove, weights, ...)
   x <- set_module_edges(x, adj_matrix)
   
   return(x)
@@ -717,8 +766,8 @@ is_weighted.network_module <- function(x, ...) {
 #' will be rewired with probability equal to 'prob_rewire'. 
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling a node to rewire to.
-#' @param exponent The exponent used for weighted sampling. When exponent = 0,
-#' nodes are sampled uniformly. When exponent > 0, the sampling probability
+#' @param eta The exponent used for weighted sampling. When eta = 0,
+#' nodes are sampled uniformly. When eta > 0, the sampling probability
 #' is based on node weights.
 #' @param ... Additional arguments.
 #' @return The modified module.
@@ -726,11 +775,13 @@ is_weighted.network_module <- function(x, ...) {
 rewire_connections.network_module <- function(x,
                                               prob_rewire,
                                               weights = NULL,
-                                              exponent = 0,
+                                              alpha = 100,
+                                              beta = 1,
+                                              epsilon = 10^-5,
                                               ...) {
   nodes <- x$nodes
   x <- get_adjacency_matrix(x)
-  x <- rewire_connections(x, prob_rewire, weights, exponent, ...)
+  x <- rewire_connections(x, prob_rewire, weights, alpha, beta, epsilon, ...)
   x <- create_module_from_adjacency_matrix(x, nodes)
   return(x)
 }
