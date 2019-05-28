@@ -178,7 +178,9 @@ gen_partial_correlations <- function(...,
       })
       
       # Ensure each association matrix is invertible by adjusting the diagonal.
-      eigen_val_list <- lapply(weight_matrix_list, function(m) eigen(m)$values)
+      eigen_val_list <- lapply(weight_matrix_list, function(m) {
+        eigen(m, symmetric = TRUE, only.values = TRUE)$values
+      })
       adjustment_list <- lapply(eigen_val_list, function(lambda) {
         (max(lambda) * 10^-k - min(lambda))
       })
