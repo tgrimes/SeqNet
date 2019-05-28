@@ -53,6 +53,16 @@ edges_from_adjacency_cpp <- function(adj) {
     .Call('_SeqNet_edges_from_adjacency_cpp', PACKAGE = 'SeqNet', adj)
 }
 
+#' C++ implementation to check if a matrix is symmetric
+#' 
+#' @param m A matrix to check.
+#' @param tol A Numeric scalar >= 0. Differences smaller than tol are ignored.
+#' @return Returns TRUE if the matrix is symmetric and FALSE otherwise.
+#' @export
+is_symmetric_cpp <- function(m, tol = 1e-12) {
+    .Call('_SeqNet_is_symmetric_cpp', PACKAGE = 'SeqNet', m, tol)
+}
+
 #' C++ implementation of qzinb
 #' 
 #' @param p A vector of probabilities
