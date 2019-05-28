@@ -61,6 +61,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// is_symmetric_cpp
+bool is_symmetric_cpp(NumericMatrix m, double tol);
+RcppExport SEXP _SeqNet_is_symmetric_cpp(SEXP mSEXP, SEXP tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericMatrix >::type m(mSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(is_symmetric_cpp(m, tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // overwrite_with_qzinb_cpp
 NumericMatrix overwrite_with_qzinb_cpp(NumericMatrix p, NumericVector size, NumericVector mu, NumericVector rho, bool lower, bool log);
 RcppExport SEXP _SeqNet_overwrite_with_qzinb_cpp(SEXP pSEXP, SEXP sizeSEXP, SEXP muSEXP, SEXP rhoSEXP, SEXP lowerSEXP, SEXP logSEXP) {
@@ -96,6 +108,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SeqNet_components_in_adjacency", (DL_FUNC) &_SeqNet_components_in_adjacency, 1},
     {"_SeqNet_ecdf_cpp", (DL_FUNC) &_SeqNet_ecdf_cpp, 1},
     {"_SeqNet_edges_from_adjacency_cpp", (DL_FUNC) &_SeqNet_edges_from_adjacency_cpp, 1},
+    {"_SeqNet_is_symmetric_cpp", (DL_FUNC) &_SeqNet_is_symmetric_cpp, 2},
     {"_SeqNet_overwrite_with_qzinb_cpp", (DL_FUNC) &_SeqNet_overwrite_with_qzinb_cpp, 6},
     {"_SeqNet_ring_lattice_cpp", (DL_FUNC) &_SeqNet_ring_lattice_cpp, 2},
     {NULL, NULL, 0}
