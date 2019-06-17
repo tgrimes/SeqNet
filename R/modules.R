@@ -108,7 +108,6 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
 create_module_from_association_matrix <- function(association_matrix, 
                                                   nodes = NULL,
                                                   module_name = NULL) {
-  # TODO: Add a check for 'association_matrix'.
   if(!is.null(nodes)) {
     if(any(nodes <= 0)) {
       stop("Argument 'nodes' must contain positive integers.")
@@ -136,7 +135,9 @@ create_module_from_association_matrix <- function(association_matrix,
     # Diagonal is doubled, but will be set to 1 later regardless.
   }
   
-  # Set diagonal to 1 when checking for positive definiteness. 
+  # Convert to precision matrix when checking for positive definiteness. 
+  # Use negative off-diagons, and set diagon to 1.
+  association_matrix <- -association_matrix
   diag(association_matrix) <- 1
   
   make_adjustments <- FALSE
@@ -151,14 +152,15 @@ create_module_from_association_matrix <- function(association_matrix,
   
   if(make_adjustments) {
     diag(association_matrix) <- 0
-    lambda <- as.numeric(eigen(-association_matrix, symmetric = TRUE, 
+    lambda <- as.numeric(eigen(association_matrix, symmetric = TRUE, 
                                only.values = TRUE)$values)
     adjustment <- (max(lambda) * 10^-2.5 - min(lambda))
     diag(association_matrix) <- adjustment
     association_matrix <- cov2cor(association_matrix)
   }
   
-  # Set diagonal to 0 when creating the module.
+  # Convert back to partial correlations. Set diagonal to zero.
+  association_matrix <- -association_matrix
   diag(association_matrix) <- 0
   
   adjacency_matrix <- (association_matrix != 0) * 1
@@ -377,7 +379,7 @@ get_adjacency_matrix.network_module <- function(x, ...) {
   if(!is.null(x$edges)) {
     if(nrow(x$edges) == 1) {
       adj_matrix[x$edges[, 1], x$edges[, 2]] <- 1
-      adj_matrix[x$edges[, 2], x$edges[, 2]] <- 1
+      adj_matrix[x$edges[, 2], x$edges[, 1]] <- 1
     } else {
       adj_matrix[x$edges[, 1:2]] <- 1
       adj_matrix[x$edges[, 2:1]] <- 1
@@ -433,18 +435,13 @@ get_association_matrix.network_module <- function(x, ...) {
 #' @return A covariance matrix for the module
 #' @export
 get_sigma.network_module <- function(x, ...) {
+  # Set diagonal to 1 and flip sign of all off-diagonal entries.
   precision_matrix <- -get_association_matrix(x)
-  if(all(precision_matrix == 0)) {
-    # If there are no connections in the module, return the identify matrix.
-    return(diag(1, nrow(precision_matrix)))
-  }
   diag(precision_matrix) <- 1
-  
   if(!is_PD(precision_matrix)) {
     stop(paste("The edge weights in the module do not correspond to a", 
                   "positive definite precision matrix."))
   }
-  
   sigma <- solve(precision_matrix)
   return(sigma)
 }
@@ -515,7 +512,7 @@ random_module_structure <- function(size,
                                     prob_rewire = 1,
                                     prob_remove = 0.5,
                                     weights = NULL,
-                                    neig_size = 2,
+                                    neig_size = 3,
                                     alpha = 100,
                                     beta = 1,
                                     epsilon = 10^-5,
