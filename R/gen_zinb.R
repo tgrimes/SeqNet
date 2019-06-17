@@ -127,9 +127,12 @@ gen_zinb <- function(n,
   }
   
   if(is.null(reference) && is.null(params)) {
-    warning("Using kidney data as reference dataset.")
-    reference <- get_kidney_reference_data()
-    reference <- sample_reference_data(reference, p)
+    if(verbose) {
+      cat("Using breast cancer TCGA data as reference dataset.\n")
+    }
+    reference <- get_reference_data()
+    params <- reference$params
+    reference <- reference$rnaseq
   }
   
   # Estimate model paramters from reference dataset
@@ -159,7 +162,8 @@ gen_zinb <- function(n,
     colnames(params) <- colnames(reference)
     
   } else {
-    # TODO: add argument checks for 'params'. 
+    # TODO: add argument checks for 'params' (i.e. that it is a data.frame 
+    # containing 3 rows, that values are positive, rho between 0 and 1, etc.)
     # params are provided; sample columns if necessary.
     index <- 1:p # Default: use all p columns of the params.
     if(p > ncol(params)) {
@@ -190,15 +194,11 @@ gen_zinb <- function(n,
   x <- pnorm(x) # Obtain n by p matrix of quantiles.
   
   # Convert quantiles to counts for each gene.
-  if(p > 1) {
-    overwrite_with_qzinb_cpp(x, params[1, ], params[2, ], params[3, ])
-  } else {
-    for(i in 1:p) {
-      x[, i] <- qzinb(x[, i], 
-                      size = params[1, i], 
-                      mu = params[2, i],
-                      rho = params[3, i])
-    }
+  for(i in 1:p) {
+    x[, i] <- qzinb(x[, i], 
+                    size = params[1, i], 
+                    mu = params[2, i],
+                    rho = params[3, i])
   }
   
   # Adjust library size by default (arg is null) or if requested (arg is TRUE).
@@ -238,14 +238,13 @@ gen_zinb <- function(n,
 #' estimation of the parameters may be unreliable.
 #' @param reference Either a vector or data.frame of counts from a reference
 #' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If NULL, the kidney dataset is used and parameter estimates
-#' for all of its genes are calculated.
+#' correspond to a gene.
 #' @param verbose Boolean indicator for message output.
 #' @return Returns a list containing a matrix of parameter estimates 'size', 
 #' 'mu', and 'rho' for each gene in the reference, and the reference dataset
 #' used.
 #' @export
-est_params_from_reference <- function(reference = NULL,
+est_params_from_reference <- function(reference,
                                       verbose = TRUE) {
   get_nb_params <- function(x) {
     fit <- fitdistrplus::fitdist(x, "nbinom",
@@ -311,22 +310,11 @@ est_params_from_reference <- function(reference = NULL,
       }
     }
     
-    # # Get shape and scale parameters for gamma-poisson.
-    # est_prob <- fit$size / (fit$size + fit$mu)
-    # est_scale <- (1 - est_prob) / est_prob
-    
     params <- c(size = fit$size,
                 mu = fit$mu,
                 rho = fit$rho)
     
     return(params)
-  }
-  
-  if(is.null(reference)) {
-    if(verbose) {
-      cat("No reference dataset provided. Using kidney data.\n")
-    }
-    reference <- get_kidney_reference_data()
   }
   
   if(is.vector(reference)) {

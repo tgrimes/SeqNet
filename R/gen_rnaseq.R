@@ -41,9 +41,11 @@ gen_rnaseq <- function(n,
   }
   
   if(is.null(reference)) {
-    warning("Using kidney data as reference dataset.")
-    reference <- get_kidney_reference_data()
-    df_ref <- reference$expression
+    if(verbose) {
+      cat("Using breast cancer TCGA data as reference dataset.\n")
+    }
+    reference <- load_reference_data()
+    df_ref <- reference$rnaseq
     df_ref <- sample_reference_data(df_ref, p)
   } else {
     df_ref <- sample_reference_data(reference, p)
