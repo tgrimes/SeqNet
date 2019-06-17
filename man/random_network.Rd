@@ -4,7 +4,8 @@
 \alias{random_network}
 \title{Create a network object.}
 \usage{
-random_network(p, n_modules = NULL, consistent_connections = TRUE, ...)
+random_network(p, n_modules = NULL, consistent_connections = FALSE,
+  ...)
 }
 \arguments{
 \item{p}{The number of nodes in the network; 'p' is required to be 

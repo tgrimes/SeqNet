@@ -119,8 +119,6 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
 #' @export 
 create_network_from_association_matrix <- function(association_matrix, 
                                                    ...) {
-  # TODO: Add check for 'association_matrix' as a precision matrix.
-  
   p <- ncol(association_matrix)
   
   # Use node names from association_matrix, if provided and no new nodes are added.
@@ -161,7 +159,7 @@ create_network_from_association_matrix <- function(association_matrix,
 #' @export 
 random_network <- function(p,
                            n_modules = NULL,
-                           consistent_connections = TRUE,
+                           consistent_connections = FALSE,
                            ...) {
   # Check 'p'.
   if((p %% 1 != 0) || p <= 0) {

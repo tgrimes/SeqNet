@@ -5,7 +5,7 @@
 \title{Create a random network structure for a module}
 \usage{
 random_module_structure(size, prob_rewire = 1, prob_remove = 0.5,
-  weights = NULL, neig_size = 2, alpha = 100, beta = 1,
+  weights = NULL, neig_size = 3, alpha = 100, beta = 1,
   epsilon = 10^-5, ...)
 }
 \arguments{
