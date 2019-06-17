@@ -152,18 +152,12 @@ get_sigma.matrix <- function(x, ...) {
   warning("Interpreting as a partial correlation matrix.")
   
   precision_matrix <- -x
-  if(all(precision_matrix == 0)) {
-    # If there are no connections in x, return the identify matrix.
-    return(diag(1, nrow(precision_matrix)))
-  }
   diag(precision_matrix) <- 1
-  
   if(!is_PD(precision_matrix)) {
     stop(paste("The edge weights in the module do not correspond to a", 
                "positive definite precision matrix."))
   }
   sigma <- solve(precision_matrix)
-  
   return(sigma)
 }
 
