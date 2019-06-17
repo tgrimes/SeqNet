@@ -10,7 +10,6 @@ testthat::test_that("networks can be created from matricies", {
   network <- gen_partial_correlations(network)
   assoc <- get_association_matrix(network)
   expect_is(assoc, "matrix")
-  expect_false(check_adjacency_cpp(assoc))
   network <- create_network_from_association_matrix(assoc)
   expect_is(network, "network")
   expect_equal(get_association_matrix(network), assoc)

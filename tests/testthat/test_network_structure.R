@@ -25,4 +25,18 @@ testthat::test_that("networks have appropriate structure.", {
   expect_equal(vals$`avg degree`, 6)
   expect_equal(vals$`clustering coef`, 0.6)
   expect_equal(round(vals$`avg path length`, 3), 4.592)
+  
+  nw <- matrix(1, 2, 2)
+  nw[1, -1] <- 0.8
+  nw[-1, 1] <- 0.8
+  nw <- create_network_from_association_matrix(nw)
+  adj <- unname(get_adjacency_matrix(nw))
+  expect_equal(adj[1, 2], adj[2, 1])
+  expect_equal(adj[1, 1], adj[2, 2])
+  expect_equal(adj[1, 1], 0)
+  assoc <- unname(get_association_matrix(nw))
+  expect_equal(assoc[1, 2], 0.8)
+  expect_equal(assoc[2, 1], 0.8)
+  expect_equal(assoc[1, 1], assoc[2, 2])
+  expect_equal(assoc[1, 1], 0)
 })
