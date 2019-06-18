@@ -320,9 +320,8 @@ rewire_connections_to_node.default <- function(x, node, ...) {
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param eta The exponent used for weighted sampling. When eta = 0,
-#' nodes are sampled uniformly. When eta > 0, the sampling probability
-#' is based on node weights.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified object x.
@@ -442,9 +441,8 @@ rewire_connections.default <- function(x, ...) {
 #' will be rewired with probability equal to 'prob_rewire'. 
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling a node to rewire to.
-#' @param eta The exponent used for weighted sampling. When eta = 0,
-#' nodes are sampled uniformly. When eta > 0, the sampling probability
-#' is based on node weights.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified object x.

@@ -130,7 +130,7 @@ gen_zinb <- function(n,
     if(verbose) {
       cat("Using breast cancer TCGA data as reference dataset.\n")
     }
-    reference <- get_reference_data()
+    reference <- load_reference_data()
     params <- reference$params
     reference <- reference$rnaseq
   }
@@ -186,7 +186,7 @@ gen_zinb <- function(n,
   
   if(!single_network) {
     return(lapply(network, function(nw) {
-      gen_counts_zinb(n, nw, params = params, verbose = verbose)
+      gen_zinb(n, nw, params = params, verbose = verbose)
     }))
   }
   

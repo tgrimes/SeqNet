@@ -53,7 +53,7 @@ gen_rnaseq <- function(n,
   
   if(!single_network) {
     return(lapply(network, function(nw) {
-      gen_counts(n, nw, df_ref, verbose = verbose)
+      gen_rnaseq(n, nw, df_ref, verbose = verbose)
     }))
   }
   

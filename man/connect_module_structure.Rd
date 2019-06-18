@@ -12,9 +12,11 @@ connect_module_structure(adj, weights = NULL, alpha = 100, beta = 1,
 
 \item{weights}{(Optional) weights used for sampling nodes.}
 
-\item{epsilon}{A small constant added to the sampling probability of each node.}
+\item{alpha}{A positive value used to parameterize the Beta distribution.}
 
-\item{eta}{A positive value used for sampling nodes.}
+\item{beta}{A positive value used to parameterize the Beta distribution.}
+
+\item{epsilon}{A small constant added to the sampling probability of each node.}
 }
 \value{
 A modified adjacency matrix

@@ -14,13 +14,13 @@ sample_link_nodes(n, nodes, degree, alpha0 = 100, beta0 = 1,
 
 \item{degree}{The degree of each node.}
 
-\item{epsilon}{Added to sampling probability.}
-
-\item{eta}{Exponent for empirical CDF.}
-
-\item{eta0}{Used when sampling link nodes.}
-
 \item{epsilon}{Used when sampling link nodes.}
+
+\item{...}{Additional arguments are ignored.}
+
+\item{alpha}{A positive value used to parameterize the Beta distribution.}
+
+\item{beta}{A positive value used to parameterize the Beta distribution.}
 }
 \value{
 A vector of selected nodes (possibly of length 1).

@@ -4,7 +4,7 @@
 #' @return A list containing the RNA-seq reference data and the corresponding 
 #' ZINB parameters.
 #' @export 
-get_reference_data <- function() {
+load_reference_data <- function() {
   load("data/reference.rda")
   
   return(reference)

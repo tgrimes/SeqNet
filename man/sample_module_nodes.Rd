@@ -14,6 +14,8 @@ sample_module_nodes(n, nodes, degree, nu = 0.01, ...)
 \item{degree}{The degree of each node.}
 
 \item{nu}{Multiplier for nodes that are already in one or more modules.}
+
+\item{...}{Additional arguments are ignored.}
 }
 \value{
 A vector of selected nodes of length m.

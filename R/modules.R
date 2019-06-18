@@ -502,8 +502,8 @@ get_node_names.network_module <- function(x, ...) {
 #' @param neig_size The neighborhood size within which the nodes of the 
 #' ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 #' so long as 'size' >= (1 + 2 * 'neig_size') 
-#' @param eta A positive value used for sampling nodes. See 
-#' ?rewire_connections_to_node and ?remove_connections_to_node for details.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments are ignored.
 #' @return An adjacency matrix representing the network structure.
@@ -547,7 +547,8 @@ random_module_structure <- function(size,
 #' 
 #' @param adj An adjacency matrix to modify.
 #' @param weights (Optional) weights used for sampling nodes.
-#' @param eta A positive value used for sampling nodes.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution.
 #' @param epsilon A small constant added to the sampling probability of each node.
 #' @return A modified adjacency matrix
 #' @note When connecting two components, a node is sampled from each with
@@ -650,9 +651,9 @@ update_module_with_random_weights <- function(module,
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param eta The exponent used for weighted sampling. When eta = 0,
-#' nodes are sampled uniformly. When eta > 0, the sampling probability
-#' is based on node weights.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified module.
 #' @export
@@ -763,9 +764,9 @@ is_weighted.network_module <- function(x, ...) {
 #' will be rewired with probability equal to 'prob_rewire'. 
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling a node to rewire to.
-#' @param eta The exponent used for weighted sampling. When eta = 0,
-#' nodes are sampled uniformly. When eta > 0, the sampling probability
-#' is based on node weights.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified module.
 #' @export

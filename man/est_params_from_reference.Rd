@@ -4,13 +4,12 @@
 \alias{est_params_from_reference}
 \title{Estimate ZINB parameters from reference data}
 \usage{
-est_params_from_reference(reference = NULL, verbose = TRUE)
+est_params_from_reference(reference, verbose = TRUE)
 }
 \arguments{
 \item{reference}{Either a vector or data.frame of counts from a reference
 gene expression profile. If a data.frame is provided, each column should
-correspond to a gene. If NULL, the kidney dataset is used and parameter estimates
-for all of its genes are calculated.}
+correspond to a gene.}
 
 \item{verbose}{Boolean indicator for message output.}
 }

@@ -19,13 +19,13 @@ will be rewired with probability equal to 'prob_rewire'. Note, the degree of
 \item{weights}{(Optional) A vector of weights for each node. These are used
 in addition to the degree of each node when sampling nodes to rewire.}
 
+\item{alpha}{A positive value used to parameterize the Beta distribution.}
+
+\item{beta}{A positive value used to parameterize the Beta distribution.}
+
 \item{epsilon}{A small constant added to the sampling probability of each node.}
 
 \item{...}{Additional arguments.}
-
-\item{eta}{The exponent used for weighted sampling. When eta = 0,
-nodes are sampled uniformly. When eta > 0, the sampling probability
-is based on node weights.}
 }
 \value{
 The modified object x.

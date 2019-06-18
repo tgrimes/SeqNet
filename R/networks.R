@@ -330,10 +330,10 @@ create_modules_for_network <- function(n_modules,
 #' @param n The number of link nodes to sample.
 #' @param nodes The nodes to sample from.
 #' @param degree The degree of each node.
-#' @param eta Exponent for empirical CDF.
-#' @param epsilon Added to sampling probability.
-#' @param eta0 Used when sampling link nodes.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon Used when sampling link nodes.
+#' @param ... Additional arguments are ignored.
 #' @return A vector of selected nodes (possibly of length 1).
 #' @export
 sample_link_nodes <- function(n, nodes, degree, alpha0 = 100, beta0 = 1, epsilon = 10^-5, ...) {
@@ -355,6 +355,7 @@ sample_link_nodes <- function(n, nodes, degree, alpha0 = 100, beta0 = 1, epsilon
 #' @param nodes The nodes available to sample from.
 #' @param degree The degree of each node.
 #' @param nu Multiplier for nodes that are already in one or more modules.
+#' @param ... Additional arguments are ignored.
 #' @return A vector of selected nodes of length m.
 #' @export
 sample_module_nodes <- function(n, nodes, degree, nu = 0.01, ...) {
@@ -772,9 +773,9 @@ set_node_names <- function(network, node_names) {
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
 #' in addition to the degree of each node when sampling nodes to rewire.
-#' @param eta The exponent used for weighted sampling. When eta = 0,
-#' nodes are sampled uniformly. When eta > 0, the sampling probability
-#' is based on node weights.
+#' @param alpha A positive value used to parameterize the Beta distribution.
+#' @param beta  A positive value used to parameterize the Beta distribution. 
+#' @param epsilon A small constant added to the sampling probability of each node.
 #' @param ... Additional arguments.
 #' @return The modified network.
 #' @export

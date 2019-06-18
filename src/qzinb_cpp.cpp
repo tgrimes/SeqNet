@@ -37,7 +37,6 @@ NumericMatrix overwrite_with_qzinb_cpp(NumericMatrix p, NumericVector size, Nume
     }
   }
     
-  double x;
   for(int i = 0; i < p.ncol(); i++) {
     if(rho[i] == 0) {
       p(_, i) = Rcpp::qnbinom_mu(p(_, i), 

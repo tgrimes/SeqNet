@@ -22,12 +22,13 @@ random_module_structure(size, prob_rewire = 1, prob_remove = 0.5,
 ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
 so long as 'size' >= (1 + 2 * 'neig_size')}
 
+\item{alpha}{A positive value used to parameterize the Beta distribution.}
+
+\item{beta}{A positive value used to parameterize the Beta distribution.}
+
 \item{epsilon}{A small constant added to the sampling probability of each node.}
 
 \item{...}{Additional arguments are ignored.}
-
-\item{eta}{A positive value used for sampling nodes. See 
-?rewire_connections_to_node and ?remove_connections_to_node for details.}
 }
 \value{
 An adjacency matrix representing the network structure.
