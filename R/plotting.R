@@ -1,8 +1,3 @@
-# Requires: 
-#   igraph - for plotting networks.
-# require(igraph)
-
-setClass(Class = "network_plot")
 
 #' Visualize a network
 #' 

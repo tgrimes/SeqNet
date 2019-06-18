@@ -1,5 +1,3 @@
-setClass(Class = "network")
-
 #' Create a network object.
 #' 
 #' Creates a 'network' object containing no modules. 

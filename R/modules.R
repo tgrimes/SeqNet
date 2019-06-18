@@ -1,7 +1,3 @@
-library(methods)
-setClass(Class = "network_module")
-
-
 #' Create a module
 #' 
 #' @param nodes A numeric vector indicating which nodes in the network are
