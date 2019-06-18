@@ -968,7 +968,10 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
 #' @param do_facet_wrap If TRUE, the groups are plotted in seperate graphs.
 #' @param scales Only used if do_facet_wrap is TRUE. See ggplot2::facet_wrap
 #' for details.
-plot_gene_pair <- function(counts_list, geneA, geneB, method = "loess", se_alpha = 0.1,
+#' @return Returns the generated plot.
+#' @export
+plot_gene_pair <- function(counts_list, geneA, geneB, 
+                           method = "loess", se_alpha = 0.1,
                            do_facet_wrap = FALSE, scales = "fixed") {
   if(!is.list(counts_list)) {
     counts_list <- list(x = counts_list)
@@ -999,16 +1002,15 @@ plot_gene_pair <- function(counts_list, geneA, geneB, method = "loess", se_alpha
   
   df <- tibble::tibble(
     group = unlist(lapply(1:length(n), function(i) rep(groups[i], n[i]))),
-    geneA = unlist(exprA),
-    geneB = unlist(exprB))
-  
+    A = unlist(exprA),
+    B = unlist(exprB))
   
   # Create the plot.
-  g <- ggplot2::ggplot(df, ggplot2::aes(x = .data$geneA, 
-                                        y = .data$geneB, 
+  g <- ggplot2::ggplot(df, ggplot2::aes(x = .data$A, 
+                                        y = .data$B, 
                                         color = .data$group))
   if(do_facet_wrap) {
-    g <- g + ggplot2::facet_wrap(. ~ .data$group, scales = scales)
+    g <- g + ggplot2::facet_wrap(. ~ rlang::.data$group, scales = scales)
   } 
   g <- g + ggplot2::geom_point(alpha = 0.5)
   if(!is.null(method)) {

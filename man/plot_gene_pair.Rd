@@ -30,6 +30,9 @@ trend line. Set to 0 to remove the confidence interval.}
 \item{scales}{Only used if do_facet_wrap is TRUE. See ggplot2::facet_wrap
 for details.}
 }
+\value{
+Returns the generated plot.
+}
 \description{
 Plots the expression of two genes for visual assessment of association.
 }
