@@ -1,6 +1,6 @@
 Package: SeqNet
 Title: Generate RNA-Seq Data from Gene-Gene Association Networks
-Version: 0.2.2.0001
+Version: 1.0.0
 Authors@R: person("Tyler", "Grimes", email = "tyler.grimes@ufl.edu", role = c("aut", "cre"))
 Description: Methods to generate random gene-gene association network and simulate RNA-seq data from them. Includes functions to generate random networks of any size and perturb them to obtain differential networks. Network objects are built from individual, overlapping modules that represent pathways. The resulting network has various topological properties that are characteristic of gene regulatory networks. RNA-seq counts can be generated such that the association among gene expression reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal counts. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
 Depends: R (>= 3.3.2)
