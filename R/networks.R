@@ -336,14 +336,14 @@ create_modules_for_network <- function(n_modules,
 #' @param ... Additional arguments are ignored.
 #' @return A vector of selected nodes (possibly of length 1).
 #' @export
-sample_link_nodes <- function(n, nodes, degree, alpha0 = 100, beta0 = 1, epsilon = 10^-5, ...) {
+sample_link_nodes <- function(n, nodes, degree, alpha = 100, beta = 1, epsilon = 10^-5, ...) {
   # if(FALSE && eta0 < 0) {
   #   prob <- (1 - ecdf_cpp(degree))^-eta0 + epsilon
   # } else {
   #   prob <- pbeta(ecdf_cpp(degree), alpha, beta) + epsilon
   # }
   # prob <- degree^eta0 + epsilon
-  prob <- pbeta(ecdf_cpp(degree), alpha0, beta0) + epsilon
+  prob <- pbeta(ecdf_cpp(degree), alpha, beta) + epsilon
   
   link_nodes <- sample(nodes, n, prob = prob)
   return(link_nodes)
