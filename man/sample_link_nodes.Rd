@@ -4,7 +4,7 @@
 \alias{sample_link_nodes}
 \title{Sample link nodes for new module}
 \usage{
-sample_link_nodes(n, nodes, degree, alpha0 = 100, beta0 = 1,
+sample_link_nodes(n, nodes, degree, alpha = 100, beta = 1,
   epsilon = 10^-5, ...)
 }
 \arguments{
@@ -14,13 +14,13 @@ sample_link_nodes(n, nodes, degree, alpha0 = 100, beta0 = 1,
 
 \item{degree}{The degree of each node.}
 
-\item{epsilon}{Used when sampling link nodes.}
-
-\item{...}{Additional arguments are ignored.}
-
 \item{alpha}{A positive value used to parameterize the Beta distribution.}
 
 \item{beta}{A positive value used to parameterize the Beta distribution.}
+
+\item{epsilon}{Used when sampling link nodes.}
+
+\item{...}{Additional arguments are ignored.}
 }
 \value{
 A vector of selected nodes (possibly of length 1).
