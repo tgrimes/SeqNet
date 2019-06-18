@@ -1,17 +1,3 @@
-
-#' Load the RNA-seq reference data
-#' 
-#' @return A list containing the RNA-seq reference data and the corresponding 
-#' ZINB parameters.
-#' @export 
-load_reference_data <- function() {
-  load("data/reference.rda")
-  
-  return(reference)
-}
-
-
-
 #' Sample genes from reference dataset
 #' 
 #' @param reference_data The reference data.frame to use.

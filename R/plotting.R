@@ -1004,9 +1004,11 @@ plot_gene_pair <- function(counts_list, geneA, geneB, method = "loess", se_alpha
   
   
   # Create the plot.
-  g <- ggplot2::ggplot(df, ggplot2::aes(x = geneA, y = geneB, color = group))
+  g <- ggplot2::ggplot(df, ggplot2::aes(x = .data$geneA, 
+                                        y = .data$geneB, 
+                                        color = .data$group))
   if(do_facet_wrap) {
-    g <- g + ggplot2::facet_wrap(. ~ group, scales = scales)
+    g <- g + ggplot2::facet_wrap(. ~ .data$group, scales = scales)
   } 
   g <- g + ggplot2::geom_point(alpha = 0.5)
   if(!is.null(method)) {

@@ -130,7 +130,7 @@ gen_zinb <- function(n,
     if(verbose) {
       cat("Using breast cancer TCGA data as reference dataset.\n")
     }
-    reference <- load_reference_data()
+    data(reference)
     params <- reference$params
     reference <- reference$rnaseq
   }
