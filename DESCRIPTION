@@ -12,12 +12,17 @@ Depends: R (>= 3.3.0)
 Imports: 
     fitdistrplus,
     ggplot2,
+    grDevices,
+    graphics,
     igraph,
     mvtnorm,
     purrr,
     RColorBrewer,
     tibble,
-    Rcpp
+    Rcpp,
+    rlang,
+    stats,
+    utils
 Suggests: 
     knitr,
     rmarkdown,
