@@ -44,7 +44,7 @@ gen_rnaseq <- function(n,
     if(verbose) {
       cat("Using breast cancer TCGA data as reference dataset.\n")
     }
-    data(reference)
+    data("reference", envir = environment())
     df_ref <- reference$rnaseq
     df_ref <- sample_reference_data(df_ref, p)
     rm(reference)
