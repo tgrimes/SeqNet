@@ -2,19 +2,28 @@
 % Please edit documentation in R/modules.R
 \name{get_adjacency_matrix.network_module}
 \alias{get_adjacency_matrix.network_module}
-\title{Get adjacency matrix of a module}
+\title{Get adjacency matrix}
 \usage{
 \method{get_adjacency_matrix}{network_module}(x, ...)
 }
 \arguments{
-\item{x}{The 'network_module' object to get adjacency matrix for.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-An adjacency matrix with entry ij == 1 if node i and j are 
-connected, and 0 otherwise.
+An adjacency matrix with entry ij = 1 if node i and j are 
+connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-Get adjacency matrix of a module
+The adjacency matrix is constructed from all modules in a network.
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_adjacency_matrix(nw)
+module <- nw$modules[[1]]
+get_adjacency_matrix(module)
 }

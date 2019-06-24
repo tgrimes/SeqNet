@@ -2,7 +2,7 @@
 % Please edit documentation in R/gen_rnaseq.R
 \name{gen_rnaseq}
 \alias{gen_rnaseq}
-\title{Generate RNA-seq data}
+\title{Generate RNA-seq data from an underlying network}
 \usage{
 gen_rnaseq(n, network, reference = NULL, verbose = TRUE)
 }
@@ -28,4 +28,10 @@ underlying network. An association structure is imposed by first generating
 data from a multivariate Gaussian distribution. Those data are then used to
 sample from the empirical distribution of gene expression profiles in the 
 reference dataset using the inverse transform method.
+}
+\examples{
+nw <- random_network(10) # Create a random network with 10 nodes.
+nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+# If no reference is provided, the internal RNA-seq reference dataset is used.
+x <- gen_rnaseq(20, nw)$x # Simulate 20 observations from the network.
 }

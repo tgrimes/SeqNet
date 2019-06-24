@@ -17,3 +17,16 @@ A vector containing the node names or node indicies.
 \description{
 Get node names
 }
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+get_node_names(nw) # Default names are 1, 2, ..., 10.
+nw <- set_node_names(nw, paste("node", 1:10, sep = "_"))
+get_node_names(nw) # Print out updated node names.
+# Modules only contain the indicies to nodes, not the node names
+module <- nw$modules[[1]]
+get_node_names(module)
+# When converting the network to a matrix, node names appear as column names.
+adj_matrix <- get_adjacency_matrix(nw)
+colnames(adj_matrix) 
+}

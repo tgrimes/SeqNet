@@ -1,8 +1,7 @@
-#' Check if a matrix is positive definite
+#' Internal function to check if a matrix is positive definite
 #' 
 #' @param x A matrix to check.
 #' @return Returns TRUE if the matrix is positive definite and FALSE otherwise.
-#' @export
 is_PD <- function(x) {
   # Note: for matricies with p > 500, computing the smallest eigenvalue is 
   # faster than Choleski. See RSpectra::eigs_sym(adj, k = 1, which = "SA")

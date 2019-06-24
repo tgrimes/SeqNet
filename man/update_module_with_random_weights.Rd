@@ -23,3 +23,11 @@ An updated 'network_module' object.
 The small-world network is generated using the Watts-Strogatz method.
 See ?igraph::watts.strogatz.game for details.
 }
+\examples{
+# Create a random module. 
+module <- random_module(1:10)
+is_weighted(module)
+# Add a random weight to each connection.
+module <- update_module_with_random_weights(module)
+is_weighted(module)
+}

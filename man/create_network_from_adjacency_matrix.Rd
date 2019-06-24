@@ -19,3 +19,8 @@ A network object.
 \description{
 Create a network object from adjacency matrix
 }
+\examples{
+adj_mat <- random_module_structure(10)
+nw <- create_network_from_adjacency_matrix(adj_mat)
+all(adj_mat == get_adjacency_matrix(nw))
+}

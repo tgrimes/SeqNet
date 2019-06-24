@@ -4,10 +4,13 @@
 \alias{get_association_matrix}
 \title{Get association matrix}
 \usage{
-get_association_matrix(x, ...)
+get_association_matrix(x, tol = 10^-13, ...)
 }
 \arguments{
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+
+\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+is set to zero.}
 
 \item{...}{Additional arguments.}
 }
@@ -17,4 +20,21 @@ connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
 Get association matrix
+}
+\note{
+The connections in an adjacency matrix and association matrix may differ
+if the network contains multiple modules. The adjacency matrix only considers 
+direct connections in the network, whereas the association matrix takes into 
+account the fact that overlapping modules can create conditional dependencies
+between two genes in seperate modules (i.e. genes that don't have a direct
+connection in the graph).
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_association_matrix(nw)
+module <- nw$modules[[1]]
+get_association_matrix(module)
 }

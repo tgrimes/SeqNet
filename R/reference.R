@@ -9,6 +9,12 @@
 #' @param threshold_ZI The minimum proportion of zero counts for a gene to be
 #' considered as zero inflated.
 #' @export 
+#' @examples 
+#' \donttest{
+#' data(reference)
+#' rnaseq <- reference$rnaseq
+#' rnaseq_subset <- sample_reference_data(rnaseq, 10)
+#' }
 sample_reference_data <- function(reference_data,
                                   p,
                                   percent_ZI = NULL,

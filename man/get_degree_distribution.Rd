@@ -19,3 +19,10 @@ is not the same as the degree distribution from the adjacency matrix
 obtained from the network, which collapses the individual structures into
 one graph.
 }
+\examples{
+set.seed(13245)
+nw <- random_network(10)
+deg <- get_degree_distribution(nw) # Degree of each node.
+table(deg) # Frequency table of degrees.
+# Five nodes have degree 2, three nodes have degree 3, etc.
+}

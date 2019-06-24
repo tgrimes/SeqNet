@@ -17,3 +17,9 @@ The modified 'network_module' object.
 \description{
 Set the name for a module
 }
+\examples{
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+module <- nw$modules[[1]]
+named_module <- set_module_name(module, "new name")
+}

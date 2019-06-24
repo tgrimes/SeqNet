@@ -1,4 +1,4 @@
-#' Generate RNA-seq data
+#' Generate RNA-seq data from an underlying network
 #' 
 #' The expression data are generated based on the gene-gene associations of an
 #' underlying network. An association structure is imposed by first generating 
@@ -15,6 +15,11 @@
 #' dataset. If a list of networks were provided, then the results for
 #' each network are returned as a list.
 #' @export 
+#' @examples 
+#' nw <- random_network(10) # Create a random network with 10 nodes.
+#' nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+#' # If no reference is provided, the internal RNA-seq reference dataset is used.
+#' x <- gen_rnaseq(20, nw)$x # Simulate 20 observations from the network.
 gen_rnaseq <- function(n, 
                        network,
                        reference = NULL,
@@ -58,21 +63,12 @@ gen_rnaseq <- function(n,
     }))
   }
   
-  # If reference data contain counts, then round the simulated data at the end. 
-  round_to_counts <- TRUE
-  if(any((df_ref %% 1) != 0)) {
-    round_to_counts <- FALSE
-  }
-  
   x <- gen_gaussian(n, network)$x
   x <- pnorm(x) # Obtain n by p matrix of percentiles.
   for(i in 1:p) {
     # Setting type = 1 gives inverse of empirical distribution function.
     x[, i] <- quantile(df_ref[, i], x[, i], type = 1)
   }
-  
-  if(round_to_counts)
-    x <- round(x)
   
   return(list(x = x,
               reference = df_ref))

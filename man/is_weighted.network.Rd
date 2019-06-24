@@ -2,20 +2,29 @@
 % Please edit documentation in R/networks.R
 \name{is_weighted.network}
 \alias{is_weighted.network}
-\title{Check if a network is weighted}
+\title{Check if an object is weighted}
 \usage{
 \method{is_weighted}{network}(x, ...)
 }
 \arguments{
-\item{x}{The 'network' object to check.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{...}{Additional arguments}
-}
-\value{
-A boolean value that is TRUE if all of the modules in the network
-are weighted and FALSE otherwise. If the network contains no modules or
-no connections, then this function returns TRUE.
+\item{...}{Additional arguments.
+object are weighted by 0s and 1s, and returns TRUE otherwise. If there
+are no connections in the module, then this function returns TRUE.}
 }
 \description{
-Check if a network is weighted
+Check if an object is weighted
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# The network, and hence all of its modules, are unweighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
+# Add random weights to the connections.
+nw <- gen_partial_correlations(nw)
+# The network, and hence all of its modules, are now weighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
 }

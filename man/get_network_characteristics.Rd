@@ -17,3 +17,7 @@ A list containing characteristics of the network.
 \description{
 The average degree, clustering coefficient, and average path length are calculated.
 }
+\examples{
+nw <- random_network(10)
+get_network_characteristics(nw)
+}

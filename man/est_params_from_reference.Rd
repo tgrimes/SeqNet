@@ -24,3 +24,23 @@ For example, we should not expect differential expression or differential
 connectivity of genes within the sample. If the data are heterogeneous, the
 estimation of the parameters may be unreliable.
 }
+\examples{
+# The internal reference dataset already contains ZINB parameter estimates,
+# so running est_params_from_reference() is not necessary. To simulate 
+# ZINB data from a different RNA-seq reference dataset, the data can
+# be passed into gen_zinb() directly using the 'reference' argument, and 
+# est_params_from_reference() will be used automatically (i.e. the user
+# does not need to call this function directly).
+\donttest{
+# An example using the reference dataset
+data(reference) 
+# The RNA-seq dataset should have samples as rows and genes as columns:
+rnaseq <- reference$rnaseq
+# Estimate ZINB params for first ten genes.
+params <- est_params_from_reference(rnaseq[, 1:10])$params 
+# However, the previous call is not needed for simulated ZINB data.
+# The RNA-seq dataset can be passed directly to `gen_zinb()`.
+nw <- random_network(10)
+x <- gen_zinb(20, nw, reference = rnaseq[, 1:10])$x # Pass in 'rnaseq' directly.
+}
+}

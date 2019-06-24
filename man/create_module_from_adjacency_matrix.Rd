@@ -26,3 +26,9 @@ The edges in the module will be set to the edges in the adjacency matrix.
 The edges are undirected, and only the lower triangle of the
 matrix is considered. See ?set_module_edges for more details.
 }
+\examples{
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+adj_mat <- get_adjacency_matrix(nw)
+create_module_from_adjacency_matrix(adj_mat)
+}

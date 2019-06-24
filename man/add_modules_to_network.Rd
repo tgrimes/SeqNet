@@ -2,7 +2,7 @@
 % Please edit documentation in R/networks.R
 \name{add_modules_to_network}
 \alias{add_modules_to_network}
-\title{Adds a set of modules to the network}
+\title{Internal function for adding a set of modules to the network}
 \usage{
 add_modules_to_network(network, module_list)
 }
@@ -15,5 +15,5 @@ add_modules_to_network(network, module_list)
 The modified network.
 }
 \description{
-Adds a set of modules to the network
+Internal function for adding a set of modules to the network
 }

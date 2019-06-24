@@ -7,15 +7,24 @@
 \method{is_weighted}{matrix}(x, ...)
 }
 \arguments{
-\item{x}{A 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{...}{Additional arguments.}
-}
-\value{
-Returns FALSE if all of entries in the matrix are either zero or one, 
-and returns TRUE otherwise. However, if there are no connections, i.e. all
-off-diagonal entries are zero, then this function returns TRUE.
+\item{...}{Additional arguments.
+object are weighted by 0s and 1s, and returns TRUE otherwise. If there
+are no connections in the module, then this function returns TRUE.}
 }
 \description{
 Check if an object is weighted
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# The network, and hence all of its modules, are unweighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
+# Add random weights to the connections.
+nw <- gen_partial_correlations(nw)
+# The network, and hence all of its modules, are now weighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
 }

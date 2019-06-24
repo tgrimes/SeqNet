@@ -20,3 +20,13 @@ A network object.
 \description{
 Create a network object from an association matrix
 }
+\examples{
+# Create a random weighted network and extract the association matrix from it.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+assoc_mat <- get_association_matrix(nw)
+# Any association matrix can be used to directly create a network object.
+# However, the created network will only contain one module.
+nw_from_assoc <- create_network_from_association_matrix(assoc_mat)
+all(get_adjacency_matrix(nw) == get_adjacency_matrix(nw_from_assoc))
+}

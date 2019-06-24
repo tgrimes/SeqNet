@@ -2,7 +2,7 @@
 % Please edit documentation in R/networks.R
 \name{replace_module_in_network}
 \alias{replace_module_in_network}
-\title{Replaces a module in the network}
+\title{Internal function for replacing a module in the network}
 \usage{
 replace_module_in_network(module_index, module, network)
 }
@@ -17,5 +17,5 @@ replace_module_in_network(module_index, module, network)
 The modified network.
 }
 \description{
-Replaces a module in the network
+Internal function for replacing a module in the network
 }

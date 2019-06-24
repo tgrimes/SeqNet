@@ -23,3 +23,11 @@ The value(s) of the density function evaluated at x.
 \description{
 The Zero-Inflated Negative Binomial Distribution
 }
+\examples{
+x <- rzinb(10, 1, 10, 0.1)
+p <- pzinb(x, 1, 10, 0.1)
+y <- qzinb(p, 1, 10, 0.1)
+all(x == y)
+# Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
+sum(dzinb(0:5, 1, 10, 0.1))
+}

@@ -38,3 +38,11 @@ A list containing the indicies for genes contained in each module.
 \description{
 Creates a collection of modules containing randomly samples genes.
 }
+\examples{
+# Create a two modules (having random structures and sizes) from a pool 
+# of 100 nodes.
+create_modules_for_network(n_modules = 2, p = 100)
+# Set n_modules = NULL to continue making modules until all nodes have
+# been selected at least once.
+create_modules_for_network(n_modules = NULL, p = 100)
+}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{get_layout_for_modules}
 \alias{get_layout_for_modules}
-\title{Creates coordinates based on a set of modules}
+\title{Internal function used to create coordinates based on a set of modules}
 \usage{
 get_layout_for_modules(g, modules)
 }
@@ -16,5 +16,5 @@ belong to each module}
 A matrix of coordinates for plotting
 }
 \description{
-Creates coordinates based on a set of modules
+Internal function used to create coordinates based on a set of modules
 }

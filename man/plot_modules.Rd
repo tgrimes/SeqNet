@@ -67,3 +67,10 @@ will be based on that plot and convex hulls are drawn to trace out the modules;
 in this case it is likely that the displayed modules will contain extraneous
 nodes.
 }
+\examples{
+set.seed(1)
+# Networks can be plotted with modules highlighted.
+nw <- random_network(100)
+g <- plot_network(nw)
+plot_modules(nw, g) # Overlay convex hulls around modules in previous layout.
+}

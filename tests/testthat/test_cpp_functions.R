@@ -14,7 +14,7 @@ testthat::test_that("cpp functions work", {
   adj[edges[, 2:1]] <- 1
   expect_equal(components_in_adjacency(adj), c(1, 1, 2, 2, 2))
   
-  expect_true(check_adjacency_cpp(adj))
+  expect_true(is_adjacency_cpp(adj))
   
   expect_equal(edges_from_adjacency_cpp(adj), edges)
   

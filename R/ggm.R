@@ -13,6 +13,10 @@
 #' @return A list containing the n by p matrix of samples and the 'network'
 #' object used to generate them.
 #' @export
+#' @examples
+#' nw <- random_network(10) # Create a random network with 10 nodes.
+#' nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+#' x <- gen_gaussian(20, nw)$x # Simulate 20 Gaussian observations from network. 
 gen_gaussian <- function(n, ...) {
   if(n <= 0) {
     stop("n must be positive.")
@@ -121,6 +125,9 @@ gen_gaussian <- function(n, ...) {
 #' @return An updated network object containing random weights. If multiple
 #' networks were provided, then a list of network objects is returned.
 #' @export
+#' @examples
+#' nw <- random_network(10) # Create a random network with 10 nodes.
+#' nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
 gen_partial_correlations <- function(...,
                                      k = 2.5,
                                      rweights = function(n) (-1)^rbinom(n, 1, 0.5) * runif(n, 0.5, 1)) {

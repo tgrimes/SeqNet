@@ -21,3 +21,6 @@ A 'network_module' object.
 \description{
 Create a random module
 }
+\examples{
+module <- random_module(1:10)
+}

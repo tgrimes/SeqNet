@@ -2,18 +2,47 @@
 % Please edit documentation in R/generics.R
 \name{rewire_connections.default}
 \alias{rewire_connections.default}
-\title{Rewire connections.}
+\title{Rewire connections}
 \usage{
-\method{rewire_connections}{default}(x, ...)
+\method{rewire_connections}{default}(x, prob_rewire = 1,
+  weights = NULL, alpha = 100, beta = 1, epsilon = 10^-5,
+  run_checks = TRUE, ...)
 }
 \arguments{
-\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{The 'network', 'network_module', or 'matrix' object to modify.}
+
+\item{prob_rewire}{A value between 0 and 1. The connections to each node 
+will be rewired with probability equal to 'prob_rewire'.}
+
+\item{weights}{(Optional) A vector of weights for each node. These are used
+in addition to the degree of each node when sampling a node to rewire to.}
+
+\item{alpha}{A positive value used to parameterize the Beta distribution.}
+
+\item{beta}{A positive value used to parameterize the Beta distribution.}
+
+\item{epsilon}{A small constant added to the sampling probability of each node.}
+
+\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+case the weights are removed and a warning is given.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-The modified object.
+The modified module.
 }
 \description{
-Rewire connections.
+Rewire connections
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# Rewire nodes in the network each with probability 1/2
+nw_rewired <- rewire_connections(nw, 0.5)
+# Plot the two networks for comparison
+g <- plot(nw)
+plot(nw_rewired, g) # Pass in g to mirror the layout.
+# Or plot the differential network.
+plot_network_diff(nw, nw_rewired, g)
 }

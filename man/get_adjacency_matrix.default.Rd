@@ -18,3 +18,12 @@ connected, and 0 otherwise. The diagonal entries are all zero.
 \description{
 The adjacency matrix is constructed from all modules in a network.
 }
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_adjacency_matrix(nw)
+module <- nw$modules[[1]]
+get_adjacency_matrix(module)
+}

@@ -2,27 +2,39 @@
 % Please edit documentation in R/networks.R
 \name{remove_connections_to_node.network}
 \alias{remove_connections_to_node.network}
-\title{Remove connections to a node.}
+\title{Remove connections to a node}
 \usage{
 \method{remove_connections_to_node}{network}(x, node, prob_remove,
-  weights = NULL, ...)
+  run_checks = TRUE, ...)
 }
 \arguments{
-\item{x}{A 'network' object to modify.}
+\item{x}{The 'network', 'network_module', or 'matrix' object to modify.}
 
 \item{node}{The node to unwire.}
 
 \item{prob_remove}{A value between 0 and 1. Each connection to 'node_index' 
 will be removed with probability equal to 'prob_remove'.}
 
-\item{weights}{(Optional) A vector of weights for each node. These are used
-in addition to the degree of each node when sampling neighbors to unwire from.}
+\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+case the weights are removed and a warning is given.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-The modified network.
+The modified adjacency matrix.
 }
 \description{
-Remove connections to a node.
+Remove connections to a node
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# Remove all connections to node 1.
+nw_rewired <- remove_connections_to_node(nw, 1, 1)
+# Plot the two networks for comparison
+g <- plot(nw)
+plot(nw_rewired, g) # Pass in g to mirror the layout.
+# Or plot the differential network.
+plot_network_diff(nw, nw_rewired)
 }

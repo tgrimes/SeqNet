@@ -28,3 +28,14 @@ module structure is used to incorporate general pathways in the graph. These
 are randomly constructed by generating a small-world graph using the Watts-Strogatz
 method (implemented through igraph::watts.strogatz.game).
 }
+\examples{
+# Networks can be crafted manually by first constructing the individual
+# modules, then putting them together to create a network.
+module_1 <- random_module(1:10) # A module containing nodes 1-10
+module_2 <- random_module(5:15) # A module containing nodes 5-15
+# Create a network containing 20 nodes and the two modules. 
+nw <- create_network_from_modules(20, list(module_1, module_2))
+nw 
+# Note: nodes 16-20 are not in a module, so they have no connections.
+plot(nw)
+}

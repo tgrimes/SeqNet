@@ -31,3 +31,7 @@ and the same modules (the connections within modules may differ). Any
 connection that is common across different networks will also have the same 
 partial correlation weight across networks.
 }
+\examples{
+nw <- random_network(10) # Create a random network with 10 nodes.
+nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+}

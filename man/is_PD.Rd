@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc.R
 \name{is_PD}
 \alias{is_PD}
-\title{Check if a matrix is positive definite}
+\title{Internal function to check if a matrix is positive definite}
 \usage{
 is_PD(x)
 }
@@ -13,5 +13,5 @@ is_PD(x)
 Returns TRUE if the matrix is positive definite and FALSE otherwise.
 }
 \description{
-Check if a matrix is positive definite
+Internal function to check if a matrix is positive definite
 }

@@ -35,3 +35,7 @@ graph and the new graph of `network`.
 This function plots the given network. If the result of another plot is 
 provided, this plot will be modified for easier comparison.
 }
+\examples{
+nw <- random_network(10)
+plot(nw)
+}

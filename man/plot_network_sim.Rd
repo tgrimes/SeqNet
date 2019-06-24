@@ -29,3 +29,19 @@ the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)),
 where s1 and s2 are the weights for a particular
 connection in network_1 and network_2, respectively
 }
+\examples{
+# Create two networks, the second being a perturbation of the first.
+nw1 <- random_network(20)
+nw2 <- perturb_network(nw1, n_nodes = 5)
+nw1 <- gen_partial_correlations(nw1)
+nw2 <- gen_partial_correlations(nw2)
+# Can compare networks by plotting each using the same layout.
+g <- plot(nw1)
+plot(nw2, g)
+# Or, plot the differential network or similarity network
+plot_network_diff(nw1, nw2, g)
+plot_network_sim(nw1, nw2, g)
+# Note the behavior when both networks are the same.
+plot_network_diff(nw1, nw1, g) # No differences produces an empty network
+plot_network_sim(nw1, nw1, g) # Edge widths are still scaled by connection strength.
+}

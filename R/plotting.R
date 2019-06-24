@@ -22,6 +22,35 @@
 #' through the `compare_edge` argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of `network`.
 #' @export
+#' @examples 
+#' set.seed(0)
+#' # Basic plotting for networks, modules, and matricies
+#' nw <- random_network(10)
+#' plot(nw)
+#' module <- random_module(1:10)
+#' plot(module)
+#' adj_mat <- get_adjacency_matrix(nw)
+#' plot_network(adj_mat)
+#' # To compare multiple networks, the layout from the first plot can be used
+#' # in subsequent plots using the second argument, `compare_graph`.
+#' nw1 <- random_network(10)
+#' nw2 <- remove_connections_to_node(nw1, 6, prob_remove = 1)
+#' g <- plot(nw1)
+#' plot(nw2, g)
+#' # If the network contains many nodes of degree 0, plotting as subgraph
+#' # may be preferred.
+#' nw <- random_network(100, n_modules = 1)
+#' plot(nw)
+#' plot(nw, as_subgraph = TRUE)
+#' # Networks can be plotted with modules highlighted.
+#' nw <- random_network(100)
+#' g <- plot_network(nw)
+#' plot_modules(nw, g)
+#' # For large networks, the vertex labels can clutter the graph; these can
+#' # be removed using the `include_vertex_labels` argument.
+#' nw <- random_network(250)
+#' g <- plot(nw)
+#' plot(nw, g, include = FALSE)
 plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
                          node_scale = 4, edge_scale = 1,
                          node_color = adjustcolor("orange", 0.5),
@@ -226,6 +255,12 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' argument, which will setup the plot for easier comparison between the old 
 #' graph and the new graph of `network`.
 #' @export
+#' @examples 
+#' set.seed(1)
+#' # Networks can be plotted with modules highlighted.
+#' nw <- random_network(100)
+#' g <- plot_network(nw)
+#' plot_modules(nw, g) # Overlay convex hulls around modules in previous layout.
 plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
                          modules = NULL,
                          node_scale = 4, edge_scale = 1,
@@ -433,13 +468,12 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   invisible(plot_summary)
 }
 
-#' Creates coordinates based on a set of modules
+#' Internal function used to create coordinates based on a set of modules
 #' 
 #' @param g An 'igraph' object
 #' @param modules A list containing sets of indicies indicating the nodes g that 
 #' belong to each module
 #' @return A matrix of coordinates for plotting
-#' @export
 get_layout_for_modules <- function(g, modules) {
   # See the R blog post by Markus Konrad for details:
   # https://www.r-bloggers.com/visualizing-graphs-with-overlapping-node-groups/
@@ -535,6 +569,9 @@ get_layout_for_modules <- function(g, modules) {
 #' argument, which will setup the plot for easier comparison between the old 
 #' graph and the new graph of `network`.
 #' @export
+#' @examples 
+#' nw <- random_network(10)
+#' plot(nw)
 plot.network <- function(x, 
                          compare_graph = NULL, 
                          show_modules = FALSE, 
@@ -558,6 +595,9 @@ plot.network <- function(x,
 #' @return Creates a plot of the module and returns a graph object. 
 #' See ?plot_network for details.
 #' @export
+#' @examples 
+#' module <- random_module(1:10)
+#' plot(module)
 plot.network_module <- function(x, ...) {
   plot_network(x, ...)
 }
@@ -569,6 +609,18 @@ plot.network_module <- function(x, ...) {
 #' plot_network().
 #' @param ... Additional arguments passed to plot.igraph().
 #' @export
+#' @examples 
+#' nw <- random_network(10)
+#' g <- plot(nw)
+#' # Can change the plot by modifying the instance `g`.
+#' # For example, make vertex size and edge width twice as big.
+#' g$edge.width <- 2 * g$edge.width
+#' g$vertex.size <- 2 * g$vertex.size
+#' # Change color of verticies, edges, and vertex labels.
+#' g$edge.color <- "orange"
+#' g$vertex.color <- "navy"
+#' g$vertex.label.color <- "white"
+#' plot(g)
 plot.network_plot <- function(x, ...) {
   
   plot(x$graph, 
@@ -596,34 +648,54 @@ plot.network_plot <- function(x, ...) {
 #' plot_network().
 #' @param ... Additional arguments passed to plot().
 #' @export
+#' @examples 
+#' nw <- random_network(10)
+#' g <- plot(nw, display_plot = FALSE) # Doesn't display the plot.
+#' g # Displays the plot.
 print.network_plot <- function(x, ...) {
   plot(x, ...)
 }
 
-#' Plot matrix representation of network
+#' Plot heatmap representation of a network
 #' 
-#' This function plots the given network as a heatmap to visualize the 
-#' corresponding association matrix. A weighted association matrix can be 
-#' provided to show relative strength of associations.
+#' This function plots the given network as a heatmap to visualize its
+#' connections. If the network is weighted, then the heatmap will use greyscale
+#' colors to represent connection strengths; black squares correspond to the 
+#' strongest connections, while lighter color squares are weaker connections.
 #' @param network Either a network object or association matrix of the network.
 #' @param main A string containing the title for the graph.
 #' @param col Color palatte used for heatmap. See ?heatmap for details.
+#' @param ... Additional arguments passed to `heatmap()`.
 #' @return The matrix used to create the heatmap
 #' @export
-plot_network_matrix <- function(network, main = "Untitled",
-                                col = colorRampPalette(RColorBrewer::brewer.pal(8, "Greys"))(50)) {
-  if(class(network) == "network") {
-    adj_matrix <- get_adjacency_matrix(network)
-  } else if(is.matrix(network)){
-    adj_matrix <- network
+#' @examples 
+#' set.seed(12345)
+#' nw <- random_network(10)
+#' nw <- set_node_names(nw, paste("node", 1:10, sep = "_"))
+#' heatmap_network(nw, "Unweighted Network")
+#' nw <- gen_partial_correlations(nw)
+#' heatmap_network(nw, "Weighted Network")
+heatmap_network <- function(network, main = NULL,
+                            col = colorRampPalette(RColorBrewer::brewer.pal(8, "Greys"))(50),
+                            ...) {
+  if(is.null(main)) {
+    # Use name of network object as the default title.
+    main <- deparse(substitute(network))
+  }
+  if(is_weighted(network)) {
+    mat <- get_association_matrix(network)
   } else {
-    stop("network should be either a matrix or a network class object.")
+    mat <- get_adjacency_matrix(network)
   }
   
-  heatmap(adj_matrix, main = main,
-          symm = TRUE, Rowv = NA, Colv = NA, col = col)
+  p <- ncol(mat)
+  rownames(mat) <- colnames(mat)
+  mat <- abs(mat)
+  diag(mat) <- 0
+  heatmap(mat, main = main, symm = TRUE, Rowv = NA, Colv = NA, 
+          revC = TRUE, col = col, ...)
   
-  return(adj_matrix)
+  return(mat)
 }
 
 
@@ -661,6 +733,15 @@ plot_network_matrix <- function(network, main = "Untitled",
 #' through the 'compare_edge' argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of 'network'.
 #' @export
+#' @examples 
+#' # Create two networks, the second being a perturbation of the first.
+#' nw1 <- random_network(20)
+#' nw2 <- perturb_network(nw1, n_nodes = 5)
+#' # Can compare networks by plotting each using the same layout.
+#' g <- plot(nw1)
+#' plot(nw2, g)
+#' # Or, the differential network can be plotted.
+#' plot_network_diff(nw1, nw2, g)
 plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
                                as_subgraph = FALSE,
                                node_scale = 4, edge_scale = 1, 
@@ -889,6 +970,21 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
 #' through the 'compare_edge' argument, which will setup the plot for easier 
 #' comparison between the old graph and the graph of 'network'.
 #' @export
+#' @examples 
+#' # Create two networks, the second being a perturbation of the first.
+#' nw1 <- random_network(20)
+#' nw2 <- perturb_network(nw1, n_nodes = 5)
+#' nw1 <- gen_partial_correlations(nw1)
+#' nw2 <- gen_partial_correlations(nw2)
+#' # Can compare networks by plotting each using the same layout.
+#' g <- plot(nw1)
+#' plot(nw2, g)
+#' # Or, plot the differential network or similarity network
+#' plot_network_diff(nw1, nw2, g)
+#' plot_network_sim(nw1, nw2, g)
+#' # Note the behavior when both networks are the same.
+#' plot_network_diff(nw1, nw1, g) # No differences produces an empty network
+#' plot_network_sim(nw1, nw1, g) # Edge widths are still scaled by connection strength.
 plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
   ##################################
   # Check arguments for errors.
@@ -953,13 +1049,13 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
 #' Scatter plot of two gene expressions
 #' 
 #' Plots the expression of two genes for visual assessment of association.
-#' @param counts_list A named list containing one or more n by p gene expression 
+#' @param x_list A named list containing one or more n by p gene expression 
 #' profiles, one for each group or subpopulation under consideration.
 #' @param geneA The name of the first gene to plot. Must be either a character
-#' string matching a column name in each matrix of counts_list or an integer
+#' string matching a column name in each matrix of x_list or an integer
 #' to index the columns.
 #' @param geneB The name of the second gene to plot. Must be either a character
-#' string matching a column name in each matrix of counts_list or an integer
+#' string matching a column name in each matrix of x_list or an integer
 #' to index the columns.
 #' @param method Charater string either "lm" or "loess" used for plotting. 
 #' For no line, set method = NULL. 
@@ -970,19 +1066,35 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
 #' for details.
 #' @return Returns the generated plot.
 #' @export
-plot_gene_pair <- function(counts_list, geneA, geneB, 
+#' @examples 
+#' \donttest{
+#' data(reference)
+#' rnaseq <- reference$rnaseq
+#' genes <- colnames(rnaseq)
+#' plot_gene_pair(rnaseq, genes[1], genes[2])
+#' # Suppose we had multiple data frames.
+#' control <- rnaseq[1:100, 1:10]
+#' treatment1 <- rnaseq[101:200, 1:10]
+#' treatment2 <- rnaseq[201:250, 1:10]
+#' plot_gene_pair(list(ctrl = control, trt1 = treatment1, trt2 = treatment2),
+#'                genes[1], genes[2], method = NA)
+#' plot_gene_pair(list(ctrl = control, trt = treatment1),
+#'                genes[1], genes[2], do_facet_wrap = TRUE, method = "lm")
+#' }
+plot_gene_pair <- function(x_list, geneA, geneB, 
                            method = "loess", se_alpha = 0.1,
                            do_facet_wrap = FALSE, scales = "fixed") {
-  if(!is.list(counts_list)) {
-    counts_list <- list(x = counts_list)
-    names(counts_list) <- "NA"
+  if(!is.list(x_list)) {
+    temp <- deparse(substitute(x_list))
+    x_list <- list(x = x_list)
+    names(x_list) <- temp
   } 
   
-  groups <- names(counts_list)
+  groups <- names(x_list)
   if(is.null(groups)) {
-    groups <- as.character(1:length(counts_list))
+    groups <- as.character(1:length(x_list))
   }
-  exprA <- lapply(counts_list, function(x) {
+  exprA <- lapply(x_list, function(x) {
     if(is.character(geneA)) {
       indexA <- which(colnames(x) == geneA)
     } else {
@@ -990,7 +1102,7 @@ plot_gene_pair <- function(counts_list, geneA, geneB,
     }
     x[, indexA]
   })
-  exprB <- lapply(counts_list, function(x) {
+  exprB <- lapply(x_list, function(x) {
     if(is.character(geneB)) {
       indexB <- which(colnames(x) == geneB)
     } else {
@@ -998,7 +1110,7 @@ plot_gene_pair <- function(counts_list, geneA, geneB,
     }
     x[, indexB]
   })
-  n <- sapply(counts_list, nrow)
+  n <- sapply(x_list, nrow)
   
   df <- tibble::tibble(
     group = unlist(lapply(1:length(n), function(i) rep(groups[i], n[i]))),
@@ -1010,10 +1122,10 @@ plot_gene_pair <- function(counts_list, geneA, geneB,
                                         y = .data$B, 
                                         color = .data$group))
   if(do_facet_wrap) {
-    g <- g + ggplot2::facet_wrap(. ~ rlang::.data$group, scales = scales)
+    g <- g + ggplot2::facet_wrap(. ~ .data$group, scales = scales)
   } 
   g <- g + ggplot2::geom_point(alpha = 0.5)
-  if(!is.null(method)) {
+  if(!is.null(method) && !is.na(method)) {
     g <- g + ggplot2::geom_smooth(method =  method, alpha = se_alpha)
   }
   
@@ -1022,9 +1134,6 @@ plot_gene_pair <- function(counts_list, geneA, geneB,
     ggplot2::labs(x = paste("Expression of", geneA), 
                   y = paste("Expression of", geneB),
                   color = "Group")
-  
-  
   plot(g)
-  
   return(g)
 }

@@ -2,18 +2,36 @@
 % Please edit documentation in R/generics.R
 \name{remove_connections}
 \alias{remove_connections}
-\title{Remove connections in a network.}
+\title{Remove connections in a network}
 \usage{
-remove_connections(x, ...)
+remove_connections(x, prob_remove, run_checks = TRUE, ...)
 }
 \arguments{
-\item{x}{A 'matrix' object to modify.}
+\item{x}{The 'network', 'network_module', or 'matrix' object to modify.}
 
-\item{...}{Additional parameters.}
+\item{prob_remove}{A value between 0 and 1. Each edge will be removed with 
+probability equal to 'prob_remove'.}
+
+\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+case the weights are removed and a warning is given.}
+
+\item{...}{Additional arguments.}
 }
 \value{
-The modified object.
+The modified adjacency matrix.
 }
 \description{
-Remove connections in a network.
+Remove connections in a network
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(20)
+# Remove connections in the network each with probability 1/2.
+nw_rewired <- remove_connections(nw, 0.5)
+# Plot the two networks for comparison
+g <- plot(nw)
+plot(nw_rewired, g) # Pass in g to mirror the layout.
+# Or plot the differential network.
+plot_network_diff(nw, nw_rewired)
 }

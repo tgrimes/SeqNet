@@ -28,3 +28,7 @@ A vector of selected nodes (possibly of length 1).
 \description{
 Sample link nodes for new module
 }
+\note{
+This function is used by `create_modules_for_network()` 
+and is not meant to be used externally.
+}

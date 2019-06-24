@@ -17,3 +17,11 @@ that belong to that module.
 \description{
 Get a list of modules from the network
 }
+\examples{
+set.seed(12345)
+# Create a random network of 50 nodes and modules of sizes between 5-20.
+nw <- random_network(50, n_modules = 5, min_module_size = 5, 
+                     max_module_size = 20, avg_module_size = 10,
+                     sd_module_size = 5)
+get_network_modules(nw) # Indicies of nodes contained in each module.
+}

@@ -5,7 +5,7 @@
 \title{Perturbs the connections in a network}
 \usage{
 perturb_network(network, n_hubs = 1, n_nodes = 0,
-  rewire_hub_prob = 0.5, rewire_other_prob = 0.1, ...)
+  rewire_hub_prob = 0.5, rewire_other_prob = 0.5, ...)
 }
 \arguments{
 \item{network}{The network to modify.}
@@ -39,4 +39,12 @@ no other nodes are changed. Hub nodes are defined as those having degree
 above three standard deviations from the average degree, and nodes are
 sampled from these to be turned off; if there are no hub nodes, then
 those with the largest degree are turned off.
+}
+\examples{
+# Create a random network, perturb the network, then plot the differential network.
+set.seed(12345)
+nw <- random_network(100)
+# Rewire 2 random hub genes and 10 other random genes:
+nw_diff <- perturb_network(nw, n_hubs = 2, n_nodes = 10)
+plot_network_diff(nw, nw_diff) 
 }

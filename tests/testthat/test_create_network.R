@@ -2,7 +2,7 @@ testthat::test_that("networks can be created from matricies", {
   adj <- random_module_structure(10)
   colnames(adj) <- 1:10
   expect_is(adj, "matrix")
-  expect_true(check_adjacency_cpp(adj))
+  expect_true(is_adjacency_cpp(adj))
   network <- create_network_from_adjacency_matrix(adj)
   expect_is(network, "network")
   expect_equal(get_adjacency_matrix(network), adj)

@@ -17,3 +17,8 @@ Prints a summary of the module.
 \description{
 Print function for 'network' object.
 }
+\examples{
+nw <- random_network(10)
+nw
+print(nw)
+}

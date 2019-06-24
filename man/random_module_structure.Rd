@@ -39,3 +39,10 @@ lattice, and edges are randomly rewired and/or removed. The procedure
 is similar to the Watts-Strogatz method, but the sampling of edges to 
 modify can be based on the degree of each node.
 }
+\examples{
+# Create a random module structure (an adjacency matrix) for 10 nodes.
+adj_mat <- random_module_structure(10)
+# A network object can be created using this structure.
+module <- create_module_from_adjacency_matrix(adj_mat)
+nw <- create_network_from_modules(10, module)
+}

@@ -2,17 +2,18 @@
 % Please edit documentation in R/generics.R
 \name{rewire_connections_to_node.matrix}
 \alias{rewire_connections_to_node.matrix}
-\title{Rewire connections to a node.}
+\title{Rewire connections to a node}
 \usage{
-\method{rewire_connections_to_node}{matrix}(x, node, prob_rewire,
-  weights = NULL, alpha = 100, beta = 1, epsilon = 10^-5, ...)
+\method{rewire_connections_to_node}{matrix}(x, node, prob_rewire = 1,
+  weights = NULL, alpha = 100, beta = 1, epsilon = 10^-5,
+  run_checks = TRUE, ...)
 }
 \arguments{
-\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
+\item{x}{The 'network', 'network_module', or 'matrix' object to modify.}
 
 \item{node}{The node to rewire.}
 
-\item{prob_rewire}{A value between 0 and 1. Each connection to 'node' 
+\item{prob_rewire}{A value between 0 and 1, inclusive. Each connection to 'node' 
 will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 'node' is unchanged after this operation.}
 
@@ -25,11 +26,26 @@ in addition to the degree of each node when sampling nodes to rewire.}
 
 \item{epsilon}{A small constant added to the sampling probability of each node.}
 
+\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+case the weights are removed and a warning is given.}
+
 \item{...}{Additional arguments.}
 }
 \value{
-The modified object x.
+The modified object.
 }
 \description{
-Rewire connections to a node.
+Rewire connections to a node
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# Rewire connections to the first node.
+nw_rewired <- rewire_connections_to_node(nw, 1)
+# Plot the two networks for comparison
+g <- plot(nw)
+plot(nw_rewired, g) # Pass in g to mirror the layout.
+# Or plot the differential network.
+plot_network_diff(nw, nw_rewired, g)
 }

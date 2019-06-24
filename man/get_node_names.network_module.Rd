@@ -2,20 +2,31 @@
 % Please edit documentation in R/modules.R
 \name{get_node_names.network_module}
 \alias{get_node_names.network_module}
-\title{Get node names of a module}
+\title{Get node names}
 \usage{
 \method{get_node_names}{network_module}(x, ...)
 }
 \arguments{
-\item{x}{The 'network_module' object to get node names from.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-A vector containing the node indicies in the module
+A vector containing the node names or node indicies.
 }
 \description{
-Modules do not retain the names of each node, so the node indicies returned
-used instead. If the network node names are known, then the vector returned
-from this function can be used to index those node names.
+Get node names
+}
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+get_node_names(nw) # Default names are 1, 2, ..., 10.
+nw <- set_node_names(nw, paste("node", 1:10, sep = "_"))
+get_node_names(nw) # Print out updated node names.
+# Modules only contain the indicies to nodes, not the node names
+module <- nw$modules[[1]]
+get_node_names(module)
+# When converting the network to a matrix, node names appear as column names.
+adj_matrix <- get_adjacency_matrix(nw)
+colnames(adj_matrix) 
 }

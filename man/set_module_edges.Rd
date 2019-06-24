@@ -2,7 +2,7 @@
 % Please edit documentation in R/modules.R
 \name{set_module_edges}
 \alias{set_module_edges}
-\title{Set the edges in a module}
+\title{Internal function used to set the edges in a module}
 \usage{
 set_module_edges(module, edges)
 }
@@ -20,5 +20,5 @@ edge list.}
 The modified 'network_module' object.
 }
 \description{
-Set the edges in a module
+Internal function used to set the edges in a module
 }

@@ -5,31 +5,32 @@
 #' @param ... Additional arguments.
 #' @return An adjacency matrix with entry ij = 1 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
+#' @note The connections in an adjacency matrix and association matrix may differ
+#' if the network contains multiple modules. The adjacency matrix only considers 
+#' direct connections in the network, whereas the association matrix takes into 
+#' account the fact that overlapping modules can create conditional dependencies
+#' between two genes in seperate modules (i.e. genes that don't have a direct
+#' connection in the graph).
 #' @export
+#' @examples 
+#' # Create a random network with 10 nodes and add random edge weights.
+#' nw <- random_network(10)
+#' nw <- gen_partial_correlations(nw)
+#' # Get adjacency matrix for the network or individual modules in the network.
+#' get_adjacency_matrix(nw)
+#' module <- nw$modules[[1]]
+#' get_adjacency_matrix(module)
 get_adjacency_matrix <- function(x, ...) {
   UseMethod("get_adjacency_matrix")
 }
 
-#' Get adjacency matrix
-#' 
-#' The adjacency matrix is constructed from all modules in a network.
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return An adjacency matrix with entry ij = 1 if node i and j are 
-#' connected, and 0 otherwise. The diagonal entries are all zero.
+#' @inherit get_adjacency_matrix
 #' @export
 get_adjacency_matrix.default <- function(x, ...) {
   cat("get_adjacency_matrix() is defined for 'network' and 'network_module' objects.\n")
 }
 
-#' Get adjacency matrix
-#' 
-#' All off-diagonal entries that are near zero are set to zero. All remaining 
-#' non-zero values are set to 1, and the diagonal is set to zero.
-#' @param x A 'matrix' object.
-#' @param ... Additional arguments.
-#' @return An adjacency matrix with entry ij = 1 if node i and j are 
-#' connected, and 0 otherwise. The diagonal entries are all zero.
+#' @inherit get_adjacency_matrix
 #' @export
 get_adjacency_matrix.matrix <- function(x, ...) {
   if(!(class(x) == "matrix")) 
@@ -53,33 +54,37 @@ get_adjacency_matrix.matrix <- function(x, ...) {
 #' Get association matrix
 #' 
 #' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param tol A small tolerance threshold; any entry that is within `tol` from zero
+#' is set to zero.
 #' @param ... Additional arguments.
 #' @return An association matrix with entry ij != 0 if node i and j are 
 #' connected, and 0 otherwise. The diagonal entries are all zero.
+#' @note The connections in an adjacency matrix and association matrix may differ
+#' if the network contains multiple modules. The adjacency matrix only considers 
+#' direct connections in the network, whereas the association matrix takes into 
+#' account the fact that overlapping modules can create conditional dependencies
+#' between two genes in seperate modules (i.e. genes that don't have a direct
+#' connection in the graph).
 #' @export
-get_association_matrix <- function(x, ...) {
+#' @examples 
+#' # Create a random network with 10 nodes and add random edge weights.
+#' nw <- random_network(10)
+#' nw <- gen_partial_correlations(nw)
+#' # Get adjacency matrix for the network or individual modules in the network.
+#' get_association_matrix(nw)
+#' module <- nw$modules[[1]]
+#' get_association_matrix(module)
+get_association_matrix <- function(x, tol = 10^-13, ...) {
   UseMethod("get_association_matrix")
 }
 
-#' Get association matrix
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' #' @return An association matrix with entry ij != 0 if node i and j are 
-#' connected, and 0 otherwise. The diagonal entries are all zero.
+#' @inherit get_association_matrix
 #' @export
-get_association_matrix.default <- function(x, ...) {
+get_association_matrix.default <- function(x, tol = 10^-13, ...) {
   cat("get_association_matrix() is defined for 'network' and 'network_module' objects.\n")
 }
 
-#' Get association matrix
-#' 
-#' All off-diagonal values in the matrix are left unchanged. The diagonal
-#' is set to zero.
-#' @param x A 'matrix' object.
-#' @param tol A numeric value. Associations within tol from zero are set to zero.
-#' @param ... Additional arguments.
-#' @return Returns the matrix with diagonal elements set to zero.
+#' @inherit get_association_matrix
 #' @export
 get_association_matrix.matrix <- function(x, tol = 10^-13, ...) {
   if(!(class(x) == "matrix")) 
@@ -90,9 +95,9 @@ get_association_matrix.matrix <- function(x, tol = 10^-13, ...) {
     stop(paste0("'", deparse(substitute(x)),  "' is not a symmetric matrix."))
   if(!is_weighted(x)) 
     stop(paste0("'", deparse(substitute(x)), "' is not a weighted matrix."))
-  
+
   diag(x) <- 0
-  x[abs(x) < tol] <- 0
+  x[abs(x) < tol] <- 0 # Set entries near zero to zero.
   return(x)
 }
 
@@ -106,44 +111,30 @@ get_association_matrix.matrix <- function(x, tol = 10^-13, ...) {
 #' as the weight, where m_i is the number of modules containing gene i.
 #' @param x Either a 'network', 'network_module', or 'matrix' object.
 #' @param ... Additional arguments.
-#' @note If a matrix is provided, it is assumed to be a partial correlation matrix.
-#' A warning is given in this case. To avoid the warning message, convert the
+#' @note If a matrix is provided, it is assumed to be a partial correlation matrix;
+#' a warning is given in this case. To avoid the warning message, convert the
 #' matrix into a network object using 'create_network_from_association_matrix()'.
 #' @return A covariance matrix.
 #' @export
+#' @examples 
+#' # Create a random network with 10 nodes and add random edge weights.
+#' nw <- random_network(10)
+#' nw <- gen_partial_correlations(nw)
+#' # Get covariance matrix for the network or individual modules in the network.
+#' get_sigma(nw)
+#' module <- nw$modules[[1]]
+#' get_sigma(module)
 get_sigma <- function(x, ...) {
   UseMethod("get_sigma")
 }
 
-#' Get the covariance matrix
-#' 
-#' The associations in each module are taken as partial correlations, and
-#' the covariance matrix is calculated from these assuming that expression
-#' for gene i is the weighted average over each module using 1/sqrt(m_i) 
-#' as the weight, where m_i is the number of modules containing gene i.
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @note If a matrix is provided, it is assumed to be a partial correlation matrix.
-#' A warning is given in this case. To avoid the warning message, convert the
-#' matrix into a network object using 'create_network_from_association_matrix()'.
-#' @return A covariance matrix.
+#' @inherit get_sigma
 #' @export
 get_sigma.default <- function(x, ...) {
   # cat("get_sigma() is defined for 'network' and 'network_module' objects.\n")
 }
 
-#' Get the covariance matrix
-#' 
-#' The associations in each module are taken as partial correlations, and
-#' the covariance matrix is calculated from these assuming that expression
-#' for gene i is the weighted average over each module using 1/sqrt(m_i) 
-#' as the weight, where m_i is the number of modules containing gene i.
-#' @param x A 'matrix' object.
-#' @param ... Additional arguments.
-#' @note The matrix is assumed to be a partial correlation matrix.
-#' A warning is given in this case. To avoid the warning message, convert the
-#' matrix into a network object using 'create_network_from_association_matrix()'.
-#' @return A covariance matrix.
+#' @inherit get_sigma
 #' @export
 get_sigma.matrix <- function(x, ...) {
   if(any(diag(x) == 0)) {
@@ -168,29 +159,28 @@ get_sigma.matrix <- function(x, ...) {
 #' object are weighted by 0s and 1s, and returns TRUE otherwise. If there
 #' are no connections in the module, then this function returns TRUE.
 #' @export
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(10)
+#' # The network, and hence all of its modules, are unweighted.
+#' is_weighted(nw)
+#' sapply(nw$modules, is_weighted)
+#' # Add random weights to the connections.
+#' nw <- gen_partial_correlations(nw)
+#' # The network, and hence all of its modules, are now weighted.
+#' is_weighted(nw)
+#' sapply(nw$modules, is_weighted)
 is_weighted <- function(x, ...) {
   UseMethod("is_weighted")
 }
 
-#' Check if an object is weighted
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return Returns FALSE if all of the connections in the 
-#' object are weighted by 0s and 1s, and returns TRUE otherwise. If there
-#' are no connections in the module, then this function returns TRUE.
+#' @inherit is_weighted
 #' @export
 is_weighted.default <- function(x, ...) {
   cat("is_weighted() is defined for 'network' and 'network_module' objects.\n")
 }
 
-#' Check if an object is weighted
-#' 
-#' @param x A 'matrix' object.
-#' @param ... Additional arguments.
-#' @return Returns FALSE if all of entries in the matrix are either zero or one, 
-#' and returns TRUE otherwise. However, if there are no connections, i.e. all
-#' off-diagonal entries are zero, then this function returns TRUE.
+#' @inherit is_weighted
 #' @export
 is_weighted.matrix <- function(x, ...) {
   if(!(class(x) == "matrix")) 
@@ -217,25 +207,25 @@ is_weighted.matrix <- function(x, ...) {
 #' @param ... Additional arguments.
 #' @return The modified object.
 #' @export
+#' @examples 
+#' # Create a random network with 10 nodes and add random edge weights.
+#' nw <- random_network(10)
+#' nw <- gen_partial_correlations(nw)
+#' is_weighted(nw)
+#' # Remove the edge weights from the network.
+#' nw <- remove_weights(nw)
+#' is_weighted(nw)
 remove_weights <- function(x, ...) {
   UseMethod("remove_weights")
 }
 
-#' Removes the weights of all connections
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return The modified object.
+#' @inherit remove_weights
 #' @export
 remove_weights.default <- function(x, ...) {
   cat("remove_weights() is defined for 'network', 'network_module', and 'matrix' objects.\n")
 }
 
-#' Removes the weights of all connections
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return The modified object.
+#' @inherit remove_weights
 #' @export
 remove_weights.matrix <- function(x, ...) {
   if(!(class(x) == "matrix")) 
@@ -256,26 +246,33 @@ remove_weights.matrix <- function(x, ...) {
 #' @param x Either a 'network', 'network_module', or 'matrix' object.
 #' @param ... Additional arguments.
 #' @return A vector containing the node names or node indicies.
+#' @note Modules do not retain the names of each node, so the node indicies are
+#' returned instead. These can be used to index into the vector of node
+#' names obtained from the network.
 #' @export
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(10)
+#' get_node_names(nw) # Default names are 1, 2, ..., 10.
+#' nw <- set_node_names(nw, paste("node", 1:10, sep = "_"))
+#' get_node_names(nw) # Print out updated node names.
+#' # Modules only contain the indicies to nodes, not the node names
+#' module <- nw$modules[[1]]
+#' get_node_names(module)
+#' # When converting the network to a matrix, node names appear as column names.
+#' adj_matrix <- get_adjacency_matrix(nw)
+#' colnames(adj_matrix) 
 get_node_names <- function(x, ...) {
   UseMethod("get_node_names")
 }
 
-#' Get node names
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return A vector containing the node names or node indicies.
+#' @inherit get_node_names
 #' @export
 get_node_names.default <- function(x, ...) {
   cat("get_node_names() is defined for 'network' and 'network_module' objects.\n")
 }
 
-#' Get node names
-#' 
-#' @param x A 'matrix' object.
-#' @param ... Additional arguments.
-#' @return A vector containing the node names or node indicies.
+#' @inherit get_node_names
 #' @export
 get_node_names.matrix <- function(x, ...) {
   node_names <- colnames(x)
@@ -288,34 +285,11 @@ get_node_names.matrix <- function(x, ...) {
 
 
 
-#' Rewire connections to a node.
+#' Rewire connections to a node
 #' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param x The 'network', 'network_module', or 'matrix' object to modify.
 #' @param node The node to rewire.
-#' @param ... Additional arguments.
-#' @return The modified object.
-#' @export
-rewire_connections_to_node <- function(x, node, ...) {
-  UseMethod("rewire_connections_to_node")
-}
-
-#' Rewire connections to a node.
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param node The node to rewire.
-#' @param ... Additional arguments. 
-#' @return The modified object.
-#' @export
-rewire_connections_to_node.default <- function(x, node, ...) {
-  cat("rewire_connections_to_node() is defined for 'network', 'network_module'",
-      " and 'matrix' objects.\n")
-}
-
-#' Rewire connections to a node.
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param node The node to rewire.
-#' @param prob_rewire A value between 0 and 1. Each connection to 'node' 
+#' @param prob_rewire A value between 0 and 1, inclusive. Each connection to 'node' 
 #' will be rewired with probability equal to 'prob_rewire'. Note, the degree of 
 #' 'node' is unchanged after this operation.
 #' @param weights (Optional) A vector of weights for each node. These are used
@@ -323,19 +297,71 @@ rewire_connections_to_node.default <- function(x, node, ...) {
 #' @param alpha A positive value used to parameterize the Beta distribution.
 #' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
+#' @param run_checks If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+#' adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+#' case the weights are removed and a warning is given. 
 #' @param ... Additional arguments.
-#' @return The modified object x.
+#' @return The modified object.
+#' @export
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(10)
+#' # Rewire connections to the first node.
+#' nw_rewired <- rewire_connections_to_node(nw, 1)
+#' # Plot the two networks for comparison
+#' g <- plot(nw)
+#' plot(nw_rewired, g) # Pass in g to mirror the layout.
+#' # Or plot the differential network.
+#' plot_network_diff(nw, nw_rewired, g)
+rewire_connections_to_node <- function(x,
+                                       node,
+                                       prob_rewire = 1,
+                                       weights = NULL,
+                                       alpha = 100,
+                                       beta = 1,
+                                       epsilon = 10^-5,
+                                       run_checks = TRUE,
+                                       ...) {
+  UseMethod("rewire_connections_to_node")
+}
+
+#' @inherit rewire_connections_to_node
+#' @export
+rewire_connections_to_node.default <- function(x,
+                                               node,
+                                               prob_rewire = 1,
+                                               weights = NULL,
+                                               alpha = 100,
+                                               beta = 1,
+                                               epsilon = 10^-5,
+                                               run_checks = TRUE,
+                                               ...) {
+  cat("rewire_connections_to_node() is defined for 'network', 'network_module'",
+      " and 'matrix' objects.\n")
+}
+
+#' @inherit rewire_connections_to_node
 #' @export
 rewire_connections_to_node.matrix <- function(x,
                                               node,
-                                              prob_rewire,
+                                              prob_rewire = 1,
                                               weights = NULL,
                                               alpha = 100,
                                               beta = 1,
                                               epsilon = 10^-5,
+                                              run_checks = TRUE,
                                               ...) {
   if(!(class(x) == "matrix")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(run_checks && is_weighted(x)) {
+    warning("'", deparse(substitute(x)), "' is weighted.",
+            "Edge weights are removed prior to rewiring.")
+    x <- remove_weights(x)
+  }
+  if(run_checks && !is_adjacency_cpp(x)) {
+    # Stop if the matrix is not an adjacency matrix (even after removing weights).
+    stop("'", deparse(substitute(x)), "' is not an adjacency matrix.")
+  }
   
   nodes <- get_node_names(x)
   p <- length(nodes)
@@ -413,30 +439,9 @@ rewire_connections_to_node.matrix <- function(x,
 
 
 
-#' Rewire connections.
+#' Rewire connections
 #' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments.
-#' @return The modified object.
-#' @export
-rewire_connections <- function(x, ...) {
-  UseMethod("rewire_connections")
-}
-
-#' Rewire connections.
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
-#' @param ... Additional arguments. 
-#' @return The modified object.
-#' @export
-rewire_connections.default <- function(x, ...) {
-  cat("rewire_connections() is defined for 'network_module'",
-      " and 'matrix' objects.\n")
-}
-
-#' Rewire connections.
-#' 
-#' @param x Either a 'network', 'network_module', or 'matrix' object.
+#' @param x The 'network', 'network_module', or 'matrix' object to modify.
 #' @param prob_rewire A value between 0 and 1. The connections to each node 
 #' will be rewired with probability equal to 'prob_rewire'. 
 #' @param weights (Optional) A vector of weights for each node. These are used
@@ -444,16 +449,71 @@ rewire_connections.default <- function(x, ...) {
 #' @param alpha A positive value used to parameterize the Beta distribution.
 #' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
+#' @param run_checks If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+#' adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+#' case the weights are removed and a warning is given. 
 #' @param ... Additional arguments.
-#' @return The modified object x.
+#' @return The modified module.
+#' @note When applied to a network object, all modules in the network are
+#' rewired. If
+#' @export
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(10)
+#' # Rewire nodes in the network each with probability 1/2
+#' nw_rewired <- rewire_connections(nw, 0.5)
+#' # Plot the two networks for comparison
+#' g <- plot(nw)
+#' plot(nw_rewired, g) # Pass in g to mirror the layout.
+#' # Or plot the differential network.
+#' plot_network_diff(nw, nw_rewired, g)
+rewire_connections <- function(x,
+                               prob_rewire = 1,
+                               weights = NULL,
+                               alpha = 100,
+                               beta = 1,
+                               epsilon = 10^-5,
+                               run_checks = TRUE,
+                               ...) {
+  UseMethod("rewire_connections")
+}
+
+#' @inherit rewire_connections
+#' @export
+rewire_connections.default <- function(x,
+                                       prob_rewire = 1,
+                                       weights = NULL,
+                                       alpha = 100,
+                                       beta = 1,
+                                       epsilon = 10^-5,
+                                       run_checks = TRUE,
+                                       ...) {
+  cat("rewire_connections() is defined for 'network_module'",
+      " and 'matrix' objects.\n")
+}
+
+#' @inherit rewire_connections
 #' @export
 rewire_connections.matrix <- function(x,
-                                      prob_rewire,
+                                      prob_rewire = 1,
                                       weights = NULL,
                                       alpha = 100,
                                       beta = 1,
                                       epsilon = 10^-5,
+                                      run_checks = TRUE,
                                       ...) {
+  if(!(class(x) == "matrix")) 
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(run_checks && is_weighted(x)) {
+    warning("'", deparse(substitute(x)), "' is weighted.",
+            "Edge weights are removed prior to rewiring.")
+    x <- remove_weights(x)
+  }
+  if(run_checks && !is_adjacency_cpp(x)) {
+    # Stop if the matrix is not an adjacency matrix (even after removing weights).
+    stop("'", deparse(substitute(x)), "' is not an adjacency matrix.")
+  }
+  
   for(i in get_node_names(x)) {
     x <- rewire_connections_to_node(x, i, prob_rewire = prob_rewire,
                                     weights = weights, alpha = alpha, beta = beta, 
@@ -465,47 +525,65 @@ rewire_connections.matrix <- function(x,
 
 
 
-#' Remove connections to a node.
+#' Remove connections to a node
 #' 
-#' @param x A 'network', 'network_module', or 'matrix' object to modify. 
-#' @param node The node to rewire.
-#' @param ... Additional parameters.
-#' @return The modified object.
+#' @param x The 'network', 'network_module', or 'matrix' object to modify.
+#' @param node The node to unwire.
+#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
+#' will be removed with probability equal to 'prob_remove'.
+#' @param run_checks If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+#' adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+#' case the weights are removed and a warning is given. 
+#' @param ... Additional arguments.
+#' @return The modified adjacency matrix.
 #' @export
-remove_connections_to_node <- function(x, node, ...) {
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(10)
+#' # Remove all connections to node 1.
+#' nw_rewired <- remove_connections_to_node(nw, 1, 1)
+#' # Plot the two networks for comparison
+#' g <- plot(nw)
+#' plot(nw_rewired, g) # Pass in g to mirror the layout.
+#' # Or plot the differential network.
+#' plot_network_diff(nw, nw_rewired)
+remove_connections_to_node <- function(x,
+                                       node,
+                                       prob_remove,
+                                       run_checks = TRUE,
+                                       ...) {
   UseMethod("remove_connections_to_node")
 }
 
-#' Remove connections to a node.
-#' 
-#' @param x A 'network', 'network_module', or 'matrix' object to modify. 
-#' @param node The node to rewire.
-#' @param ... Additional parameters.
-#' @return The modified object.
+#' @inherit remove_connections_to_node
 #' @export
-remove_connections_to_node.default <- function(x, node, ...) {
+remove_connections_to_node.default <- function(x,
+                                               node,
+                                               prob_remove,
+                                               run_checks = TRUE,
+                                               ...) {
   cat("remove_connections_to_node() is defined for 'network', 'network_module'",
       " and 'matrix' objects.\n")
 }
 
-#' Remove connections to a node.
-#' 
-#' @param x An adjacency matrix to modify.
-#' @param node The node to unwire.
-#' @param prob_remove A value between 0 and 1. Each connection to 'node_index' 
-#' will be removed with probability equal to 'prob_remove'.
-#' @param weights (Optional) A vector of weights for each node. These are used
-#' in addition to the degree of each node when sampling neighbors to unwire from.
-#' @param ... Additional arguments.
-#' @return The modified adjacency matrix.
+#' @inherit remove_connections_to_node
 #' @export
 remove_connections_to_node.matrix <- function(x,
                                               node,
                                               prob_remove,
-                                              weights = NULL,
+                                              run_checks = TRUE,
                                               ...) {
   if(!(class(x) == "matrix")) 
-    stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(run_checks && is_weighted(x)) {
+    warning("'", deparse(substitute(x)), "' is weighted.",
+            "Edge weights are removed prior to rewiring.")
+    x <- remove_weights(x)
+  }
+  if(run_checks && !is_adjacency_cpp(x)) {
+    # Stop if the matrix is not an adjacency matrix (even after removing weights).
+    stop("'", deparse(substitute(x)), "' is not an adjacency matrix.")
+  }
   
   nodes <- get_node_names(x)
   p <- length(nodes)
@@ -514,18 +592,10 @@ remove_connections_to_node.matrix <- function(x,
     stop("Argument 'node' must be a positive integer.")
   if(prob_remove < 0 || prob_remove > 1) 
     stop("Argument 'prob_remove' must be in [0, 1].")
-  if(!is.null(weights) && (length(weights) != p || !is.numeric(weights))) 
-    stop("'", deparse(substitute(weights)), "' is not a numeric vector of length", 
-         " equal to the number of nodes in 'x'.")
-  
-  if(is.null(weights)) {
-    weights <- rep(0, p)
-  }
   
   if(node %in% nodes) {
     node_index <- which(node == nodes)
     degree <- colSums(x)
-    weights <- weights + degree
     
     # Remove connections if the node has neighbors.
     if(degree[node_index] > 0) {
@@ -533,7 +603,6 @@ remove_connections_to_node.matrix <- function(x,
       n_remove <- sum(runif(length(neighbors)) < prob_remove)
       
       if(n_remove > 0) {
-        
         # Sample the connections to rewire.
         if(length(neighbors) == 1) {
           # Do not use sample() if only one neighbor.
@@ -556,40 +625,61 @@ remove_connections_to_node.matrix <- function(x,
 }
 
 
-#' Remove connections in a network.
+#' Remove connections in a network
 #' 
-#' @param x A 'matrix' object to modify. 
-#' @param ... Additional parameters.
-#' @return The modified object.
+#' @param x The 'network', 'network_module', or 'matrix' object to modify.
+#' @param prob_remove A value between 0 and 1. Each edge will be removed with 
+#' probability equal to 'prob_remove'.
+#' @param run_checks If TRUE and 'x' is a matrix, then it is checked that 'x' is an
+#' adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
+#' case the weights are removed and a warning is given. 
+#' @param ... Additional arguments.
+#' @return The modified adjacency matrix.
 #' @export
-remove_connections <- function(x, ...) {
+#' @examples 
+#' # Create a random network with 10 nodes. 
+#' nw <- random_network(20)
+#' # Remove connections in the network each with probability 1/2.
+#' nw_rewired <- remove_connections(nw, 0.5)
+#' # Plot the two networks for comparison
+#' g <- plot(nw)
+#' plot(nw_rewired, g) # Pass in g to mirror the layout.
+#' # Or plot the differential network.
+#' plot_network_diff(nw, nw_rewired)
+remove_connections <- function(x,
+                               prob_remove,
+                               run_checks = TRUE,
+                               ...) {
   UseMethod("remove_connections")
 }
 
-#' Remove connections in a network.
-#' 
-#' @param x A 'matrix' object to modify. 
-#' @param ... Additional parameters.
-#' @return The modified object.
+#' @inherit remove_connections
 #' @export
-remove_connections.default <- function(x, ...) {
+remove_connections.default <- function(x,
+                                       prob_remove,
+                                       run_checks = TRUE,
+                                       ...) {
   cat("remove_connections() is defined for ",
       "'matrix' objects.\n")
 }
 
-#' Remove connections in a network.
-#' 
-#' @param x An adjacency matrix to modify.
-#' @param prob_remove A value between 0 and 1. Each edge will be removed with 
-#' probability equal to 'prob_remove'.
-#' @param ... Additional arguments.
-#' @return The modified adjacency matrix.
+#' @inherit remove_connections
 #' @export
 remove_connections.matrix <- function(x,
                                       prob_remove,
+                                      run_checks = TRUE,
                                       ...) {
   if(!(class(x) == "matrix")) 
-    stop("'", deparse(substitute(x)), "' is not a 'matrix' object.")
+    stop(paste0("'", deparse(substitute(x)), "' is not a 'matrix' object."))
+  if(run_checks && is_weighted(x)) {
+    warning("'", deparse(substitute(x)), "' is weighted.",
+            "Edge weights are removed prior to rewiring.")
+    x <- remove_weights(x)
+  }
+  if(run_checks && !is_adjacency_cpp(x)) {
+    # Stop if the matrix is not an adjacency matrix (even after removing weights).
+    stop("'", deparse(substitute(x)), "' is not an adjacency matrix.")
+  }
   
   p <- ncol(x)
   

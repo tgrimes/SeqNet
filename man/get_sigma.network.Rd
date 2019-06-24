@@ -2,21 +2,30 @@
 % Please edit documentation in R/networks.R
 \name{get_sigma.network}
 \alias{get_sigma.network}
-\title{Get the covariance matrix of a network}
+\title{Get the covariance matrix}
 \usage{
 \method{get_sigma}{network}(x, ...)
 }
 \arguments{
-\item{x}{A weighted 'network' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-A covariance matrix for the network.
+A covariance matrix.
 }
 \description{
 The associations in each module are taken as partial correlations, and
 the covariance matrix is calculated from these assuming that expression
 for gene i is the weighted average over each module using 1/sqrt(m_i) 
 as the weight, where m_i is the number of modules containing gene i.
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get covariance matrix for the network or individual modules in the network.
+get_sigma(nw)
+module <- nw$modules[[1]]
+get_sigma(module)
 }

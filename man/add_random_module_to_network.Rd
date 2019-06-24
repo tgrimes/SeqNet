@@ -19,3 +19,21 @@ The modified 'network' object.
 \description{
 Adds a random module of a given size to the network
 }
+\examples{
+# This function provides an alternative way to iteratively add random
+# modules to the network. It uses a weighted sampling of nodes, where
+# nodes that haven't been selected for a module have a higher probability 
+# of being sampled for the new module.
+nw <- create_empty_network(100)
+plot(nw) # An empty network of 100 nodes.
+# Add random modules of size 10 to the network, 1 at a time.
+# By plotting the network each time, we can watch it grow.
+set.seed(12345)
+plot(nw <<- add_random_module_to_network(nw, 10))
+plot(nw <<- add_random_module_to_network(nw, 10))
+plot(nw <<- add_random_module_to_network(nw, 10))
+plot(nw <<- add_random_module_to_network(nw, 10))
+plot(nw <<- add_random_module_to_network(nw, 10))
+plot(nw <<- add_random_module_to_network(nw, 10))
+# Etc.
+}

@@ -18,3 +18,7 @@ See ?plot_network for details.
 \description{
 Plot function for 'network_module' object.
 }
+\examples{
+module <- random_module(1:10)
+plot(module)
+}

@@ -7,16 +7,26 @@
 \method{get_association_matrix}{matrix}(x, tol = 10^-13, ...)
 }
 \arguments{
-\item{x}{A 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{tol}{A numeric value. Associations within tol from zero are set to zero.}
+\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+is set to zero.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-Returns the matrix with diagonal elements set to zero.
+An association matrix with entry ij != 0 if node i and j are 
+connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-All off-diagonal values in the matrix are left unchanged. The diagonal
-is set to zero.
+Get association matrix
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_association_matrix(nw)
+module <- nw$modules[[1]]
+get_association_matrix(module)
 }

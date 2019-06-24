@@ -23,3 +23,10 @@ considered as zero inflated.}
 \description{
 Sample genes from reference dataset
 }
+\examples{
+\donttest{
+data(reference)
+rnaseq <- reference$rnaseq
+rnaseq_subset <- sample_reference_data(rnaseq, 10)
+}
+}

@@ -15,3 +15,16 @@ plot_network().}
 \description{
 Plot function for 'network_plot' class
 }
+\examples{
+nw <- random_network(10)
+g <- plot(nw)
+# Can change the plot by modifying the instance `g`.
+# For example, make vertex size and edge width twice as big.
+g$edge.width <- 2 * g$edge.width
+g$vertex.size <- 2 * g$vertex.size
+# Change color of verticies, edges, and vertex labels.
+g$edge.color <- "orange"
+g$vertex.color <- "navy"
+g$vertex.label.color <- "white"
+plot(g)
+}

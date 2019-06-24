@@ -2,7 +2,7 @@
 % Please edit documentation in R/gen_zinb.R
 \name{gen_zinb}
 \alias{gen_zinb}
-\title{Generate RNA-seq counts}
+\title{Generate ZINB counts from an underlying network}
 \usage{
 gen_zinb(n, network, reference = NULL, params = NULL,
   library_sizes = NULL, adjust_library_size = NULL, verbose = TRUE)
@@ -41,4 +41,10 @@ udnerlying network. An association structure is imposed by first generating
 data from a multivariate Gaussian distribution, and counts are then obtained
 through the inverse tranformation method. To generate realistic counts, either 
 a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
+}
+\examples{
+nw <- random_network(10) # Create a random network with 10 nodes.
+nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+# If no reference is provided, ZINB data are generated using an internal reference.
+x <- gen_zinb(20, nw)$x # Simulate 20 ZINB observations from the network.
 }

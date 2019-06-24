@@ -2,18 +2,27 @@
 % Please edit documentation in R/networks.R
 \name{remove_weights.network}
 \alias{remove_weights.network}
-\title{Removes the weights of all connections in the network}
+\title{Removes the weights of all connections}
 \usage{
 \method{remove_weights}{network}(x, ...)
 }
 \arguments{
-\item{x}{The 'network' object to modify.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-The modified 'network' object.
+The modified object.
 }
 \description{
-Removes the weights of all connections in the network
+Removes the weights of all connections
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+is_weighted(nw)
+# Remove the edge weights from the network.
+nw <- remove_weights(nw)
+is_weighted(nw)
 }

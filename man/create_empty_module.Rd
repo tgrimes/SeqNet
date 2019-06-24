@@ -16,3 +16,7 @@ A 'network_module' object.
 \description{
 Create a module
 }
+\examples{
+module <- create_empty_module(1:10)
+plot(module) # A module with no edges.
+}

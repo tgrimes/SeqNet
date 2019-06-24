@@ -7,7 +7,7 @@
 \method{get_adjacency_matrix}{matrix}(x, ...)
 }
 \arguments{
-\item{x}{A 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
@@ -16,6 +16,14 @@ An adjacency matrix with entry ij = 1 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-All off-diagonal entries that are near zero are set to zero. All remaining 
-non-zero values are set to 1, and the diagonal is set to zero.
+The adjacency matrix is constructed from all modules in a network.
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_adjacency_matrix(nw)
+module <- nw$modules[[1]]
+get_adjacency_matrix(module)
 }

@@ -2,12 +2,12 @@
 % Please edit documentation in R/networks.R
 \name{get_adjacency_matrix.network}
 \alias{get_adjacency_matrix.network}
-\title{Get the adjacency matrix of a network}
+\title{Get adjacency matrix}
 \usage{
 \method{get_adjacency_matrix}{network}(x, ...)
 }
 \arguments{
-\item{x}{A 'network' object; can be either weighted or unweighted.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
@@ -16,15 +16,14 @@ An adjacency matrix with entry ij = 1 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-The adjacency matrix indicates direct connections in the network. The ij'th
-entry in the adjacency matrix is 1 if gene i and j are connected in any 
-module and is 0 otherwise.
+The adjacency matrix is constructed from all modules in a network.
 }
-\note{
-Note that the connections in an adjacency matrix and association matrix
-will likely differ. The adjacency matrix only considers direct connections in 
-the network, whereas the association matrix takes into account the fact that 
-there are overlapping modules which can create conditional dependencies
-between two genes in seperate modules (i.e. genes that don't have a direct
-connection in the graph).
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_adjacency_matrix(nw)
+module <- nw$modules[[1]]
+get_adjacency_matrix(module)
 }

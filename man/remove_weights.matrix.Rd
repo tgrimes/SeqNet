@@ -17,3 +17,12 @@ The modified object.
 \description{
 Removes the weights of all connections
 }
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+is_weighted(nw)
+# Remove the edge weights from the network.
+nw <- remove_weights(nw)
+is_weighted(nw)
+}

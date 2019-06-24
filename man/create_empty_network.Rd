@@ -15,3 +15,7 @@ A network object.
 \description{
 Creates a 'network' object containing no modules.
 }
+\examples{
+nw <- create_empty_network(10)
+plot(nw) # A network with no edges.
+}

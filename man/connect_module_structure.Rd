@@ -33,3 +33,19 @@ nodes having larger 'weight' are more likely to be selected, where 'weight'
 is equal to 'weights' + degree. (If Arugment 'weights' is NULL, then 'weight'
 is simply the node degree).
 }
+\examples{
+# This function is used in `random_module_structure()` to reconnect any
+# disconnected components. To demonstrate, we'll create a random structure,
+# remove connections to one of the nodes (that node will then be a disconnected
+# component), and use `connect_module_structure()` to reconnect it back to
+# the main component.
+adj <- random_module_structure(10)
+adj <- remove_connections_to_node(adj, 1, prob_remove = 1)
+# Note that there are now two components in the network:
+components_in_adjacency(adj) 
+g <- plot_network(adj)
+# After connecting, the network contains one component.
+adj <- connect_module_structure(adj)
+components_in_adjacency(adj) 
+plot_network(adj, g)
+}

@@ -53,3 +53,13 @@ direction (if the networks are weighted), tan edges are in network_1 but not
 network_2, and red edges are in network_2 but not network_1. All edges are
 scaled according to the strongest association in either network.
 }
+\examples{
+# Create two networks, the second being a perturbation of the first.
+nw1 <- random_network(20)
+nw2 <- perturb_network(nw1, n_nodes = 5)
+# Can compare networks by plotting each using the same layout.
+g <- plot(nw1)
+plot(nw2, g)
+# Or, the differential network can be plotted.
+plot_network_diff(nw1, nw2, g)
+}

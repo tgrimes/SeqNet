@@ -2,32 +2,31 @@
 % Please edit documentation in R/networks.R
 \name{get_association_matrix.network}
 \alias{get_association_matrix.network}
-\title{Get the association matrix of a network}
+\title{Get association matrix}
 \usage{
 \method{get_association_matrix}{network}(x, tol = 10^-13, ...)
 }
 \arguments{
-\item{x}{A weighted 'network' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{tol}{A numeric value. Associations within tol to zero are set to zero.}
+\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+is set to zero.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-An association matrix with entry ij != 0 if node i and j have a nonzero
-conditional linear association (in the Gaussian graphical model), and 0 
-otherwise. The diagonal entries are all zero.
+An association matrix with entry ij != 0 if node i and j are 
+connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
-The association matrix for a weighted network is recovered from its
-covariance structure (see ?get_sigma.network). The off-diagonal entries are 
-interpreted as partial correlations, and the diagonal entries are set to zero.
+Get association matrix
 }
-\note{
-Note that the connections in an adjacency matrix and association matrix
-will likely differ. The adjacency matrix only considers direct connections in 
-the network, whereas the association matrix takes into account the fact that 
-there are overlapping modules which can create conditional dependencies
-between two genes in seperate modules (i.e. genes that don't have a direct
-connection in the graph).
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_association_matrix(nw)
+module <- nw$modules[[1]]
+get_association_matrix(module)
 }

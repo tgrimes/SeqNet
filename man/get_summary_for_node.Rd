@@ -21,3 +21,10 @@ a vector of incidices to modules that contain the node.
 \description{
 Get summary for a node in the network.
 }
+\examples{
+set.seed(12345)
+nw <- random_network(100)
+get_summary_for_node(1, nw)
+# Node 1 is contained in modules 1 and 2, and it is connected to nodes 
+# 2, 4, 11, 13, 23, and 29.
+}

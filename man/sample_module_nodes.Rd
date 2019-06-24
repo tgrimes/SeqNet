@@ -23,3 +23,7 @@ A vector of selected nodes of length m.
 \description{
 Sample nodes for new module
 }
+\note{
+This function is used by `create_modules_for_network()` 
+and is not meant to be used externally.
+}

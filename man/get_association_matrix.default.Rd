@@ -4,15 +4,29 @@
 \alias{get_association_matrix.default}
 \title{Get association matrix}
 \usage{
-\method{get_association_matrix}{default}(x, ...)
+\method{get_association_matrix}{default}(x, tol = 10^-13, ...)
 }
 \arguments{
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{...}{Additional arguments.
-#' @return An association matrix with entry ij != 0 if node i and j are 
-connected, and 0 otherwise. The diagonal entries are all zero.}
+\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+is set to zero.}
+
+\item{...}{Additional arguments.}
+}
+\value{
+An association matrix with entry ij != 0 if node i and j are 
+connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
 Get association matrix
+}
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get adjacency matrix for the network or individual modules in the network.
+get_association_matrix(nw)
+module <- nw$modules[[1]]
+get_association_matrix(module)
 }

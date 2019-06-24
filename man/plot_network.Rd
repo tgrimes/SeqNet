@@ -44,3 +44,33 @@ network object, network module, an adjacency matrix, or an association matrix.
 If the result of another plot is provided using the 'compare_graph' argument, 
 then the layout of this network will be based on that plot.
 }
+\examples{
+set.seed(0)
+# Basic plotting for networks, modules, and matricies
+nw <- random_network(10)
+plot(nw)
+module <- random_module(1:10)
+plot(module)
+adj_mat <- get_adjacency_matrix(nw)
+plot_network(adj_mat)
+# To compare multiple networks, the layout from the first plot can be used
+# in subsequent plots using the second argument, `compare_graph`.
+nw1 <- random_network(10)
+nw2 <- remove_connections_to_node(nw1, 6, prob_remove = 1)
+g <- plot(nw1)
+plot(nw2, g)
+# If the network contains many nodes of degree 0, plotting as subgraph
+# may be preferred.
+nw <- random_network(100, n_modules = 1)
+plot(nw)
+plot(nw, as_subgraph = TRUE)
+# Networks can be plotted with modules highlighted.
+nw <- random_network(100)
+g <- plot_network(nw)
+plot_modules(nw, g)
+# For large networks, the vertex labels can clutter the graph; these can
+# be removed using the `include_vertex_labels` argument.
+nw <- random_network(250)
+g <- plot(nw)
+plot(nw, g, include = FALSE)
+}

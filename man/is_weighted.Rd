@@ -16,3 +16,15 @@ are no connections in the module, then this function returns TRUE.}
 \description{
 Check if an object is weighted
 }
+\examples{
+# Create a random network with 10 nodes. 
+nw <- random_network(10)
+# The network, and hence all of its modules, are unweighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
+# Add random weights to the connections.
+nw <- gen_partial_correlations(nw)
+# The network, and hence all of its modules, are now weighted.
+is_weighted(nw)
+sapply(nw$modules, is_weighted)
+}

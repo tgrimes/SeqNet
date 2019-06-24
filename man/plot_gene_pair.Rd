@@ -4,19 +4,19 @@
 \alias{plot_gene_pair}
 \title{Scatter plot of two gene expressions}
 \usage{
-plot_gene_pair(counts_list, geneA, geneB, method = "loess",
-  se_alpha = 0.1, do_facet_wrap = FALSE, scales = "fixed")
+plot_gene_pair(x_list, geneA, geneB, method = "loess", se_alpha = 0.1,
+  do_facet_wrap = FALSE, scales = "fixed")
 }
 \arguments{
-\item{counts_list}{A named list containing one or more n by p gene expression 
+\item{x_list}{A named list containing one or more n by p gene expression 
 profiles, one for each group or subpopulation under consideration.}
 
 \item{geneA}{The name of the first gene to plot. Must be either a character
-string matching a column name in each matrix of counts_list or an integer
+string matching a column name in each matrix of x_list or an integer
 to index the columns.}
 
 \item{geneB}{The name of the second gene to plot. Must be either a character
-string matching a column name in each matrix of counts_list or an integer
+string matching a column name in each matrix of x_list or an integer
 to index the columns.}
 
 \item{method}{Charater string either "lm" or "loess" used for plotting. 
@@ -35,4 +35,20 @@ Returns the generated plot.
 }
 \description{
 Plots the expression of two genes for visual assessment of association.
+}
+\examples{
+\donttest{
+data(reference)
+rnaseq <- reference$rnaseq
+genes <- colnames(rnaseq)
+plot_gene_pair(rnaseq, genes[1], genes[2])
+# Suppose we had multiple data frames.
+control <- rnaseq[1:100, 1:10]
+treatment1 <- rnaseq[101:200, 1:10]
+treatment2 <- rnaseq[201:250, 1:10]
+plot_gene_pair(list(ctrl = control, trt1 = treatment1, trt2 = treatment2),
+               genes[1], genes[2], method = NA)
+plot_gene_pair(list(ctrl = control, trt = treatment1),
+               genes[1], genes[2], do_facet_wrap = TRUE, method = "lm")
+}
 }

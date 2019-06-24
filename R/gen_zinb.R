@@ -7,6 +7,13 @@
 #' @param log Logical; if TRUE, then log(d) is returned.
 #' @return The value(s) of the density function evaluated at x.
 #' @export 
+#' @examples 
+#' x <- rzinb(10, 1, 10, 0.1)
+#' p <- pzinb(x, 1, 10, 0.1)
+#' y <- qzinb(p, 1, 10, 0.1)
+#' all(x == y)
+#' # Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
+#' sum(dzinb(0:5, 1, 10, 0.1))
 dzinb <- function(x, size, mu, rho = 0, log = FALSE) {
   d <- rho * (x == 0) + (1 - rho) * dnbinom(x, size, mu = mu)
   if(log) {
@@ -25,6 +32,13 @@ dzinb <- function(x, size, mu, rho = 0, log = FALSE) {
 #' Otherwise, P(X > x).
 #' @param log.p Logical; if TRUE, then exp(p) is used.
 #' @export 
+#' @examples 
+#' x <- rzinb(10, 1, 10, 0.1)
+#' p <- pzinb(x, 1, 10, 0.1)
+#' y <- qzinb(p, 1, 10, 0.1)
+#' all(x == y)
+#' # Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
+#' sum(dzinb(0:5, 1, 10, 0.1))
 qzinb <- function (p, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
   if (!lower.tail) {
     p <- 1 - p
@@ -47,6 +61,13 @@ qzinb <- function (p, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
 #' Otherwise, P(X > x).
 #' @param log.p Logical; if TRUE, then log(p) is returned.
 #' @export 
+#' @examples 
+#' x <- rzinb(10, 1, 10, 0.1)
+#' p <- pzinb(x, 1, 10, 0.1)
+#' y <- qzinb(p, 1, 10, 0.1)
+#' all(x == y)
+#' # Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
+#' sum(dzinb(0:5, 1, 10, 0.1))
 pzinb <- function (q, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
   p <- rho + (1 - rho) * pnbinom(q, size, mu = mu)
   if (!lower.tail) {
@@ -66,13 +87,20 @@ pzinb <- function (q, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
 #' @param mu The distribution mean.
 #' @param rho The zero-inflation parameter.
 #' @export 
+#' @examples 
+#' x <- rzinb(10, 1, 10, 0.1)
+#' p <- pzinb(x, 1, 10, 0.1)
+#' y <- qzinb(p, 1, 10, 0.1)
+#' all(x == y)
+#' # Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
+#' sum(dzinb(0:5, 1, 10, 0.1))
 rzinb <- function (n, size, mu, rho) {
   x <- ifelse(rbinom(n, 1, rho), 0, rnbinom(n, size, mu = mu))
   
   return(x)
 }
 
-#' Generate RNA-seq counts
+#' Generate ZINB counts from an underlying network
 #' 
 #' The count data are generated based on the gene-gene associations of an
 #' udnerlying network. An association structure is imposed by first generating 
@@ -98,6 +126,11 @@ rzinb <- function (n, size, mu, rho) {
 #' to create them. If a list of networks were provided, then the results for
 #' each network are returned as a list.
 #' @export 
+#' @examples
+#' nw <- random_network(10) # Create a random network with 10 nodes.
+#' nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+#' # If no reference is provided, ZINB data are generated using an internal reference.
+#' x <- gen_zinb(20, nw)$x # Simulate 20 ZINB observations from the network.
 gen_zinb <- function(n, 
                      network,
                      reference = NULL,
@@ -244,6 +277,25 @@ gen_zinb <- function(n,
 #' 'mu', and 'rho' for each gene in the reference, and the reference dataset
 #' used.
 #' @export
+#' @examples
+#' # The internal reference dataset already contains ZINB parameter estimates,
+#' # so running est_params_from_reference() is not necessary. To simulate 
+#' # ZINB data from a different RNA-seq reference dataset, the data can
+#' # be passed into gen_zinb() directly using the 'reference' argument, and 
+#' # est_params_from_reference() will be used automatically (i.e. the user
+#' # does not need to call this function directly).
+#' \donttest{
+#' # An example using the reference dataset
+#' data(reference) 
+#' # The RNA-seq dataset should have samples as rows and genes as columns:
+#' rnaseq <- reference$rnaseq
+#' # Estimate ZINB params for first ten genes.
+#' params <- est_params_from_reference(rnaseq[, 1:10])$params 
+#' # However, the previous call is not needed for simulated ZINB data.
+#' # The RNA-seq dataset can be passed directly to `gen_zinb()`.
+#' nw <- random_network(10)
+#' x <- gen_zinb(20, nw, reference = rnaseq[, 1:10])$x # Pass in 'rnaseq' directly.
+#' }
 est_params_from_reference <- function(reference,
                                       verbose = TRUE) {
   get_nb_params <- function(x) {

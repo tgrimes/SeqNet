@@ -7,7 +7,7 @@
 \method{get_sigma}{matrix}(x, ...)
 }
 \arguments{
-\item{x}{A 'matrix' object.}
+\item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.}
 }
@@ -20,8 +20,12 @@ the covariance matrix is calculated from these assuming that expression
 for gene i is the weighted average over each module using 1/sqrt(m_i) 
 as the weight, where m_i is the number of modules containing gene i.
 }
-\note{
-The matrix is assumed to be a partial correlation matrix.
-A warning is given in this case. To avoid the warning message, convert the
-matrix into a network object using 'create_network_from_association_matrix()'.
+\examples{
+# Create a random network with 10 nodes and add random edge weights.
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+# Get covariance matrix for the network or individual modules in the network.
+get_sigma(nw)
+module <- nw$modules[[1]]
+get_sigma(module)
 }

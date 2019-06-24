@@ -24,3 +24,9 @@ The edge weights in the module will be set to the corresponding values
 in the association matrix. The edges are undirected, and only the lower 
 triangle of the matrix is considered. See ?set_module_weights for more details.
 }
+\examples{
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+assoc_mat <- get_association_matrix(nw)
+create_module_from_association_matrix(assoc_mat)
+}

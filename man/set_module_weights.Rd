@@ -2,7 +2,7 @@
 % Please edit documentation in R/modules.R
 \name{set_module_weights}
 \alias{set_module_weights}
-\title{Set the connection weights for a module}
+\title{Internal function to set the connection weights for a module}
 \usage{
 set_module_weights(module, weights)
 }
@@ -19,5 +19,5 @@ connections in the module will be used.}
 The modified 'network_module' object.
 }
 \description{
-Set the connection weights for a module
+Internal function to set the connection weights for a module
 }

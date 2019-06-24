@@ -25,3 +25,8 @@ the inverse of the standardized association matrix for the module.
 Observations are combined for gene i by taking the sum across the m_i modules 
 containing it and dividing by sqrt(m_i).
 }
+\examples{
+nw <- random_network(10) # Create a random network with 10 nodes.
+nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
+x <- gen_gaussian(20, nw)$x # Simulate 20 Gaussian observations from network. 
+}

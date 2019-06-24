@@ -29,3 +29,12 @@ An unweighted network object.
 Creates an unweighted 'network' object containing randomly generated 
 modules.
 }
+\examples{
+# Create a random network of 10 nodes
+nw <- random_network(10)
+nw
+# Add a random weight to each connection.
+nw <- gen_partial_correlations(nw)
+# Plot the network
+plot(nw)
+}

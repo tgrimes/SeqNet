@@ -17,3 +17,9 @@ module, then NULL is returned.
 \description{
 Get edge weights.
 }
+\examples{
+nw <- random_network(10)
+nw <- gen_partial_correlations(nw)
+module <- nw$modules[[1]]
+get_edge_weights_from_module(module)
+}

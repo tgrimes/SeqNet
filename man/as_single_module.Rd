@@ -16,3 +16,18 @@ The modified 'network' object.
 This modification can be used if it is desired to simulate from a single
 GGM rather than averaging over the GGMs for each module.
 }
+\examples{
+# This function can be used prior to generating weights for the network 
+# connections. With multiple modules in the network, the weighted network may
+# gain conditional dependencies between nodes across modules. If the network
+# is reduced to a single module prior to generating weights, then the
+# weighted and unweighted networks will maintain the same structure.
+nw <- random_network(20, n_modules = 3)
+g <- plot(nw)
+nw <- gen_partial_correlations(nw)
+plot(nw, g) # Additional edges appear from conditional dependencies across modules.
+nw <- remove_weights(nw) # Remove weights to avoid warning message in next call.
+nw <- as_single_module(nw)
+nw <- gen_partial_correlations(nw)
+plot(nw, g) # With only one module, the weighted network has the same structure.
+}

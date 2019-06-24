@@ -15,3 +15,8 @@ plot_network().}
 \description{
 Displays the network plot.
 }
+\examples{
+nw <- random_network(10)
+g <- plot(nw, display_plot = FALSE) # Doesn't display the plot.
+g # Displays the plot.
+}
