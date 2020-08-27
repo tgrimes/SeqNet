@@ -2,9 +2,10 @@
 An R package for simulating RNA-seq counts from gene-gene association networks
 
 # Installation
-SeqNet can be installed using the `devtools` package:
+
+SeqNet is now available on CRAN: https://cran.r-project.org/web/packages/SeqNet/index.html
 
 ``` r
-# install.packages('devtools')
-devtools::install_github('tgrimes/SeqNet')
+# Download from CRAN for the current stable version:
+install.packages('SeqNet')
 ```
