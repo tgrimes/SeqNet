@@ -10,10 +10,12 @@ all_networks_contain_same_modules(network_list)
 \item{network_list}{A list of 'network' objects.}
 }
 \value{
-A logical value; TRUE indicates the networks contain the same modules,
-FALSE indicates otherwise. Note, this only checks that the modules contain
-the same nodes - the structure of the modules are allowed to differ.
+A logical value; \code{TRUE} indicates the networks contain the same
+modules, and \code{FALSE} indicates otherwise. Note, this only checks that
+the modules contain the same nodes - the structure of the modules are allowed
+to differ.
 }
 \description{
 Internal function to check if a list of networks all contain the same modules.
 }
+\keyword{internal}

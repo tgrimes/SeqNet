@@ -12,7 +12,7 @@
 \item{...}{Additional arguments.}
 }
 \value{
-An adjacency matrix with entry ij = 1 if node i and j are 
+An adjacency matrix with entry ij = 1 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{

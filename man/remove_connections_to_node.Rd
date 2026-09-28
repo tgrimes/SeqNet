@@ -11,12 +11,12 @@ remove_connections_to_node(x, node, prob_remove, run_checks = TRUE, ...)
 
 \item{node}{The node to unwire.}
 
-\item{prob_remove}{A value between 0 and 1. Each connection to 'node_index' 
-will be removed with probability equal to 'prob_remove'.}
+\item{prob_remove}{A value between 0 and 1. Each connection to \code{node}
+will be removed with probability equal to \code{prob_remove}.}
 
-\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
-adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
-case the weights are removed and a warning is given.}
+\item{run_checks}{If \code{TRUE} and 'x' is a matrix, then it is checked that
+'x' is an adjacency matrix. This catches the case where 'x' is a weighted
+matrix, in which case the weights are removed and a warning is given.}
 
 \item{...}{Additional arguments.}
 }

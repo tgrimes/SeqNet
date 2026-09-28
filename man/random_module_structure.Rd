@@ -4,9 +4,17 @@
 \alias{random_module_structure}
 \title{Create a random network structure for a module}
 \usage{
-random_module_structure(size, prob_rewire = 1, prob_remove = 0.5,
-  weights = NULL, neig_size = 3, alpha = 100, beta = 1,
-  epsilon = 10^-5, ...)
+random_module_structure(
+  size,
+  prob_rewire = 1,
+  prob_remove = 0.5,
+  weights = NULL,
+  neig_size = 3,
+  alpha = 100,
+  beta = 1,
+  epsilon = 10^-5,
+  ...
+)
 }
 \arguments{
 \item{size}{The number of nodes to include in the graph.}
@@ -15,12 +23,13 @@ random_module_structure(size, prob_rewire = 1, prob_remove = 0.5,
 
 \item{prob_remove}{The probability of removing an edge.}
 
-\item{weights}{(Optional) Weights used for sampling nodes. See 
-?rewire_connections_to_node and ?remove_connections_to_node for details.}
+\item{weights}{(Optional) Weights used for sampling nodes. See
+\code{\link{rewire_connections_to_node}} and
+\code{\link{remove_connections_to_node}} for details.}
 
-\item{neig_size}{The neighborhood size within which the nodes of the 
-ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
-so long as 'size' >= (1 + 2 * 'neig_size')}
+\item{neig_size}{The neighborhood size within which the nodes of the
+ring lattice are connected. The initial degree of each node is
+\code{2 * neig_size}, so long as \code{size >= (1 + 2 * neig_size)}.}
 
 \item{alpha}{A positive value used to parameterize the Beta distribution.}
 
@@ -34,9 +43,9 @@ so long as 'size' >= (1 + 2 * 'neig_size')}
 An adjacency matrix representing the network structure.
 }
 \description{
-A single, connected graph is created. The graph is initialized as a ring 
+A single, connected graph is created. The graph is initialized as a ring
 lattice, and edges are randomly rewired and/or removed. The procedure
-is similar to the Watts-Strogatz method, but the sampling of edges to 
+is similar to the Watts-Strogatz method, but the sampling of edges to
 modify can be based on the degree of each node.
 }
 \examples{

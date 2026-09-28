@@ -25,17 +25,46 @@ create_empty_network <- function(p) {
 
 #' Create a network object.
 #' 
-#' Creates a graph with certain features. This network is then
-#' used with other sample generating methods to obtain count data. Note: the
-#' module structure is used to incorporate general pathways in the graph. These
-#' are randomly constructed by generating a small-world graph using the Watts-Strogatz
-#' method (implemented through igraph::watts.strogatz.game). 
+#' Generates a 'network' object from a list of 'network_modules', The modules
+#' are assumed to have their local network structure already generated. 
+#' Individual modules can be generated using the \code{\link{random_module}} 
+#' function.
 #' @param p The number of nodes in the graph
 #' @param module_list A named list of 'network_module' objects.
 #' @param node_names (optional) Vector of strings providing names for each node
 #' in the graph. Default names are "1", "2", ..., "p".
-#' @param ... Additional arguments passed to random_module(); only
-#' used if modules need to be generated.
+#' @param ... Arguments to be passed to other methods. Possible arguments 
+#' include:
+#' 
+#' \tabular{ll}{
+#' prob_rewire \tab
+#' The probability of removing a connection from the local network
+#'  structure; this is applied to each edge created. Used in 
+#'  \code{\link{random_module_structure}}. \cr
+#' 
+#' prob_remove \tab 
+#' The probability of rewiring a connection from the local network
+#'  structure; this is applied every connection of each node. See 
+#'  \code{\link{random_module_structure}}. \cr
+#'  
+#' neig_size \tab  
+#' The initial degree of each node when constructing the ring lattice. 
+#'  See \code{\link{random_module_structure}}. \cr
+#'  
+#' alpha \tab 
+#' A positive value used to parameterize the Beta distribution used
+#'  to sample nodes based on their degree. Larger values will place more weight 
+#'  on highly connected nodes. See \code{\link{random_module_structure}}. \cr
+#' 
+#' beta \tab A positive value used to parameterize the Beta distribution used
+#'  to sample nodes based on their degree. Set to 1 by default. Increasing this
+#'  parameter will cause the sampling to favor moderately connected nodes over 
+#'  the extreme tail of highly connected nodes. 
+#'  See \code{\link{random_module_structure}}. \cr
+#' 
+#' epsilon \tab A small constant added to the sampling probability of each node.
+#'  See \code{\link{random_module_structure}}. \cr
+#' }
 #' @return A network object.
 #' @export 
 #' @examples 
@@ -60,11 +89,11 @@ create_network_from_modules <- function(p,
   # Check 'module_list'.
   if(is.null(module_list)) {
     # NULL module_list is ok.
-  } else if(class(module_list) == "list") {
+  } else if(is(module_list, "list")) {
     # Check each element in the list 'modules'.
-    if(!all(sapply(module_list, function(m) class(m) == "network_module"))) 
+    if(!all(sapply(module_list, function(m) is(m, "network_module")))) 
       stop("Argument 'module_list' must be a list of 'network_module'.")
-  } else if(class(module_list) == "network_module") {
+  } else if(is(module_list, "network_module")) {
     # If 'module_list' is provided but is not a list, correct without warning.
     module_list <- list(module_list)
   } else {
@@ -85,12 +114,14 @@ create_network_from_modules <- function(p,
 #
 ###########################################################################
 
-#' Create a network object from adjacency matrix
+#' Create a network object from an adjacency matrix
 #' 
-#' @param adjacency_matrix The adjacency matrix for the network. This is converted
-#' to a single module structure.
+#' @param adjacency_matrix The adjacency matrix for the network. Since the
+#' adjacency matrix only provides information on the global connections, the
+#' resulting 'network' object will consist of a single module containing these
+#' connections.
 #' @param ... Additional arguments passed to
-#' create_module_from_adjacency_matrix(). 
+#' \code{\link{create_module_from_adjacency_matrix}}. 
 #' @return A network object.
 #' @export 
 #' @examples
@@ -99,8 +130,15 @@ create_network_from_modules <- function(p,
 #' all(adj_mat == get_adjacency_matrix(nw))
 create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
   # Check 'adjacency_matrix'
-  if(!is_adjacency_cpp(adjacency_matrix)) 
-    stop("Argument 'adjacency_matrix' is not an adjacency matrix.")
+  flag <- check_adjacency_cpp(adjacency_matrix)
+  if(flag == 1)
+    stop("Argument 'adjacency_matrix' is not a square matrix.")
+  if(flag == 2)
+    stop("Argument 'adjacency_matrix' has nonzero diagonal values.")
+  if(flag == 3)
+    stop("Argument 'adjacency matrix' is not symmetric.")
+  if(flag == 4)
+    stop("Argument 'adjacency_matrix' contains values that are not 0 or 1.")
   
   p <- ncol(adjacency_matrix)
   
@@ -125,11 +163,13 @@ create_network_from_adjacency_matrix <- function(adjacency_matrix, ...) {
 
 #' Create a network object from an association matrix
 #' 
-#' @param association_matrix The association matrix for the network. This is converted
-#' to a single module structure with partial correlations specified by the
-#' nonzero values in the matrix.
+#' @param association_matrix The association matrix for the network. Since the
+#' association matrix only provides information on the global connections, the
+#' resulting 'network' object will consist of a single weighted module 
+#' containing these connections. The edge weights, i.e. the partial correlations,
+#' will correspond to the nonzero values in the matrix.
 #' @param ... Additional arguments passed to 
-#' create_module_from_association_matrix().
+#' \code{\link{create_module_from_association_matrix}}.
 #' @return A network object.
 #' @export 
 #' @examples
@@ -169,17 +209,65 @@ create_network_from_association_matrix <- function(association_matrix,
 #' 
 #' Creates an unweighted 'network' object containing randomly generated 
 #' modules.
-#' @param p The number of nodes in the network; 'p' is required to be 
-#' between 10 and 20000.
-#' @param n_modules The number of modules to include in the network. If NULL,
-#' then modules are created until all nodes in the network have positive degree.
-#' @param consistent_connections If TRUE, then each module is modified so that,
-#' if two genes are connected in one module, then they are connected in 
-#' every module.
-#' @param ... Additional arguments passed to 'create_modules_for_network()',
-#' which uses 'sample_link_nodes_fn()', 'sample_module_nodes_fn()', and
-#' 'random_module()'.
+#' @param p The number of nodes in the network. If \code{p} is much larger than 
+#' 10^4, computation may begin to slow depending on the average module size and 
+#' the amount of overlap among modules.
+#' @param n_modules The number of modules to include in the network. If 
+#' \code{NULL}, then modules are created until all nodes in the network have 
+#' positive degree.
+#' @param ... Arguments to be passed to other methods. Possible arguments 
+#' include:
+#' 
+#' \tabular{ll}{
+#' nu \tab 
+#' A value between 0 and 1 used to control the amount of overlap among 
+#'  modules. Smaller values result in less overlap. Used in 
+#'  \code{\link{sample_module_nodes}}. \cr
+#'  
+#' prob_rewire \tab
+#' The probability of removing a connection from the local network
+#'  structure; this is applied to each edge created. Used in 
+#'  \code{\link{random_module_structure}}. \cr
+#' 
+#' prob_remove \tab 
+#' The probability of rewiring a connection from the local network
+#'  structure; this is applied every connection of each node. See 
+#'  \code{\link{random_module_structure}}. \cr
+#'  
+#' neig_size \tab  
+#' The initial degree of each node when constructing the ring lattice. 
+#'  See \code{\link{random_module_structure}}. \cr
+#'  
+#' alpha \tab 
+#' A positive value used to parameterize the Beta distribution used
+#'  to sample nodes based on their degree. Larger values will place more weight 
+#'  on highly connected nodes. See \code{\link{random_module_structure}}. \cr
+#' 
+#' beta \tab A positive value used to parameterize the Beta distribution used
+#'  to sample nodes based on their degree. Set to 1 by default. Increasing this
+#'  parameter will cause the sampling to favor moderately connected nodes over 
+#'  the extreme tail of highly connected nodes. 
+#'  See \code{\link{random_module_structure}}. \cr
+#' 
+#' epsilon \tab A small constant added to the sampling probability of each node.
+#'  See \code{\link{random_module_structure}}. \cr
+#'  
+#' avg_module_size \tab 
+#' See \code{\link{create_modules_for_network}}. \cr
+#' 
+#' sd_module_size \tab 
+#' See \code{\link{create_modules_for_network}}. \cr
+#' 
+#' min_module_size \tab 
+#' See \code{\link{create_modules_for_network}}. \cr
+#' 
+#' max_module_size \tab 
+#' See \code{\link{create_modules_for_network}}. \cr
+#' }
+#' 
 #' @return An unweighted network object.
+#' @references 
+#' \insertRef{grimes21}{SeqNet}
 #' @export 
 #' @examples 
 #' # Create a random network of 10 nodes
@@ -191,7 +279,6 @@ create_network_from_association_matrix <- function(association_matrix,
 #' plot(nw)
 random_network <- function(p,
                            n_modules = NULL,
-                           consistent_connections = FALSE,
                            ...) {
   # Check 'p'.
   if((p %% 1 != 0) || p <= 0) {
@@ -205,18 +292,6 @@ random_network <- function(p,
   
   module_list <- create_modules_for_network(n_modules, p, ...)
   network <- create_network_from_modules(p, module_list = module_list)
-  
-  # If two genes are connected in one module, make them connected in all modules.
-  if(consistent_connections && length(network$modules) > 0) {
-    adj <- get_adjacency_matrix(network)
-    module_list = lapply(network$modules, function(m) {
-                           create_module_from_adjacency_matrix(adj[m$nodes, m$nodes], 
-                                                               m$nodes,
-                                                               run_checks = FALSE)
-                         })
-    network <- 
-      create_network_from_modules(p, module_list)
-  }
   
   return(network)
 }
@@ -237,8 +312,10 @@ random_network <- function(p,
 #' module.
 #' @param sample_module_nodes_fn A function used for sampling nodes for a new 
 #' module.
-#' @param ... Additional arguments passed to random_module().
-#' @return A list containing the indicies for genes contained in each module.
+#' @param ... Additional arguments passed to \code{\link{random_module}}.
+#' @return A list containing the indices for genes contained in each module.
+#' @references 
+#' \insertRef{grimes21}{SeqNet}
 #' @export 
 #' @examples 
 #' # Create a two modules (having random structures and sizes) from a pool 
@@ -374,7 +451,7 @@ create_modules_for_network <- function(n_modules,
 #' @param epsilon Used when sampling link nodes.
 #' @param ... Additional arguments are ignored.
 #' @return A vector of selected nodes (possibly of length 1).
-#' @note This function is used by `create_modules_for_network()` 
+#' @note This function is used by \code{\link{create_modules_for_network}}
 #' and is not meant to be used externally. 
 #' @export
 sample_link_nodes <- function(n, nodes, degree, alpha = 100, beta = 1, epsilon = 10^-5, ...) {
@@ -398,7 +475,7 @@ sample_link_nodes <- function(n, nodes, degree, alpha = 100, beta = 1, epsilon =
 #' @param nu Multiplier for nodes that are already in one or more modules.
 #' @param ... Additional arguments are ignored.
 #' @return A vector of selected nodes of length m.
-#' @note This function is used by `create_modules_for_network()` 
+#' @note This function is used by \code{\link{create_modules_for_network}}
 #' and is not meant to be used externally. 
 #' @export
 sample_module_nodes <- function(n, nodes, degree, nu = 0.01, ...) {
@@ -406,8 +483,9 @@ sample_module_nodes <- function(n, nodes, degree, nu = 0.01, ...) {
     stop("nu must be positive.")
   }
   m <- length(nodes)
-  prob <- rep(1 / m, m)
-  prob[degree > 0] = nu * prob[degree > 0]
+  val <- 1 / m
+  prob <- rep(val, m)
+  prob[degree > 0] = nu * val
   module_nodes <- sample(nodes, n, prob = prob)
   return(module_nodes)
 }
@@ -421,7 +499,7 @@ sample_module_nodes <- function(n, nodes, degree, nu = 0.01, ...) {
 #' @inherit get_adjacency_matrix
 #' @export
 get_adjacency_matrix.network <- function(x, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network"))
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   p <- x$p
@@ -445,7 +523,7 @@ get_adjacency_matrix.network <- function(x, ...) {
 #' @inherit get_association_matrix
 #' @export
 get_association_matrix.network <- function(x, tol = 10^-13, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(!all(sapply(x$modules, is_weighted))) 
@@ -466,7 +544,7 @@ get_association_matrix.network <- function(x, tol = 10^-13, ...) {
 #' @inherit get_sigma
 #' @export
 get_sigma.network <- function(x, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(!all(sapply(x$modules, is_weighted))) 
@@ -510,7 +588,7 @@ get_sigma.network <- function(x, ...) {
 #' # Node 1 is contained in modules 1 and 2, and it is connected to nodes 
 #' # 2, 4, 11, 13, 23, and 29.
 get_summary_for_node <- function(node, network) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
@@ -583,7 +661,7 @@ get_summary_for_node <- function(node, network) {
 #' table(deg) # Frequency table of degrees.
 #' # Five nodes have degree 2, three nodes have degree 3, etc.
 get_degree_distribution <- function(network) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), "' is not a 'network' object."))
   
   adj_matrix <- get_adjacency_matrix(network)
@@ -596,7 +674,7 @@ get_degree_distribution <- function(network) {
 #' @inherit get_node_names
 #' @export
 get_node_names.network <- function(x, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   return(x$node_names)
 }
@@ -616,7 +694,7 @@ get_node_names.network <- function(x, ...) {
 #'                      sd_module_size = 5)
 #' get_network_modules(nw) # Indicies of nodes contained in each module.
 get_network_modules <- function(network) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   lapply(network$modules, function(module) module$nodes)
@@ -634,18 +712,18 @@ get_network_modules <- function(network) {
 #' @param module_list A list of 'network_module' objects to add to the network.
 #' @return The modified network.
 add_modules_to_network <- function(network, module_list) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
 
   # Check 'module_list'
   # Only perform checks if module_list is not NULL and non-empty.
   if(!is.null(module_list) && length(module_list) > 0) {
-    if(class(module_list) == "network_module") {
+    if(is(module_list, "network_module")) {
       # A single module is provided; put into a list without warning.
       module_list <- list(module_list)
     }
-    if(!all(sapply(module_list, function(m) class(m) == "network_module"))) { 
+    if(!all(sapply(module_list, function(m) is(m, "network_module")))) { 
       stop("Argument 'module_list' must be a list of 'network_module' objects.")
     } else {
       # All elements in 'module_list' are modules; check that their nodes 
@@ -686,10 +764,10 @@ add_modules_to_network <- function(network, module_list) {
 #' @param network The network to modify.
 #' @return The modified network.
 replace_module_in_network <- function(module_index, module, network) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop(paste0("'", deparse(substitute(module)), 
                 "' is not a 'network_module' object."))
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
@@ -740,7 +818,7 @@ remove_weights.network <- function(x, ...) {
 #' plot(nw <<- add_random_module_to_network(nw, 10))
 #' # Etc.
 add_random_module_to_network <- function(network, module_size, ...) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
@@ -790,7 +868,7 @@ add_random_module_to_network <- function(network, module_size, ...) {
 #' @param network The network to modify.
 #' @param node_names A vector of strings containing the names for each node
 #' in the network. If a numeric vector is provided, the values will be coerced
-#' into strings. If 'node_names' is NULL, then the names will default to 
+#' into strings. If 'node_names' is \code{NULL}, then the names will default to 
 #' "1", "2", ..., "p".
 #' @return The modified network.
 #' @export
@@ -807,7 +885,7 @@ add_random_module_to_network <- function(network, module_size, ...) {
 #' adj_matrix <- get_adjacency_matrix(nw)
 #' colnames(adj_matrix) 
 set_node_names <- function(network, node_names) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
@@ -846,7 +924,7 @@ rewire_connections_to_node.network <- function(x,
                                                epsilon = 10^-5,
                                                run_checks = TRUE,
                                                ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(length(x$modules) > 0) {
@@ -876,7 +954,7 @@ rewire_connections.network <- function(x,
                                        epsilon = 10^-5,
                                        run_checks = TRUE,
                                        ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(length(x$modules) > 0) {
@@ -897,7 +975,7 @@ remove_connections_to_node.network <- function(x,
                                                prob_remove,
                                                run_checks = TRUE,
                                                ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(length(x$modules) > 0) {
@@ -920,7 +998,7 @@ remove_connections.network <- function(x,
                                        prob_remove,
                                        run_checks = TRUE,
                                        ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(length(x$modules) > 0) {
@@ -939,7 +1017,7 @@ remove_connections.network <- function(x,
 #' 
 #' The network is perturbed by removing connections from hubs and/or rewiring
 #' other nodes in the network. By default, one hub is turned off (i.e. its 
-#' connections are removed each with probability 'rewire_hub_prob' = 0.5), and 
+#' connections are removed each with probability \code{rewire_hub_prob = 0.5}), and 
 #' no other nodes are changed. Hub nodes are defined as those having degree
 #' above three standard deviations from the average degree, and nodes are
 #' sampled from these to be turned off; if there are no hub nodes, then
@@ -949,15 +1027,16 @@ remove_connections.network <- function(x,
 #' @param n_nodes The number of non-hub nodes to rewire. When rewiring, the
 #' degree of the node is unchanged.
 #' @param rewire_hub_prob The probability that a connection is removed from
-#' a hub that is selected to be turned off. If 'rewire_hub_prob' = 1, then
+#' a hub that is selected to be turned off. If \code{rewire_hub_prob = 1}, then
 #' all of the connections to the hub are removed.
 #' @param rewire_other_prob The probability that a connection is rewired from
-#' a non-hub that is selected for rewiring. If 'rewire_other_prob' = 1, then 
+#' a non-hub that is selected for rewiring. If \code{rewire_other_prob = 1}, then 
 #' all of the connections to the hub are rewired; however, this does not mean 
 #' that all connections will be changed, as some connections may be removed
 #' but later rewired back.
-#' @param ... Additional arguments passed to rewire_connections_to_node() and 
-#' remove_connections_to_node()
+#' @param ... Additional arguments passed to 
+#' \code{\link{rewire_connections_to_node}} and 
+#' \code{\link{remove_connections_to_node}}.
 #' @return The modified network.
 #' @export
 #' @examples 
@@ -973,7 +1052,7 @@ perturb_network <- function(network,
                             rewire_hub_prob = 0.5,
                             rewire_other_prob = 0.5,
                             ...) {
-  if(!(class(network) == "network")) 
+  if(!is(network, "network")) 
     stop(paste0("'", deparse(substitute(network)), 
                 "' is not a 'network' object."))
   
@@ -1047,7 +1126,7 @@ perturb_network <- function(network,
 #' nw
 #' print(nw)
 print.network <- function(x, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), 
                 "' is not a 'network' object."))
   
@@ -1066,7 +1145,7 @@ print.network <- function(x, ...) {
 #' @inherit is_weighted
 #' @export
 is_weighted.network <- function(x, ...) {
-  if(!(class(x) == "network")) 
+  if(!is(x, "network")) 
     stop(paste0("'", deparse(substitute(x)), "' is not a 'network' object."))
   
   if(length(x$modules) == 0) {
@@ -1117,7 +1196,7 @@ as_single_module <- function(network) {
 #' 
 #' The average degree, clustering coefficient, and average path length are calculated.
 #' @param network A 'network', 'network_module', or 'matrix' object.
-#' @param global_only If TRUE, only the global characteristics are calculated. 
+#' @param global_only If \code{TRUE}, only the global characteristics are calculated. 
 #' @return A list containing characteristics of the network.
 #' @export
 #' @examples 

@@ -9,13 +9,13 @@
 \arguments{
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+\item{tol}{A small tolerance threshold; any entry that is within \code{tol} from zero
 is set to zero.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-An association matrix with entry ij != 0 if node i and j are 
+An association matrix with entry ij != 0 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{

@@ -4,31 +4,38 @@
 \alias{plot_gene_pair}
 \title{Scatter plot of two gene expressions}
 \usage{
-plot_gene_pair(x_list, geneA, geneB, method = "loess", se_alpha = 0.1,
-  do_facet_wrap = FALSE, scales = "fixed")
+plot_gene_pair(
+  x_list,
+  geneA,
+  geneB,
+  method = "loess",
+  se_alpha = 0.1,
+  do_facet_wrap = FALSE,
+  scales = "fixed"
+)
 }
 \arguments{
-\item{x_list}{A named list containing one or more n by p gene expression 
+\item{x_list}{A named list containing one or more n by p gene expression
 profiles, one for each group or subpopulation under consideration.}
 
 \item{geneA}{The name of the first gene to plot. Must be either a character
-string matching a column name in each matrix of x_list or an integer
+string matching a column name in each matrix of \code{x_list} or an integer
 to index the columns.}
 
 \item{geneB}{The name of the second gene to plot. Must be either a character
-string matching a column name in each matrix of x_list or an integer
+string matching a column name in each matrix of \code{x_list} or an integer
 to index the columns.}
 
-\item{method}{Charater string either "lm" or "loess" used for plotting. 
-For no line, set method = NULL.}
+\item{method}{Charater string either "lm" or "loess" used for plotting.
+For no line, set \code{method = NULL}.}
 
-\item{se_alpha}{Sets transparancy of confidence interval around association 
+\item{se_alpha}{Sets transparancy of confidence interval around association
 trend line. Set to 0 to remove the confidence interval.}
 
-\item{do_facet_wrap}{If TRUE, the groups are plotted in seperate graphs.}
+\item{do_facet_wrap}{If \code{TRUE}, the groups are plotted in seperate graphs.}
 
-\item{scales}{Only used if do_facet_wrap is TRUE. See ggplot2::facet_wrap
-for details.}
+\item{scales}{Only used if \code{do_facet_wrap} is \code{TRUE}. See
+\code{\link[ggplot2]{facet_wrap}} for details.}
 }
 \value{
 Returns the generated plot.

@@ -1,0 +1,17 @@
+bibentry(bibtype = "Article",
+  title        = "{SeqNet}: An {R} Package for Generating Gene-Gene Networks and Simulating {RNA}-Seq Data",
+  author       = c(person(given = "Tyler",
+                          family = "Grimes",
+                          email = "tyler.grimes@ufl.edu"),
+                   person(given = "Somnath",
+                          family = "Datta",
+                          email = "somnath.datta@ufl.edu")),
+  journal      = "Journal of Statistical Software",
+  year         = "2021",
+  volume       = "98",
+  number       = "12",
+  pages        = "1--49",
+  doi          = "10.18637/jss.v098.i12",
+  header       = "To cite SeqNet in publications use:"
+)
+

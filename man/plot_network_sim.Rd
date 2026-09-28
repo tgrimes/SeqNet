@@ -13,21 +13,22 @@ plot_network_sim(network_1, network_2, compare_graph = NULL, ...)
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
-\item{...}{Additional arguments passed to 'plot_network()'.}
+\item{...}{Additional arguments passed to \code{\link{plot_network}}.}
 }
 \value{
-Creates a plot of the network and returns a graph object. 
-The graph object can be passed back into a future call of 'plot_network()',
-'plot_network_diff()' or 'plot_network_sim()'
-through the 'compare_edge' argument, which will setup the plot for easier 
-comparison between the old graph and the graph of 'network'.
+Creates a plot of the network and returns a graph object.
+The graph object can be passed back into a future call of
+\code{\link{plot_network}}, \code{\link{plot_network_diff}} or
+\code{\link{plot_network_sim}} through the \code{compare_edge} argument,
+which will setup the plot for easier  comparison between the old graph and
+the graph of \code{network}.
 }
 \description{
-This function plots the similarity of connections between two networks. 
-Both networks must be weighted. The width of each edge corresponds to 
-the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)), 
+This function plots the similarity of connections between two networks.
+Both networks must be weighted. The width of each edge corresponds to
+the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)),
 where s1 and s2 are the weights for a particular
-connection in network_1 and network_2, respectively
+connection in \code{network_1} and \code{network_2}, respectively
 }
 \examples{
 # Create two networks, the second being a perturbation of the first.

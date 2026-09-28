@@ -7,15 +7,15 @@
 get_summary_for_node(node, network)
 }
 \arguments{
-\item{node}{The node to summarize. Can be a character string 
-corresponding to a name of a node in the network, or an integer value from 
+\item{node}{The node to summarize. Can be a character string
+corresponding to a name of a node in the network, or an integer value from
 1 to p corresponding to the index of a node.}
 
 \item{network}{A network object.}
 }
 \value{
-A list containing summary information for the node; this includes 
-a vector of indicies to other nodes in the network it is connected to, and 
+A list containing summary information for the node; this includes
+a vector of indicies to other nodes in the network it is connected to, and
 a vector of incidices to modules that contain the node.
 }
 \description{

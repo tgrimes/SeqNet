@@ -2,22 +2,24 @@
 % Please edit documentation in R/networks.R
 \name{create_network_from_adjacency_matrix}
 \alias{create_network_from_adjacency_matrix}
-\title{Create a network object from adjacency matrix}
+\title{Create a network object from an adjacency matrix}
 \usage{
 create_network_from_adjacency_matrix(adjacency_matrix, ...)
 }
 \arguments{
-\item{adjacency_matrix}{The adjacency matrix for the network. This is converted
-to a single module structure.}
+\item{adjacency_matrix}{The adjacency matrix for the network. Since the
+adjacency matrix only provides information on the global connections, the
+resulting 'network' object will consist of a single module containing these
+connections.}
 
 \item{...}{Additional arguments passed to
-create_module_from_adjacency_matrix().}
+\code{\link{create_module_from_adjacency_matrix}}.}
 }
 \value{
 A network object.
 }
 \description{
-Create a network object from adjacency matrix
+Create a network object from an adjacency matrix
 }
 \examples{
 adj_mat <- random_module_structure(10)

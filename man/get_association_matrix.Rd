@@ -9,13 +9,13 @@ get_association_matrix(x, tol = 10^-13, ...)
 \arguments{
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
-\item{tol}{A small tolerance threshold; any entry that is within `tol` from zero
+\item{tol}{A small tolerance threshold; any entry that is within \code{tol} from zero
 is set to zero.}
 
 \item{...}{Additional arguments.}
 }
 \value{
-An association matrix with entry ij != 0 if node i and j are 
+An association matrix with entry ij != 0 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
@@ -23,8 +23,8 @@ Get association matrix
 }
 \note{
 The connections in an adjacency matrix and association matrix may differ
-if the network contains multiple modules. The adjacency matrix only considers 
-direct connections in the network, whereas the association matrix takes into 
+if the network contains multiple modules. The adjacency matrix only considers
+direct connections in the network, whereas the association matrix takes into
 account the fact that overlapping modules can create conditional dependencies
 between two genes in seperate modules (i.e. genes that don't have a direct
 connection in the graph).

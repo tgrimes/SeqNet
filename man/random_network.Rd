@@ -4,29 +4,72 @@
 \alias{random_network}
 \title{Create a network object.}
 \usage{
-random_network(p, n_modules = NULL, consistent_connections = FALSE,
-  ...)
+random_network(p, n_modules = NULL, ...)
 }
 \arguments{
-\item{p}{The number of nodes in the network; 'p' is required to be 
-between 10 and 20000.}
+\item{p}{The number of nodes in the network. If \code{p} is much larger than
+10^4, computation may begin to slow depending on the average module size and
+the amount of overlap among modules.}
 
-\item{n_modules}{The number of modules to include in the network. If NULL,
-then modules are created until all nodes in the network have positive degree.}
+\item{n_modules}{The number of modules to include in the network. If
+\code{NULL}, then modules are created until all nodes in the network have
+positive degree.}
 
-\item{consistent_connections}{If TRUE, then each module is modified so that,
-if two genes are connected in one module, then they are connected in 
-every module.}
+\item{...}{Arguments to be passed to other methods. Possible arguments
+include:
 
-\item{...}{Additional arguments passed to 'create_modules_for_network()',
-which uses 'sample_link_nodes_fn()', 'sample_module_nodes_fn()', and
-'random_module()'.}
+\tabular{ll}{
+nu \tab
+A value between 0 and 1 used to control the amount of overlap among
+modules. Smaller values result in less overlap. Used in
+\code{\link{sample_module_nodes}}. \cr
+
+prob_rewire \tab
+The probability of removing a connection from the local network
+structure; this is applied to each edge created. Used in
+\code{\link{random_module_structure}}. \cr
+
+prob_remove \tab
+The probability of rewiring a connection from the local network
+structure; this is applied every connection of each node. See
+\code{\link{random_module_structure}}. \cr
+
+neig_size \tab
+The initial degree of each node when constructing the ring lattice.
+See \code{\link{random_module_structure}}. \cr
+
+alpha \tab
+A positive value used to parameterize the Beta distribution used
+to sample nodes based on their degree. Larger values will place more weight
+on highly connected nodes. See \code{\link{random_module_structure}}. \cr
+
+beta \tab A positive value used to parameterize the Beta distribution used
+to sample nodes based on their degree. Set to 1 by default. Increasing this
+parameter will cause the sampling to favor moderately connected nodes over
+the extreme tail of highly connected nodes.
+See \code{\link{random_module_structure}}. \cr
+
+epsilon \tab A small constant added to the sampling probability of each node.
+See \code{\link{random_module_structure}}. \cr
+
+avg_module_size \tab
+See \code{\link{create_modules_for_network}}. \cr
+
+sd_module_size \tab
+See \code{\link{create_modules_for_network}}. \cr
+
+min_module_size \tab
+See \code{\link{create_modules_for_network}}. \cr
+
+max_module_size \tab
+See \code{\link{create_modules_for_network}}. \cr
+}}
 }
 \value{
 An unweighted network object.
 }
 \description{
-Creates an unweighted 'network' object containing randomly generated 
+Creates an unweighted 'network' object containing randomly generated
 modules.
 }
 \examples{
@@ -37,4 +80,7 @@ nw
 nw <- gen_partial_correlations(nw)
 # Plot the network
 plot(nw)
+}
+\references{
+\insertRef{grimes21}{SeqNet}
 }

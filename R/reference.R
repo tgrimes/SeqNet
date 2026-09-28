@@ -1,13 +1,17 @@
 #' Sample genes from reference dataset
 #' 
 #' @param reference_data The reference data.frame to use.
-#' @param p The number of genes (columns) to sample
-#' @param percent_ZI The percentage of genes to be zero inflated. If
-#' NULL, the genes are sampled at random; in this case, the empirical 
-#' distribution of gene expression profiles will determine the probablility
-#' that a sampled gene is zero inflated.
+#' @param p The number of genes (columns) to sample.
+#' @param percent_ZI The desired percentage of zero-inflated genes. This 
+#' percentage of zero-inflated genes will be sampled from the reference
+#' dataset, and the remaining will be non-zero-inflated. If
+#' NULL, then genes are sampled at random from the reference dataset.
 #' @param threshold_ZI The minimum proportion of zero counts for a gene to be
-#' considered as zero inflated.
+#' considered as zero inflated. This is used to identify which genes in the
+#' reference dataset are zero-inflated.
+#' @return The modified reference dataset.
+#' @note If p is greater than the number of columns in the reference dataset,
+#' then sampling with replacement will be used (with a warning message). 
 #' @export 
 #' @examples 
 #' \donttest{

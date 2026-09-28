@@ -38,14 +38,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// is_adjacency_cpp
-bool is_adjacency_cpp(NumericMatrix m);
-RcppExport SEXP _SeqNet_is_adjacency_cpp(SEXP mSEXP) {
+// check_adjacency_cpp
+int check_adjacency_cpp(NumericMatrix m);
+RcppExport SEXP _SeqNet_check_adjacency_cpp(SEXP mSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericMatrix >::type m(mSEXP);
-    rcpp_result_gen = Rcpp::wrap(is_adjacency_cpp(m));
+    rcpp_result_gen = Rcpp::wrap(check_adjacency_cpp(m));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -78,7 +78,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_SeqNet_components_in_adjacency", (DL_FUNC) &_SeqNet_components_in_adjacency, 1},
     {"_SeqNet_ecdf_cpp", (DL_FUNC) &_SeqNet_ecdf_cpp, 1},
     {"_SeqNet_edges_from_adjacency_cpp", (DL_FUNC) &_SeqNet_edges_from_adjacency_cpp, 1},
-    {"_SeqNet_is_adjacency_cpp", (DL_FUNC) &_SeqNet_is_adjacency_cpp, 1},
+    {"_SeqNet_check_adjacency_cpp", (DL_FUNC) &_SeqNet_check_adjacency_cpp, 1},
     {"_SeqNet_is_symmetric_cpp", (DL_FUNC) &_SeqNet_is_symmetric_cpp, 2},
     {"_SeqNet_ring_lattice_cpp", (DL_FUNC) &_SeqNet_ring_lattice_cpp, 2},
     {NULL, NULL, 0}

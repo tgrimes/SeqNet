@@ -35,11 +35,13 @@ edges_from_adjacency_cpp <- function(adj) {
 #' C++ implementation to check if a matrix is an adjacency matrix
 #' 
 #' @param m A matrix to check.
-#' @return Returns TRUE if the matrix is an adjacency matrix and FALSE 
-#' otherwise.
+#' @return Returns 0 if the matrix is an adjacency matrix. If the matrix is 
+#' not square, returns 1; if the diagonal entries are not all zero, returns 2; 
+#' if the matrix is not symmetric, returns 3; if the matrix contains values
+#' other than 0 or 1, returns 4.
 #' @export
-is_adjacency_cpp <- function(m) {
-    .Call('_SeqNet_is_adjacency_cpp', PACKAGE = 'SeqNet', m)
+check_adjacency_cpp <- function(m) {
+    .Call('_SeqNet_check_adjacency_cpp', PACKAGE = 'SeqNet', m)
 }
 
 #' C++ implementation to check if a matrix is symmetric

@@ -4,11 +4,19 @@
 \alias{plot_network_diff}
 \title{Plot the difference between two networks}
 \usage{
-plot_network_diff(network_1, network_2, compare_graph = NULL,
-  as_subgraph = FALSE, node_scale = 4, edge_scale = 1,
-  node_color = adjustcolor("orange", 0.5), edge_colors = c("black",
-  "wheat", "red"), generate_layout = igraph::nicely,
-  include_vertex_labels = TRUE, ...)
+plot_network_diff(
+  network_1,
+  network_2,
+  compare_graph = NULL,
+  as_subgraph = FALSE,
+  node_scale = 4,
+  edge_scale = 1,
+  node_color = adjustcolor("orange", 0.5),
+  edge_colors = c("black", "wheat", "red"),
+  generate_layout = igraph::nicely,
+  include_vertex_labels = TRUE,
+  ...
+)
 }
 \arguments{
 \item{network_1}{A 'network' or 'matrix' object.}
@@ -26,32 +34,36 @@ plot_network_diff(network_1, network_2, compare_graph = NULL,
 \item{node_color}{The color used for the nodes.}
 
 \item{edge_colors}{A vector of three colors used for edges; the first colors
-edges common to both network, the second colors edges in network_1 but not
-network_2, and the third colors edges that are in network_2 but not 
-network_1. Default is c("black", "wheat", "red").}
+edges common to both network, the second colors edges in \code{network_1} but
+not \code{network_2}, and the third colors edges that are in \code{network_2}
+but not \code{network_2}. Default is \code{c("black", "wheat", "red")}.}
 
 \item{generate_layout}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+for details. Other options include \code{\link[igraph:layout_as_star]{as_star}},
+\code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among
+many others.}
 
-\item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
+\item{include_vertex_labels}{If \code{TRUE}, the verticies will be labeled.}
 
-\item{...}{Additional arguments passed to plot.igraph().}
+\item{...}{Additional arguments passed to \code{\link[igraph]{plot.igraph}}.}
 }
 \value{
-Creates a plot of the network and returns a graph object. 
-The graph object can be passed back into a future call of 'plot_network()',
-'plot_network_diff()' or 'plot_network_sim()'
-through the 'compare_edge' argument, which will setup the plot for easier 
-comparison between the old graph and the graph of 'network'.
+Creates a plot of the network and returns a graph object.
+The graph object can be passed back into a future call of
+\code{\link{plot_network}}, \code{\link{plot_network_diff}}, or
+\code{\link{plot_network_sim}} through the \code{compare_edge} argument,
+which will setup the plot for easier  comparison between the old graph and
+the graph of \code{network}.
 }
 \description{
-This function plots the difference in connectivity between two networks. 
-For two identical networks, the graph will be empty. For non-identical 
-networks, black edges are shared by both networks but differ in magnitude or 
-direction (if the networks are weighted), tan edges are in network_1 but not 
-network_2, and red edges are in network_2 but not network_1. All edges are
-scaled according to the strongest association in either network.
+This function plots the difference in connectivity between two networks.
+For two identical networks, the graph will be empty. For non-identical
+networks, black edges are shared by both networks but differ in magnitude or
+direction (if the networks are weighted), tan edges are in \code{network_1}
+but not \code{network_2}, and red edges are in \code{network_2} but not
+\code{network_1}. All edges are scaled according to the strongest association
+in either network.
 }
 \examples{
 # Create two networks, the second being a perturbation of the first.

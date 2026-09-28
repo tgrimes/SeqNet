@@ -15,3 +15,4 @@ A list of 'network' objects.
 \description{
 Internal function used to extract 'network' objects from argument list.
 }
+\keyword{internal}

@@ -17,7 +17,7 @@ A covariance matrix.
 \description{
 The associations in each module are taken as partial correlations, and
 the covariance matrix is calculated from these assuming that expression
-for gene i is the weighted average over each module using 1/sqrt(m_i) 
+for gene i is the weighted average over each module using 1/sqrt(m_i)
 as the weight, where m_i is the number of modules containing gene i.
 }
 \examples{

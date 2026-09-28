@@ -17,13 +17,14 @@ A covariance matrix.
 \description{
 The associations in each module are taken as partial correlations, and
 the covariance matrix is calculated from these assuming that expression
-for gene i is the weighted average over each module using 1/sqrt(m_i) 
+for gene i is the weighted average over each module using 1/sqrt(m_i)
 as the weight, where m_i is the number of modules containing gene i.
 }
 \note{
 If a matrix is provided, it is assumed to be a partial correlation matrix;
 a warning is given in this case. To avoid the warning message, convert the
-matrix into a network object using 'create_network_from_association_matrix()'.
+matrix into a network object using
+\code{\link{create_network_from_association_matrix}}.
 }
 \examples{
 # Create a random network with 10 nodes and add random edge weights.

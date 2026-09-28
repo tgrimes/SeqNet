@@ -10,8 +10,11 @@
 \item{x}{Either a 'network', 'network_module', or 'matrix' object.}
 
 \item{...}{Additional arguments.
-object are weighted by 0s and 1s, and returns TRUE otherwise. If there
-are no connections in the module, then this function returns TRUE.}
+object are weighted by 0s and 1s, and returns \code{TRUE} otherwise. If there
+are no connections in the module, then this function returns \code{TRUE}.}
+}
+\value{
+A Boolean value indicating whether the input is weighted.
 }
 \description{
 Check if an object is weighted

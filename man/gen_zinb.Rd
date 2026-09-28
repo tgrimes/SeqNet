@@ -4,8 +4,15 @@
 \alias{gen_zinb}
 \title{Generate ZINB counts from an underlying network}
 \usage{
-gen_zinb(n, network, reference = NULL, params = NULL,
-  library_sizes = NULL, adjust_library_size = NULL, verbose = TRUE)
+gen_zinb(
+  n,
+  network,
+  reference = NULL,
+  params = NULL,
+  library_sizes = NULL,
+  adjust_library_size = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{n}{The number of samples to generate.}
@@ -14,18 +21,19 @@ gen_zinb(n, network, reference = NULL, params = NULL,
 
 \item{reference}{Either a vector or data.frame of counts from a reference
 gene expression profile. If a data.frame is provided, each column should
-correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
-are estimated from the kidney dataset.}
+correspond to a gene. If both \code{reference} and \code{params} are
+\code{NULL}, then parameters are estimated from the
+\code{\link{reference}} dataset.}
 
-\item{params}{A matrix of ZINB parameter values; each column should contain 
+\item{params}{A matrix of ZINB parameter values; each column should contain
 the size, mu, and rho parameters for a gene.}
 
-\item{library_sizes}{A vector of library sizes. Used only if 'reference' is 
-NULL.}
+\item{library_sizes}{A vector of library sizes. Used only if \code{reference} is
+\code{NULL}.}
 
-\item{adjust_library_size}{A boolean value. If TRUE, the library size of 
-generated counts are adjusted based on the reference library sizes. If both 
-'reference' and 'library_size' is NULL, then no adjustment is made. 
+\item{adjust_library_size}{A boolean value. If \code{TRUE}, the library size of
+generated counts are adjusted based on the reference library sizes. If both
+\code{reference} and \code{library_sizes} is \code{NULL}, then no adjustment is made.
 By default, this adjustment is made if the necessary information is provided.}
 
 \item{verbose}{Boolean indicator for message output.}
@@ -37,10 +45,12 @@ each network are returned as a list.
 }
 \description{
 The count data are generated based on the gene-gene associations of an
-udnerlying network. An association structure is imposed by first generating 
+udnerlying network. An association structure is imposed by first generating
 data from a multivariate Gaussian distribution, and counts are then obtained
-through the inverse tranformation method. To generate realistic counts, either 
-a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
+through the inverse tranformation method. To generate realistic counts, either
+a reference dataset or parameters for the ZINB model (size, mu, rho) can be
+provided. Parameters can be estimated from a reference using the
+\code{\link{est_params_from_reference}} function.
 }
 \examples{
 nw <- random_network(10) # Create a random network with 10 nodes.

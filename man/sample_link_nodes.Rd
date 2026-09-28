@@ -4,8 +4,15 @@
 \alias{sample_link_nodes}
 \title{Sample link nodes for new module}
 \usage{
-sample_link_nodes(n, nodes, degree, alpha = 100, beta = 1,
-  epsilon = 10^-5, ...)
+sample_link_nodes(
+  n,
+  nodes,
+  degree,
+  alpha = 100,
+  beta = 1,
+  epsilon = 10^-5,
+  ...
+)
 }
 \arguments{
 \item{n}{The number of link nodes to sample.}
@@ -29,6 +36,6 @@ A vector of selected nodes (possibly of length 1).
 Sample link nodes for new module
 }
 \note{
-This function is used by `create_modules_for_network()` 
+This function is used by \code{\link{create_modules_for_network}}
 and is not meant to be used externally.
 }

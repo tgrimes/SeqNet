@@ -10,7 +10,7 @@ get_degree_distribution(network)
 \item{network}{A network object.}
 }
 \value{
-A vector of length p, containing the degree for each node in the 
+A vector of length p, containing the degree for each node in the
 network.
 }
 \description{

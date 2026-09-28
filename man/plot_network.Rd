@@ -4,17 +4,25 @@
 \alias{plot_network}
 \title{Visualize a network}
 \usage{
-plot_network(network, compare_graph = NULL, as_subgraph = FALSE,
-  node_scale = 4, edge_scale = 1, node_color = adjustcolor("orange",
-  0.5), generate_layout = igraph::nicely, include_vertex_labels = TRUE,
-  display_plot = TRUE, ...)
+plot_network(
+  network,
+  compare_graph = NULL,
+  as_subgraph = FALSE,
+  node_scale = 4,
+  edge_scale = 1,
+  node_color = adjustcolor("orange", 0.5),
+  generate_layout = igraph::nicely,
+  include_vertex_labels = TRUE,
+  display_plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{network}{A 'network', 'network_module', or 'matrix' object.}
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
-\item{as_subgraph}{If TRUE, only nodes of positive degree will be shown.}
+\item{as_subgraph}{If \code{TRUE}, only nodes of positive degree will be shown.}
 
 \item{node_scale}{Used for scaling of nodes.}
 
@@ -23,25 +31,29 @@ plot_network(network, compare_graph = NULL, as_subgraph = FALSE,
 \item{node_color}{The color used for the nodes.}
 
 \item{generate_layout}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+for details. Other options include \code{\link[igraph:layout_as_star]{as_star}},
+\code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among
+many others.}
 
-\item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
+\item{include_vertex_labels}{If \code{TRUE}, the verticies will be labeled.}
 
-\item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
+\item{display_plot}{If \code{TRUE} (default), the plot will be generated and
+displayed.}
 
-\item{...}{Additional arguments passed to plot.igraph().}
+\item{...}{Additional arguments passed to \code{\link[igraph]{plot.igraph}}.}
 }
 \value{
-Creates a plot of the network and returns a graph object. 
-The graph object can be passed back into a future call of plot.network() 
-through the `compare_edge` argument, which will setup the plot for easier 
-comparison between the old graph and the graph of `network`.
+Creates a plot of the network and returns a graph object.
+The graph object can be passed back into a future call of
+\code{\link{plot.network}} through the \code{compare_edge} argument, which
+will setup the plot for easier comparison between the old graph and the graph
+of \code{network}.
 }
 \description{
-This function is used to plot a network. The 'network' argument can be a 
-network object, network module, an adjacency matrix, or an association matrix. 
-If the result of another plot is provided using the 'compare_graph' argument, 
+This function is used to plot a network. The \code{network} argument can be a
+network object, network module, an adjacency matrix, or an association matrix.
+If the result of another plot is provided using the \code{compare_graph} argument,
 then the layout of this network will be based on that plot.
 }
 \examples{

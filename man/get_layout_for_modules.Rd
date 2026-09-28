@@ -9,8 +9,8 @@ get_layout_for_modules(g, modules)
 \arguments{
 \item{g}{An 'igraph' object}
 
-\item{modules}{A list containing sets of indicies indicating the nodes g that 
-belong to each module}
+\item{modules}{A list containing sets of indicies indicating the nodes in
+\code{g} that belong to each module}
 }
 \value{
 A matrix of coordinates for plotting

@@ -12,7 +12,7 @@ get_adjacency_matrix(x, ...)
 \item{...}{Additional arguments.}
 }
 \value{
-An adjacency matrix with entry ij = 1 if node i and j are 
+An adjacency matrix with entry ij = 1 if node i and j are
 connected, and 0 otherwise. The diagonal entries are all zero.
 }
 \description{
@@ -20,8 +20,8 @@ The adjacency matrix is constructed from all modules in a network.
 }
 \note{
 The connections in an adjacency matrix and association matrix may differ
-if the network contains multiple modules. The adjacency matrix only considers 
-direct connections in the network, whereas the association matrix takes into 
+if the network contains multiple modules. The adjacency matrix only considers
+direct connections in the network, whereas the association matrix takes into
 account the fact that overlapping modules can create conditional dependencies
 between two genes in seperate modules (i.e. genes that don't have a direct
 connection in the graph).

@@ -4,25 +4,30 @@
 \alias{heatmap_network}
 \title{Plot heatmap representation of a network}
 \usage{
-heatmap_network(network, main = NULL,
-  col = colorRampPalette(RColorBrewer::brewer.pal(8, "Greys"))(50), ...)
+heatmap_network(
+  network,
+  main = NULL,
+  col = colorRampPalette(gray.colors(8, 0.1, 1))(50),
+  ...
+)
 }
 \arguments{
 \item{network}{Either a network object or association matrix of the network.}
 
 \item{main}{A string containing the title for the graph.}
 
-\item{col}{Color palatte used for heatmap. See ?heatmap for details.}
+\item{col}{Color palatte used for heatmap. See \code{link[stats]{heatmap}}
+for details.}
 
-\item{...}{Additional arguments passed to `heatmap()`.}
+\item{...}{Additional arguments passed to \code{link[stats]{heatmap}}.}
 }
 \value{
-The matrix used to create the heatmap
+The matrix used to create the heatmap.
 }
 \description{
 This function plots the given network as a heatmap to visualize its
 connections. If the network is weighted, then the heatmap will use greyscale
-colors to represent connection strengths; black squares correspond to the 
+colors to represent connection strengths; black squares correspond to the
 strongest connections, while lighter color squares are weaker connections.
 }
 \examples{

@@ -40,13 +40,14 @@ create_empty_module <- function(nodes) {
 #' 
 #' The edges in the module will be set to the edges in the adjacency matrix. 
 #' The edges are undirected, and only the lower triangle of the
-#' matrix is considered. See ?set_module_edges for more details. 
+#' matrix is considered. See \code{\link{set_module_edges}} for more details. 
 #' @param adjacency_matrix The adjacency matrix used to create the module.
 #' @param nodes A numeric vector indicating which nodes in the network are
 #' contained in this module.
 #' @param module_name (optional) Character string specifying the name of the 
-#' module. If NULL, the module will be unnamed.
-#' @param run_checks If TRUE, then the 'adjacency_matrix' argument is checked.
+#' module. If \code{NULL}, the module will be unnamed.
+#' @param run_checks If \code{TRUE}, then the \code{adjacency_matrix} argument 
+#' is checked.
 #' @return A 'network_module' object.
 #' @export
 #' @examples
@@ -58,14 +59,16 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
                                                 nodes = NULL,
                                                 module_name = NULL,
                                                 run_checks = TRUE) {
-  if(run_checks && !is_adjacency_cpp(adjacency_matrix)) {
-    if(!all(diag(adjacency_matrix) == 0))
+  if(run_checks) {
+    flag <- check_adjacency_cpp(adjacency_matrix)
+    if(flag == 1)
+      stop("Argument 'adjacency_matrix' is not a square matrix.")
+    if(flag == 2)
       stop("Argument 'adjacency_matrix' has nonzero diagonal values.")
-    if(!all(abs(adjacency_matrix - t(adjacency_matrix)) < 10^-13))
+    if(flag == 3)
       stop("Argument 'adjacency matrix' is not symmetric.")
-    if(!all(adjacency_matrix %in% c(0, 1)))
+    if(flag == 4)
       stop("Argument 'adjacency_matrix' contains values that are not 0 or 1.")
-    stop("Argument 'adjacency_matrix' is not an adjacency matrix.")
   }
     
   if(run_checks && !is.null(nodes)) {
@@ -101,12 +104,13 @@ create_module_from_adjacency_matrix <- function(adjacency_matrix,
 #' 
 #' The edge weights in the module will be set to the corresponding values
 #' in the association matrix. The edges are undirected, and only the lower 
-#' triangle of the matrix is considered. See ?set_module_weights for more details. 
+#' triangle of the matrix is considered. See \code{\link{set_module_weights}} 
+#' for more details. 
 #' @param association_matrix The association matrix used to create the module.
 #' @param nodes A numeric vector indicating which nodes in the network are
 #' contained in this module.
 #' @param module_name (optional) Character string specifying the name of the 
-#' module. If NULL, the module will be unnamed.
+#' module. If \code{NULL}, the module will be unnamed.
 #' @return A 'network_module' object.
 #' @export
 #' @examples
@@ -187,9 +191,12 @@ create_module_from_association_matrix <- function(association_matrix,
 #' @param nodes A numeric vector indicating which nodes in the network 
 #' are contained in this module. 
 #' @param module_name (optional) Character string specifying the name of the 
-#' module. If NULL, the module will be unnamed.
-#' @param ... Additional arguments passed to 'random_module_structure()'.
+#' module. If \code{NULL}, the module will be unnamed.
+#' @param ... Additional arguments passed to 
+#' \code{\link{random_module_structure}}.
 #' @return A 'network_module' object.
+#' @references 
+#' \insertRef{grimes21}{SeqNet}
 #' @export
 #' @examples 
 #' module <- random_module(1:10)
@@ -236,7 +243,7 @@ random_module <- function(nodes,
 #' edge list.
 #' @return The modified 'network_module' object.
 set_module_edges <- function(module, edges) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   # If there is only one node in the module, return it unmodified.
@@ -281,7 +288,7 @@ set_module_edges <- function(module, edges) {
 #' connections in the module will be used.
 #' @return The modified 'network_module' object.
 set_module_weights <- function(module, weights) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   if(is.null(module$edges) && !is.null(weights)) {
     warning("Argument 'weights' is not NULL, but the module edges is.")
@@ -328,7 +335,7 @@ set_module_weights <- function(module, weights) {
 #' @inherit remove_weights
 #' @export
 remove_weights.network_module <- function(x, ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   if(is.null(x$edges))
     return(x)
@@ -357,7 +364,7 @@ remove_weights.network_module <- function(x, ...) {
 #' module <- nw$modules[[1]]
 #' named_module <- set_module_name(module, "new name")
 set_module_name <- function(module, module_name) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   if(!is.null(module_name) &&
      (is.na(module_name) || module_name == "")) {
@@ -381,7 +388,7 @@ set_module_name <- function(module, module_name) {
 #' @inherit get_adjacency_matrix
 #' @export
 get_adjacency_matrix.network_module <- function(x, ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   n_nodes <- length(x$nodes)
@@ -403,7 +410,7 @@ get_adjacency_matrix.network_module <- function(x, ...) {
 #' @inherit get_association_matrix
 #' @export
 get_association_matrix.network_module <- function(x, tol = 10^-13, ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   if(!is_weighted(x)) 
     stop("'", deparse(substitute(x)), "' is not weighted.")
@@ -451,7 +458,7 @@ get_sigma.network_module <- function(x, ...) {
 #' @param module The 'network_module' object to get edge weights for.
 #' @return A vector containing the weights of each edge. If the edges are 
 #' unweighted, then a vector of 1's is returned. If there are no edges, in the
-#' module, then NULL is returned.
+#' module, then \code{NULL} is returned.
 #' @export
 #' @examples
 #' nw <- random_network(10)
@@ -459,7 +466,7 @@ get_sigma.network_module <- function(x, ...) {
 #' module <- nw$modules[[1]]
 #' get_edge_weights_from_module(module)
 get_edge_weights_from_module <- function(module) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   
   if(is.null(module$edges)) {
@@ -495,10 +502,11 @@ get_node_names.network_module <- function(x, ...) {
 #' @param prob_rewire The probability of rewiring an edge.
 #' @param prob_remove The probability of removing an edge.
 #' @param weights (Optional) Weights used for sampling nodes. See 
-#' ?rewire_connections_to_node and ?remove_connections_to_node for details.
+#' \code{\link{rewire_connections_to_node}} and 
+#' \code{\link{remove_connections_to_node}} for details.
 #' @param neig_size The neighborhood size within which the nodes of the 
-#' ring lattice are connected. The initial degree of each node is 2 * 'neig_size',
-#' so long as 'size' >= (1 + 2 * 'neig_size') 
+#' ring lattice are connected. The initial degree of each node is 
+#' \code{2 * neig_size}, so long as \code{size >= (1 + 2 * neig_size)}.
 #' @param alpha A positive value used to parameterize the Beta distribution.
 #' @param beta  A positive value used to parameterize the Beta distribution. 
 #' @param epsilon A small constant added to the sampling probability of each node.
@@ -557,13 +565,11 @@ random_module_structure <- function(size,
 #' @param beta  A positive value used to parameterize the Beta distribution.
 #' @param epsilon A small constant added to the sampling probability of each node.
 #' @return A modified adjacency matrix
-#' @note When connecting two components, a node is sampled from each with
-#' probability proportional to ecdf(weights)(weights)^eta + epsilon,
-#' where 'weights' are subset to only those nodes in the corresponding component.
-#' When 'eta' = 0, this results in uniform sampling. When 'eta' > 0, 
-#' nodes having larger 'weight' are more likely to be selected, where 'weight'
-#' is equal to 'weights' + degree. (If Arugment 'weights' is NULL, then 'weight'
-#' is simply the node degree).
+#' @note This function is used in \code{\link{random_module_structure}} to 
+#' reconnect any disconnected components after edge removal and rewiring. 
+#' When connecting two components, a node is sampled from each component
+#' with probability that is dependent on node degree; those two nodes are then
+#' connected, which connects the components.
 #' @export
 #' @examples
 #' # This function is used in `random_module_structure()` to reconnect any
@@ -585,6 +591,8 @@ connect_module_structure <- function(adj,
                                      alpha = 100,
                                      beta = 1,
                                      epsilon = 10^-5) {
+  alpha <- 100
+  beta <- 1
   nodes <- 1:ncol(adj)
   if(is.null(weights)) {
     weights <- rep(0, ncol(adj))
@@ -636,7 +644,7 @@ connect_module_structure <- function(adj,
 #' Generate small-world network structure for module
 #' 
 #' The small-world network is generated using the Watts-Strogatz method.
-#' See ?igraph::watts.strogatz.game for details.
+#' See \code{\link[igraph:sample_smallworld]{watts.strogatz.game}} for details.
 #' @param module The network_module object to modify.
 #' @param rdist A distribution function that generates random numbers. The first
 #' argument should specify the number of weights to generate. By default, 
@@ -656,7 +664,7 @@ update_module_with_random_weights <- function(module,
                                                 runif(n, 0.5, 1) * (-1)^rbinom(n, 1, 0.5)
                                               },
                                               ...) {
-  if(!(class(module) == "network_module")) 
+  if(!is(module, "network_module")) 
     stop("'", deparse(substitute(module)), "' is not a 'network_module' object.")
   if(is.null(module$edges)) {
     warning("Argument 'module' contains no connections. Returning module unmodified.")
@@ -681,7 +689,7 @@ rewire_connections_to_node.network_module <- function(x,
                                                       epsilon = 10^-5,
                                                       run_checks = TRUE,
                                                       ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   adj_matrix <- get_adjacency_matrix(x)
@@ -716,7 +724,7 @@ remove_connections_to_node.network_module <- function(x,
                                                       prob_remove,
                                                       run_checks = TRUE,
                                                       ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   adj_matrix <- get_adjacency_matrix(x)
@@ -732,7 +740,7 @@ remove_connections.network_module <- function(x,
                                               prob_remove,
                                               run_checks = TRUE,
                                               ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   adj_matrix <- get_adjacency_matrix(x)
@@ -761,7 +769,7 @@ remove_connections.network_module <- function(x,
 #' module
 #' print(module)
 print.network_module <- function(x, ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   vals <- get_network_characteristics(x)
@@ -780,7 +788,7 @@ print.network_module <- function(x, ...) {
 #' @inherit is_weighted
 #' @export
 is_weighted.network_module <- function(x, ...) {
-  if(!(class(x) == "network_module")) 
+  if(!is(x, "network_module")) 
     stop("'", deparse(substitute(x)), "' is not a 'network_module' object.")
   
   if(is.null(x$edges)) {

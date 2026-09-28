@@ -4,13 +4,23 @@
 \alias{plot_modules}
 \title{Visualize a network and its modules}
 \usage{
-plot_modules(network, compare_graph = NULL, as_subgraph = TRUE,
-  modules = NULL, node_scale = 4, edge_scale = 1,
+plot_modules(
+  network,
+  compare_graph = NULL,
+  as_subgraph = TRUE,
+  modules = NULL,
+  node_scale = 4,
+  edge_scale = 1,
   node_color = adjustcolor("orange", 0.5),
-  group_color = RColorBrewer::brewer.pal(9, "Set1"),
-  generate_layout = igraph::nicely, include_vertex_labels = TRUE,
-  show_legend = FALSE, legend_position = "topright",
-  legend_horizontal = FALSE, display_plot = TRUE, ...)
+  group_color = palette.colors(9, "Set 1"),
+  generate_layout = igraph::nicely,
+  include_vertex_labels = TRUE,
+  show_legend = FALSE,
+  legend_position = "topright",
+  legend_horizontal = FALSE,
+  display_plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{network}{A 'network' object to plot. Alternatively, an adjacency or
@@ -19,11 +29,12 @@ should be specified.}
 
 \item{compare_graph}{The plot of another network to use for comparison.}
 
-\item{as_subgraph}{If TRUE, only nodes of positive degree will be shown.}
+\item{as_subgraph}{If \code{TRUE}, only nodes of positive degree will be shown.}
 
 \item{modules}{A list of modules for the network; this is used to provide
-a member list of each module when the 'network' argument is not a 'network' 
-object. To get this list from a network, use 'get_network_modules()'.}
+a member list of each module when the \code{network} argument is not a
+'network' object. To get this list from a network, use
+\code{\link{get_network_modules}}.}
 
 \item{node_scale}{Used for scaling of nodes.}
 
@@ -34,36 +45,42 @@ object. To get this list from a network, use 'get_network_modules()'.}
 \item{group_color}{A vector of colors used for the modules.}
 
 \item{generate_layout}{A function to generate the layout of a graph; used
-if coords is NULL. See ?igraph::layout_ for details. Other options include 
-'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.}
+if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from
+\pkg{\link{igraph}} for details. Other options include
+\code{\link[igraph:layout_as_star]{as_star}}, \code{\link[igraph:layout_in_circle]{in_circle}}, and
+\code{\link[igraph:layout_with_fr]{with_fr}}, among many others.}
 
-\item{include_vertex_labels}{If TRUE, the verticies will be labeled.}
+\item{include_vertex_labels}{If \code{TRUE}, the verticies will be labeled.}
 
-\item{show_legend}{If TRUE, a legend for the modules is shown. Default is FALSE.}
+\item{show_legend}{If \code{TRUE}, a legend for the modules is shown.
+Default is \code{FALSE}}
 
-\item{legend_position}{The location of the legend. Can be any one of "bottomright",
-"bottom", "bottomleft", "left", "topleft", "top", "topright", "right" or "center".}
+\item{legend_position}{The location of the legend. Can be any one of
+"bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright",
+"right" or "center".}
 
-\item{legend_horizontal}{If TRUE, the legend will be displayed horizontally.}
+\item{legend_horizontal}{If \code{TRUE}, the legend will be displayed
+horizontally.}
 
-\item{display_plot}{If TRUE (default), the plot will be generated and displayed.}
+\item{display_plot}{If \code{TRUE} (default), the plot will be generated and
+displayed.}
 
-\item{...}{Additional arguments passed to plot.igraph().}
+\item{...}{Additional arguments passed to \code{\link[igraph]{plot.igraph}}.}
 }
 \value{
-A 'network_plot' object for the network. This object can be passed 
-back into a future call of plot.network() through the `compare_graph` 
-argument, which will setup the plot for easier comparison between the old 
-graph and the new graph of `network`.
+A 'network_plot' object for the network. This object can be passed
+back into a future call of \code{\link{plot.network}} through the
+\code{compare_graph}  argument, which will setup the plot for easier
+comparison between the old graph and the new graph of \code{network}.
 }
 \description{
-This function plots a network and highlights the individual modules. 
+This function plots a network and highlights the individual modules.
 An attempt is made to layout the nodes so that any visual overlaps among modules
-correspond to true overlaps in the network, however it is possible that 
+correspond to true overlaps in the network, however it is possible that
 a node may appear to be in multiple modules in the visualization when it does
-not actually belong to multiple modules. If the result of another plot is 
-provided using the 'compare_graph' argument, then the layout of this network
-will be based on that plot and convex hulls are drawn to trace out the modules; 
+not actually belong to multiple modules. If the result of another plot is
+provided using the \code{compare_graph} argument, then the layout of this network
+will be based on that plot and convex hulls are drawn to trace out the modules;
 in this case it is likely that the displayed modules will contain extraneous
 nodes.
 }

@@ -13,6 +13,6 @@ ecdf_cpp(x)
 Returns the values for F(x).
 }
 \description{
-Constructs the empirical CDF, F, for a set of observations, x, and 
+Constructs the empirical CDF, F, for a set of observations, x, and
 returns F(x).
 }

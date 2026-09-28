@@ -12,7 +12,7 @@ get_node_names(x, ...)
 \item{...}{Additional arguments.}
 }
 \value{
-A vector containing the node names or node indicies.
+A vector containing the node names or node indices.
 }
 \description{
 Get node names

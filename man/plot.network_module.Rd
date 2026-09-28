@@ -9,11 +9,11 @@
 \arguments{
 \item{x}{A 'network_module' object.}
 
-\item{...}{Additional arguments passed to plot_network().}
+\item{...}{Additional arguments passed to \code{\link{plot_network}}.}
 }
 \value{
-Creates a plot of the module and returns a graph object. 
-See ?plot_network for details.
+Creates a plot of the module and returns a graph object.
+See \code{\link{plot_network}} for details.
 }
 \description{
 Plot function for 'network_module' object.

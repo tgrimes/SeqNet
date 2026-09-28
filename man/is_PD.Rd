@@ -15,3 +15,4 @@ Returns TRUE if the matrix is positive definite and FALSE otherwise.
 \description{
 Internal function to check if a matrix is positive definite
 }
+\keyword{internal}

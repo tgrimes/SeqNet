@@ -14,13 +14,13 @@ correspond to a gene.}
 \item{verbose}{Boolean indicator for message output.}
 }
 \value{
-Returns a list containing a matrix of parameter estimates 'size', 
+Returns a list containing a matrix of parameter estimates 'size',
 'mu', and 'rho' for each gene in the reference, and the reference dataset
-used.
+used. The parameter matrix can be used in \code{\link{gen_zinb}}.
 }
 \description{
 The observations in the reference dataset should be as homogeneous as possible.
-For example, we should not expect differential expression or differential 
+For example, we should not expect differential expression or differential
 connectivity of genes within the sample. If the data are heterogeneous, the
 estimation of the parameters may be unreliable.
 }

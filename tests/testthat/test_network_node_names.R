@@ -14,10 +14,11 @@ testthat::test_that("network module names are indexing correctly.", {
   expect_equal(adj[11:20, 11:20], module_struct)
   
   network <- random_network(100, avg_module_size = 20, sd_module_size = 10,
-                            n_modules = 5, consistent_connections = TRUE)
+                            n_modules = 1)
   adj <- get_adjacency_matrix(network)
-  mod5 <- network$modules[[5]]
+  mod5 <- network$modules[[1]]
   adj_mod5 <- get_adjacency_matrix(mod5)
   index <- mod5$nodes
   expect_equal(adj[index, index], adj_mod5)
+  expect_equal(colnames(adj[index, index]), network$node_names[mod5$nodes])
 })

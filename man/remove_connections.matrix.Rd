@@ -4,18 +4,17 @@
 \alias{remove_connections.matrix}
 \title{Remove connections in a network}
 \usage{
-\method{remove_connections}{matrix}(x, prob_remove, run_checks = TRUE,
-  ...)
+\method{remove_connections}{matrix}(x, prob_remove, run_checks = TRUE, ...)
 }
 \arguments{
 \item{x}{The 'network', 'network_module', or 'matrix' object to modify.}
 
-\item{prob_remove}{A value between 0 and 1. Each edge will be removed with 
-probability equal to 'prob_remove'.}
+\item{prob_remove}{A value between 0 and 1. Each edge will be removed with
+probability equal to \code{prob_remove}.}
 
-\item{run_checks}{If TRUE and 'x' is a matrix, then it is checked that 'x' is an
-adjacency matrix. This catches the case where 'x' is a weighted matrix, in which
-case the weights are removed and a warning is given.}
+\item{run_checks}{If \code{TRUE} and 'x' is a matrix, then it is checked that
+'x' is an adjacency matrix. This catches the case where 'x' is a weighted
+matrix, in which case the weights are removed and a warning is given.}
 
 \item{...}{Additional arguments.}
 }

@@ -10,8 +10,8 @@ set_module_edges(module, edges)
 \item{module}{The 'network_module' object to modify.}
 
 \item{edges}{A matrix used to indicate the edges in the module. If the matrix
-is square and contains the same number of rows and columns as nodes in 
-the module, then it is assumed to be an adjacency matrix and the nonzero 
+is square and contains the same number of rows and columns as nodes in
+the module, then it is assumed to be an adjacency matrix and the nonzero
 lower-triangle values of the matrix are used to indicate edges in the module.
 If the matrix is not square, the first two columns are assumed to be an
 edge list.}

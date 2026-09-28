@@ -1,35 +1,25 @@
 Package: SeqNet
 Title: Generate RNA-Seq Data from Gene-Gene Association Networks
-Version: 1.0.0
+Version: 1.1.3
 Authors@R: c(person("Tyler", "Grimes", role = c("aut", "cre"),
-                    email = "tyler.grimes@ufl.edu"),
+                    email = "tyler.grimes@unf.edu"),
              person("Somnath", "Datta", role = c("aut")))
 Author: Tyler Grimes [aut, cre],
   Somnath Datta [aut]
-Maintainer: Tyler Grimes <tyler.grimes@ufl.edu>
-Description: Methods to generate random gene-gene association networks and simulate RNA-seq data from them. Includes functions to generate random networks of any size and perturb them to obtain differential networks. Network objects are built from individual, overlapping modules that represent pathways. The resulting network has various topological properties that are characteristic of gene regulatory networks. RNA-seq data can be generated such that the association among gene expression profiles reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal distributions. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
-Depends: R (>= 3.5.0)
-Imports: 
-    fitdistrplus,
-    ggplot2,
-    grDevices,
-    graphics,
-    igraph,
-    mvtnorm,
-    purrr,
-    RColorBrewer,
-    tibble,
-    Rcpp,
-    rlang,
-    stats,
-    utils
-Suggests: 
-    knitr,
-    rmarkdown,
-    testthat
+Maintainer: Tyler Grimes <tyler.grimes@unf.edu>
+Description: Methods to generate random gene-gene association networks and simulate RNA-seq data from them, as described in Grimes and Datta (2021) <doi:10.18637/jss.v098.i12>. Includes functions to generate random networks of any size and perturb them to obtain differential networks. Network objects are built from individual, overlapping modules that represent pathways. The resulting network has various topological properties that are characteristic of gene regulatory networks. RNA-seq data can be generated such that the association among gene expression profiles reflect the underlying network. A reference RNA-seq dataset can be provided to model realistic marginal distributions. Plotting functions are available to visualize a network, compare two networks, and compare the expression of two genes across multiple networks.
+Depends: R (>= 4.0.0)
+Imports: fitdistrplus, ggplot2, grDevices, graphics, igraph, mvtnorm,
+        purrr, tibble, Rcpp, rlang, Rdpack, stats, utils, methods
+Suggests: knitr, rmarkdown, testthat
+RdMacros: Rdpack
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
-LinkingTo: 
-    Rcpp
+LazyDataCompression: xz
+RoxygenNote: 7.1.1
+LinkingTo: Rcpp
+NeedsCompilation: yes
+Packaged: 2021-07-08 13:06:56 UTC; Grimes
+Repository: CRAN
+Date/Publication: 2021-07-09 08:20:08 UTC

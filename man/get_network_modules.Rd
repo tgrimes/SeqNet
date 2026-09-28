@@ -10,7 +10,7 @@ get_network_modules(network)
 \item{network}{A 'network' object.}
 }
 \value{
-A list whose length is the number of modules in the network; 
+A list whose length is the number of modules in the network;
 each element is a vector containing the indicies of the nodes
 that belong to that module.
 }

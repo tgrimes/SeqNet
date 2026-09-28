@@ -9,7 +9,7 @@ get_network_characteristics(network, global_only = FALSE)
 \arguments{
 \item{network}{A 'network', 'network_module', or 'matrix' object.}
 
-\item{global_only}{If TRUE, only the global characteristics are calculated.}
+\item{global_only}{If \code{TRUE}, only the global characteristics are calculated.}
 }
 \value{
 A list containing characteristics of the network.

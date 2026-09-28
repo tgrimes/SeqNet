@@ -9,16 +9,16 @@ dzinb(x, size, mu, rho = 0, log = FALSE)
 \arguments{
 \item{x}{A vector of quantities.}
 
-\item{size}{The dispersion paramater used in dnbinom.}
+\item{size}{The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}.}
 
-\item{mu}{The distribution mean.}
+\item{mu}{The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.}
 
 \item{rho}{The zero-inflation parameter.}
 
-\item{log}{Logical; if TRUE, then log(d) is returned.}
+\item{log}{Logical; if \code{TRUE}, then log(d) is returned.}
 }
 \value{
-The value(s) of the density function evaluated at x.
+The value(s) of the density function evaluated at \code{x}.
 }
 \description{
 The Zero-Inflated Negative Binomial Distribution
@@ -30,4 +30,7 @@ y <- qzinb(p, 1, 10, 0.1)
 all(x == y)
 # Compute P(0 < X < 5) for X ~ ZINB(1, 10, 0.1)
 sum(dzinb(0:5, 1, 10, 0.1))
+}
+\references{
+\insertRef{grimes21}{SeqNet}
 }

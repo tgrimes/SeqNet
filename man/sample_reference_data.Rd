@@ -4,24 +4,31 @@
 \alias{sample_reference_data}
 \title{Sample genes from reference dataset}
 \usage{
-sample_reference_data(reference_data, p, percent_ZI = NULL,
-  threshold_ZI = 0.2)
+sample_reference_data(reference_data, p, percent_ZI = NULL, threshold_ZI = 0.2)
 }
 \arguments{
 \item{reference_data}{The reference data.frame to use.}
 
-\item{p}{The number of genes (columns) to sample}
+\item{p}{The number of genes (columns) to sample.}
 
-\item{percent_ZI}{The percentage of genes to be zero inflated. If
-NULL, the genes are sampled at random; in this case, the empirical 
-distribution of gene expression profiles will determine the probablility
-that a sampled gene is zero inflated.}
+\item{percent_ZI}{The desired percentage of zero-inflated genes. This
+percentage of zero-inflated genes will be sampled from the reference
+dataset, and the remaining will be non-zero-inflated. If
+NULL, then genes are sampled at random from the reference dataset.}
 
 \item{threshold_ZI}{The minimum proportion of zero counts for a gene to be
-considered as zero inflated.}
+considered as zero inflated. This is used to identify which genes in the
+reference dataset are zero-inflated.}
+}
+\value{
+The modified reference dataset.
 }
 \description{
 Sample genes from reference dataset
+}
+\note{
+If p is greater than the number of columns in the reference dataset,
+then sampling with replacement will be used (with a warning message).
 }
 \examples{
 \donttest{

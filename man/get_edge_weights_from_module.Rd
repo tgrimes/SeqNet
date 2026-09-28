@@ -10,9 +10,9 @@ get_edge_weights_from_module(module)
 \item{module}{The 'network_module' object to get edge weights for.}
 }
 \value{
-A vector containing the weights of each edge. If the edges are 
+A vector containing the weights of each edge. If the edges are
 unweighted, then a vector of 1's is returned. If there are no edges, in the
-module, then NULL is returned.
+module, then \code{NULL} is returned.
 }
 \description{
 Get edge weights.

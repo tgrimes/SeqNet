@@ -24,6 +24,6 @@ A vector of selected nodes of length m.
 Sample nodes for new module
 }
 \note{
-This function is used by `create_modules_for_network()` 
+This function is used by \code{\link{create_modules_for_network}}
 and is not meant to be used externally.
 }

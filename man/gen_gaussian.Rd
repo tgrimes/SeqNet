@@ -21,12 +21,15 @@ object used to generate them.
 Generates data based on the multivariate normal distribution parameterized by
 a zero mean vector and a covariance matrix. Observations are generated for
 each module in the network individually, and the covariance matrix is set to
-the inverse of the standardized association matrix for the module. 
-Observations are combined for gene i by taking the sum across the m_i modules 
+the inverse of the standardized association matrix for the module.
+Observations are combined for gene i by taking the sum across the m_i modules
 containing it and dividing by sqrt(m_i).
 }
 \examples{
 nw <- random_network(10) # Create a random network with 10 nodes.
 nw <- gen_partial_correlations(nw) # Add weights to connections in the network.
 x <- gen_gaussian(20, nw)$x # Simulate 20 Gaussian observations from network. 
+}
+\references{
+\insertRef{grimes21}{SeqNet}
 }

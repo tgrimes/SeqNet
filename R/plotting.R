@@ -1,26 +1,30 @@
 
 #' Visualize a network
 #' 
-#' This function is used to plot a network. The 'network' argument can be a 
+#' This function is used to plot a network. The \code{network} argument can be a 
 #' network object, network module, an adjacency matrix, or an association matrix. 
-#' If the result of another plot is provided using the 'compare_graph' argument, 
+#' If the result of another plot is provided using the \code{compare_graph} argument, 
 #' then the layout of this network will be based on that plot.
 #' @param network A 'network', 'network_module', or 'matrix' object.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param as_subgraph If TRUE, only nodes of positive degree will be shown.
+#' @param as_subgraph If \code{TRUE}, only nodes of positive degree will be shown.
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
 #' @param generate_layout A function to generate the layout of a graph; used
-#' if coords is NULL. See ?igraph::layout_ for details. Other options include 
-#' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
-#' @param include_vertex_labels If TRUE, the verticies will be labeled.
-#' @param display_plot If TRUE (default), the plot will be generated and displayed.
-#' @param ... Additional arguments passed to plot.igraph().
+#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+#' for details. Other options include \code{\link[igraph:layout_as_star]{as_star}}, 
+#' \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among 
+#' many others.
+#' @param include_vertex_labels If \code{TRUE}, the verticies will be labeled.
+#' @param display_plot If \code{TRUE} (default), the plot will be generated and 
+#' displayed.
+#' @param ... Additional arguments passed to \code{\link[igraph]{plot.igraph}}.
 #' @return Creates a plot of the network and returns a graph object. 
-#' The graph object can be passed back into a future call of plot.network() 
-#' through the `compare_edge` argument, which will setup the plot for easier 
-#' comparison between the old graph and the graph of `network`.
+#' The graph object can be passed back into a future call of 
+#' \code{\link{plot.network}} through the \code{compare_edge} argument, which
+#' will setup the plot for easier comparison between the old graph and the graph 
+#' of \code{network}.
 #' @export
 #' @examples 
 #' set.seed(0)
@@ -60,18 +64,19 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
   ##################################
   # Check arguments for errors.
   
-  if(!(class(network) %in% c("network", "network_module", "matrix"))) {
-    stop(paste0("Argument 'network' must be a 'network', 'network_module', ",
-                "or 'matrix' object."))
+  if(!any(sapply(c("network", "network_module", "matrix"), 
+                 function(class) is(network, class)))) {
+    stop("Argument 'network' must be a 'network', 'network_module', ",
+         "or 'matrix' object.")
   }
   
-  if((class(network) == "matrix") && is.null(colnames(network))) {
+  if(is(network, "matrix") && is.null(colnames(network))) {
     # Set default gene names in a matrix to 1:p.
     colnames(network) <- 1:ncol(network)
   }
 
   if(!is.null(compare_graph)) {
-    if(class(compare_graph) != "network_plot")
+    if(!is(compare_graph, "network_plot"))
       stop("Argument 'compare_graph' must be a 'network_plot' object.")
     if((nrow(compare_graph$coords) != length(get_node_names(network))) &&
        !all(attr(igraph::V(compare_graph$graph), "names") %in% get_node_names(network)))
@@ -224,7 +229,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' correspond to true overlaps in the network, however it is possible that 
 #' a node may appear to be in multiple modules in the visualization when it does
 #' not actually belong to multiple modules. If the result of another plot is 
-#' provided using the 'compare_graph' argument, then the layout of this network
+#' provided using the \code{compare_graph} argument, then the layout of this network
 #' will be based on that plot and convex hulls are drawn to trace out the modules; 
 #' in this case it is likely that the displayed modules will contain extraneous
 #' nodes.
@@ -232,28 +237,35 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' association matrix can be provided, in which case the 'modules' argument
 #' should be specified.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param as_subgraph If TRUE, only nodes of positive degree will be shown.
+#' @param as_subgraph If \code{TRUE}, only nodes of positive degree will be shown.
 #' @param modules A list of modules for the network; this is used to provide
-#' a member list of each module when the 'network' argument is not a 'network' 
-#' object. To get this list from a network, use 'get_network_modules()'.
+#' a member list of each module when the \code{network} argument is not a 
+#' 'network' object. To get this list from a network, use 
+#' \code{\link{get_network_modules}}.
 #' @param node_scale Used for scaling of nodes.
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
 #' @param group_color A vector of colors used for the modules.
 #' @param generate_layout A function to generate the layout of a graph; used
-#' if coords is NULL. See ?igraph::layout_ for details. Other options include 
-#' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
-#' @param include_vertex_labels If TRUE, the verticies will be labeled.
-#' @param show_legend If TRUE, a legend for the modules is shown. Default is FALSE.
-#' @param legend_position The location of the legend. Can be any one of "bottomright",
-#' "bottom", "bottomleft", "left", "topleft", "top", "topright", "right" or "center".
-#' @param legend_horizontal If TRUE, the legend will be displayed horizontally.
-#' @param display_plot If TRUE (default), the plot will be generated and displayed.
-#' @param ... Additional arguments passed to plot.igraph().
+#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from 
+#' \pkg{\link{igraph}} for details. Other options include 
+#' \code{\link[igraph:layout_as_star]{as_star}}, \code{\link[igraph:layout_in_circle]{in_circle}}, and 
+#' \code{\link[igraph:layout_with_fr]{with_fr}}, among many others.
+#' @param include_vertex_labels If \code{TRUE}, the verticies will be labeled.
+#' @param show_legend If \code{TRUE}, a legend for the modules is shown. 
+#' Default is \code{FALSE}
+#' @param legend_position The location of the legend. Can be any one of 
+#' "bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", 
+#' "right" or "center".
+#' @param legend_horizontal If \code{TRUE}, the legend will be displayed 
+#' horizontally.
+#' @param display_plot If \code{TRUE} (default), the plot will be generated and 
+#' displayed.
+#' @param ... Additional arguments passed to \code{\link[igraph]{plot.igraph}}.
 #' @return A 'network_plot' object for the network. This object can be passed 
-#' back into a future call of plot.network() through the `compare_graph` 
-#' argument, which will setup the plot for easier comparison between the old 
-#' graph and the new graph of `network`.
+#' back into a future call of \code{\link{plot.network}} through the 
+#' \code{compare_graph}  argument, which will setup the plot for easier 
+#' comparison between the old graph and the new graph of \code{network}.
 #' @export
 #' @examples 
 #' set.seed(1)
@@ -265,7 +277,7 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
                          modules = NULL,
                          node_scale = 4, edge_scale = 1,
                          node_color = adjustcolor("orange", 0.5),
-                         group_color = RColorBrewer::brewer.pal(9, 'Set1'),
+                         group_color = palette.colors(9, "Set 1"),
                          generate_layout = igraph::nicely,
                          include_vertex_labels = TRUE, 
                          show_legend = FALSE,
@@ -275,10 +287,11 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   ##################################
   # Check arguments for errors.
   
-  if(!(class(network) %in% c("network", "matrix"))) {
+  if(!any(sapply(c("network", "matrix"), 
+                 function(class) is(network, class)))) {
     stop("Argument 'network' must be a 'network' object.")
   }
-  if((class(network) %in% "matrix") && is.null(modules)) {
+  if(is(network, "matrix") && is.null(modules)) {
     stop("If 'network' is a matrix, then the 'modules' argument must be specified.")
   }
   
@@ -293,7 +306,7 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
   p <- length(node_names)
   
   if(!is.null(compare_graph)) {
-    if(class(compare_graph) != "network_plot")
+    if(!is(compare_graph, "network_plot"))
       stop("Argument 'compare_graph' must be a 'network_plot' object.")
     if((nrow(compare_graph$coords) != p) &&
        !all(attr(igraph::V(compare_graph$graph), "names") %in% node_names))
@@ -471,8 +484,8 @@ plot_modules <- function(network, compare_graph = NULL, as_subgraph = TRUE,
 #' Internal function used to create coordinates based on a set of modules
 #' 
 #' @param g An 'igraph' object
-#' @param modules A list containing sets of indicies indicating the nodes g that 
-#' belong to each module
+#' @param modules A list containing sets of indicies indicating the nodes in
+#' \code{g} that belong to each module
 #' @return A matrix of coordinates for plotting
 get_layout_for_modules <- function(g, modules) {
   # See the R blog post by Markus Konrad for details:
@@ -555,19 +568,20 @@ get_layout_for_modules <- function(g, modules) {
 #' provided, this plot will be modified for easier comparison.
 #' @param x A 'network' object.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param show_modules If TRUE, the modules will highlighted in the graph. 
-#' Defaults to FALSE if there is exactly one module in the network and to TRUE
-#' otherwise.
-#' @param as_subgraph If TRUE, only nodes of positive degree will be shown. 
-#' Defaults to FALSE if there are 100 or fewer nodes in the network and to TRUE
-#' otherwise.
-#' @param ... Additional arguments passed to plot_modules() or plot_network().
+#' @param show_modules If \code{TRUE}, the modules will highlighted in the graph. 
+#' Defaults to \code{FALSE} if there is exactly one module in the network and to 
+#' \code{TRUE} otherwise.
+#' @param as_subgraph If \code{TRUE}, only nodes of positive degree will be shown. 
+#' Defaults to \code{FALSE} if there are 100 or fewer nodes in the network and to 
+#' \code{TRUE} otherwise.
+#' @param ... Additional arguments passed to \code{\link{plot_modules}} or 
+#' \code{\link{plot_network}}.
 #' @return Creates a plot of the module and returns a graph object. 
-#' See ?plot_modules and ?plot_network for details.
+#' See \code{\link{plot_modules}} and \code{\link{plot_network}} for details.
 #' @return A 'network_plot' object for the network. This object can be passed 
-#' back into a future call of plot.network() through the `compare_graph` 
-#' argument, which will setup the plot for easier comparison between the old 
-#' graph and the new graph of `network`.
+#' back into a future call of \code{\link{plot.network}} through the 
+#' \code{compare_graph} argument, which will setup the plot for easier 
+#' comparison between the old graph and the new graph of \code{network}.
 #' @export
 #' @examples 
 #' nw <- random_network(10)
@@ -591,9 +605,9 @@ plot.network <- function(x,
 #' Plot function for 'network_module' object.
 #' 
 #' @param x A 'network_module' object.
-#' @param ... Additional arguments passed to plot_network().
+#' @param ... Additional arguments passed to \code{\link{plot_network}}.
 #' @return Creates a plot of the module and returns a graph object. 
-#' See ?plot_network for details.
+#' See \code{\link{plot_network}} for details.
 #' @export
 #' @examples 
 #' module <- random_module(1:10)
@@ -605,9 +619,11 @@ plot.network_module <- function(x, ...) {
 
 #' Plot function for 'network_plot' class
 #' 
-#' @param x A 'network_plot' object obtained from plot.network() or
-#' plot_network().
-#' @param ... Additional arguments passed to plot.igraph().
+#' @param x A 'network_plot' object obtained from \code{\link{plot.network}} or
+#' \code{\link{plot_network}}.
+#' @param ... Additional arguments passed to \code{\link[igraph]{plot.igraph}}.
+#' @return Creates a plot of the network and returns a graph object. 
+#' See \code{\link{plot_network}} for details.
 #' @export
 #' @examples 
 #' nw <- random_network(10)
@@ -644,9 +660,11 @@ plot.network_plot <- function(x, ...) {
 #' Print function for 'network_plot' class
 #' 
 #' Displays the network plot.
-#' @param x A 'network_plot' object obtained from plot.network() or
-#' plot_network().
-#' @param ... Additional arguments passed to plot().
+#' @param x A 'network_plot' object obtained from \code{\link{plot.network}} or
+#' \code{\link{plot_network}}.
+#' @param ... Additional arguments passed to \code{\link[graphics:plot.default]{plot}}.
+#' @return Creates a plot of the network and returns a graph object. 
+#' See \code{\link{plot_network}} for details.
 #' @export
 #' @examples 
 #' nw <- random_network(10)
@@ -664,9 +682,10 @@ print.network_plot <- function(x, ...) {
 #' strongest connections, while lighter color squares are weaker connections.
 #' @param network Either a network object or association matrix of the network.
 #' @param main A string containing the title for the graph.
-#' @param col Color palatte used for heatmap. See ?heatmap for details.
-#' @param ... Additional arguments passed to `heatmap()`.
-#' @return The matrix used to create the heatmap
+#' @param col Color palatte used for heatmap. See \code{link[stats]{heatmap}} 
+#' for details.
+#' @param ... Additional arguments passed to \code{link[stats]{heatmap}}.
+#' @return The matrix used to create the heatmap.
 #' @export
 #' @examples 
 #' set.seed(12345)
@@ -676,7 +695,7 @@ print.network_plot <- function(x, ...) {
 #' nw <- gen_partial_correlations(nw)
 #' heatmap_network(nw, "Weighted Network")
 heatmap_network <- function(network, main = NULL,
-                            col = colorRampPalette(RColorBrewer::brewer.pal(8, "Greys"))(50),
+                            col = colorRampPalette(gray.colors(8, 0.1, 1))(50),
                             ...) {
   if(is.null(main)) {
     # Use name of network object as the default title.
@@ -708,9 +727,10 @@ heatmap_network <- function(network, main = NULL,
 #' This function plots the difference in connectivity between two networks. 
 #' For two identical networks, the graph will be empty. For non-identical 
 #' networks, black edges are shared by both networks but differ in magnitude or 
-#' direction (if the networks are weighted), tan edges are in network_1 but not 
-#' network_2, and red edges are in network_2 but not network_1. All edges are
-#' scaled according to the strongest association in either network.
+#' direction (if the networks are weighted), tan edges are in \code{network_1} 
+#' but not \code{network_2}, and red edges are in \code{network_2} but not 
+#' \code{network_1}. All edges are scaled according to the strongest association 
+#' in either network.
 #' @param network_1 A 'network' or 'matrix' object.
 #' @param network_2 A 'network' or 'matrix' object.
 #' @param compare_graph The plot of another network to use for comparison.
@@ -719,19 +739,22 @@ heatmap_network <- function(network, main = NULL,
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
 #' @param edge_colors A vector of three colors used for edges; the first colors
-#' edges common to both network, the second colors edges in network_1 but not
-#' network_2, and the third colors edges that are in network_2 but not 
-#' network_1. Default is c("black", "wheat", "red").
+#' edges common to both network, the second colors edges in \code{network_1} but 
+#' not \code{network_2}, and the third colors edges that are in \code{network_2} 
+#' but not \code{network_2}. Default is \code{c("black", "wheat", "red")}.
 #' @param generate_layout A function to generate the layout of a graph; used
-#' if coords is NULL. See ?igraph::layout_ for details. Other options include 
-#' 'igraph::as_star', 'igraph::in_circle', and 'igraph::with_fr', among many others.
-#' @param include_vertex_labels If TRUE, the verticies will be labeled.
-#' @param ... Additional arguments passed to plot.igraph().
+#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+#' for details. Other options include \code{\link[igraph:layout_as_star]{as_star}}, 
+#' \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among 
+#' many others.
+#' @param include_vertex_labels If \code{TRUE}, the verticies will be labeled.
+#' @param ... Additional arguments passed to \code{\link[igraph]{plot.igraph}}.
 #' @return Creates a plot of the network and returns a graph object. 
-#' The graph object can be passed back into a future call of 'plot_network()',
-#' 'plot_network_diff()' or 'plot_network_sim()'
-#' through the 'compare_edge' argument, which will setup the plot for easier 
-#' comparison between the old graph and the graph of 'network'.
+#' The graph object can be passed back into a future call of 
+#' \code{\link{plot_network}}, \code{\link{plot_network_diff}}, or 
+#' \code{\link{plot_network_sim}} through the \code{compare_edge} argument, 
+#' which will setup the plot for easier  comparison between the old graph and 
+#' the graph of \code{network}.
 #' @export
 #' @examples 
 #' # Create two networks, the second being a perturbation of the first.
@@ -753,12 +776,13 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
   ##################################
   # Check arguments for errors.
   
-  if (!(class(network_1) %in% c("network", "network_module", "matrix")))
+  if (!any(sapply(c("network", "network_module", "matrix"), 
+                  function(class) is(network_1, class))))
     stop(paste0("Argument 'network_1' must be a 'network', 'network_module', ",
                 "or 'matrix' object."))
   
   if(!is.null(compare_graph)) {
-    if(class(compare_graph) != "network_plot")
+    if(!is(compare_graph, "network_plot"))
       stop("Argument 'compare_graph' must be a 'network_plot' object.")
     if((nrow(compare_graph$coords) != length(get_node_names(network_1))) &&
        !all(attr(igraph::V(compare_graph$graph), "names") %in% get_node_names(network_1)))
@@ -766,7 +790,8 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
                  "number of nodes or contain an overlapping set of nodes."))
   }
   
-  if (!(class(network_2) %in% c("network", "network_module", "matrix")))
+  if (!any(sapply(c("network", "network_module", "matrix"), 
+                  function(class) is(network_2, class))))
     stop(paste0("Argument 'network_2' must be a 'network', 'network_module', ",
                 "or 'matrix' object."))
   ##################################
@@ -959,16 +984,17 @@ plot_network_diff <- function (network_1, network_2, compare_graph = NULL,
 #' Both networks must be weighted. The width of each edge corresponds to 
 #' the strength of similarity and is calculated by sqrt(abs((s1 + s2)s1s2)), 
 #' where s1 and s2 are the weights for a particular
-#' connection in network_1 and network_2, respectively
+#' connection in \code{network_1} and \code{network_2}, respectively
 #' @param network_1 A weighted 'network' or 'matrix' object.
 #' @param network_2 A weighted 'network' or 'matrix' object.
 #' @param compare_graph The plot of another network to use for comparison.
-#' @param ... Additional arguments passed to 'plot_network()'.
+#' @param ... Additional arguments passed to \code{\link{plot_network}}.
 #' @return Creates a plot of the network and returns a graph object. 
-#' The graph object can be passed back into a future call of 'plot_network()',
-#' 'plot_network_diff()' or 'plot_network_sim()'
-#' through the 'compare_edge' argument, which will setup the plot for easier 
-#' comparison between the old graph and the graph of 'network'.
+#' The graph object can be passed back into a future call of 
+#' \code{\link{plot_network}}, \code{\link{plot_network_diff}} or 
+#' \code{\link{plot_network_sim}} through the \code{compare_edge} argument, 
+#' which will setup the plot for easier  comparison between the old graph and 
+#' the graph of \code{network}.
 #' @export
 #' @examples 
 #' # Create two networks, the second being a perturbation of the first.
@@ -989,13 +1015,15 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
   ##################################
   # Check arguments for errors.
   
-  if (!(class(network_1) %in% c("network", "network_module", "matrix")))
-    stop(paste0("Argument 'network_1' must be a 'network', 'network_module', ",
-                "or 'matrix' object."))
+  if (!any(sapply(c("network", "network_module", "matrix"), 
+                  function(class) is(network_1, class))))
+    stop("Argument 'network_1' must be a 'network', 'network_module', ",
+         "or 'matrix' object.")
   
-  if (!(class(network_2) %in% c("network", "network_module", "matrix")))
-    stop(paste0("Argument 'network_2' must be a 'network', 'network_module', ",
-                "or 'matrix' object."))
+  if (!any(sapply(c("network", "network_module", "matrix"), 
+                  function(class) is(network_2, class))))
+    stop("Argument 'network_2' must be a 'network', 'network_module', ",
+         "or 'matrix' object.")
   ##################################
   
   if(!is_weighted(network_1) || !is_weighted(network_2)) {
@@ -1052,18 +1080,18 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
 #' @param x_list A named list containing one or more n by p gene expression 
 #' profiles, one for each group or subpopulation under consideration.
 #' @param geneA The name of the first gene to plot. Must be either a character
-#' string matching a column name in each matrix of x_list or an integer
+#' string matching a column name in each matrix of \code{x_list} or an integer
 #' to index the columns.
 #' @param geneB The name of the second gene to plot. Must be either a character
-#' string matching a column name in each matrix of x_list or an integer
+#' string matching a column name in each matrix of \code{x_list} or an integer
 #' to index the columns.
 #' @param method Charater string either "lm" or "loess" used for plotting. 
-#' For no line, set method = NULL. 
+#' For no line, set \code{method = NULL}. 
 #' @param se_alpha Sets transparancy of confidence interval around association 
 #' trend line. Set to 0 to remove the confidence interval.
-#' @param do_facet_wrap If TRUE, the groups are plotted in seperate graphs.
-#' @param scales Only used if do_facet_wrap is TRUE. See ggplot2::facet_wrap
-#' for details.
+#' @param do_facet_wrap If \code{TRUE}, the groups are plotted in seperate graphs.
+#' @param scales Only used if \code{do_facet_wrap} is \code{TRUE}. See 
+#' \code{\link[ggplot2]{facet_wrap}} for details.
 #' @return Returns the generated plot.
 #' @export
 #' @examples 

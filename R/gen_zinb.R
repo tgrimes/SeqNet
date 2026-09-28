@@ -1,11 +1,13 @@
 #' The Zero-Inflated Negative Binomial Distribution
 #' 
 #' @param x A vector of quantities.
-#' @param size The dispersion paramater used in dnbinom.
-#' @param mu The distribution mean.
+#' @param size The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}.
+#' @param mu The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.
 #' @param rho The zero-inflation parameter.
-#' @param log Logical; if TRUE, then log(d) is returned.
-#' @return The value(s) of the density function evaluated at x.
+#' @param log Logical; if \code{TRUE}, then log(d) is returned.
+#' @return The value(s) of the density function evaluated at \code{x}.
+#' @references 
+#' \insertRef{grimes21}{SeqNet}
 #' @export 
 #' @examples 
 #' x <- rzinb(10, 1, 10, 0.1)
@@ -25,12 +27,13 @@ dzinb <- function(x, size, mu, rho = 0, log = FALSE) {
 #' The Zero-Inflated Negative Binomial Distribution
 #'
 #' @param p A vector of probabilities
-#' @param size The dispersion paramater used in dnbinom.
-#' @param mu The distribution mean.
+#' @param size The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}
+#' @param mu The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.
 #' @param rho The zero-inflation parameter.
-#' @param lower.tail Logical; if TRUE, then probabilities are P(X <= x).
+#' @param lower.tail Logical; if \code{TRUE}, then probabilities are P(X <= x).
 #' Otherwise, P(X > x).
-#' @param log.p Logical; if TRUE, then exp(p) is used.
+#' @param log.p Logical; if \code{TRUE}, then exp(p) is used.
+#' @return The quantiles for the given probabilities.
 #' @export 
 #' @examples 
 #' x <- rzinb(10, 1, 10, 0.1)
@@ -54,12 +57,13 @@ qzinb <- function (p, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
 #' The Zero-Inflated Negative Binomial Distribution
 #'
 #' @param q A vector of quantities.
-#' @param size The dispersion paramater used in dnbinom.
-#' @param mu The distribution mean.
+#' @param size The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}
+#' @param mu The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.
 #' @param rho The zero-inflation parameter.
-#' @param lower.tail Logical; if TRUE, then probabilities are P(X <= x).
+#' @param lower.tail Logical; if \code{TRUE}, then probabilities are P(X <= x).
 #' Otherwise, P(X > x).
-#' @param log.p Logical; if TRUE, then log(p) is returned.
+#' @param log.p Logical; if \code{TRUE}, then log(p) is returned.
+#' @return The probabilities for the given \code{q} values.
 #' @export 
 #' @examples 
 #' x <- rzinb(10, 1, 10, 0.1)
@@ -83,9 +87,10 @@ pzinb <- function (q, size, mu, rho, lower.tail = TRUE, log.p = FALSE) {
 #' The Zero-Inflated Negative Binomial Distribution
 #'
 #' @param n The number of random values to return.
-#' @param size The dispersion paramater used in dnbinom.
-#' @param mu The distribution mean.
+#' @param size The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}.
+#' @param mu The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.
 #' @param rho The zero-inflation parameter.
+#' @return The randomly generated values from the distribution.
 #' @export 
 #' @examples 
 #' x <- rzinb(10, 1, 10, 0.1)
@@ -106,20 +111,23 @@ rzinb <- function (n, size, mu, rho) {
 #' udnerlying network. An association structure is imposed by first generating 
 #' data from a multivariate Gaussian distribution, and counts are then obtained
 #' through the inverse tranformation method. To generate realistic counts, either 
-#' a reference dataset or parameters for the ZINB model (size, mu, rho) can be provided.
+#' a reference dataset or parameters for the ZINB model (size, mu, rho) can be 
+#' provided. Parameters can be estimated from a reference using the
+#' \code{\link{est_params_from_reference}} function.
 #' @param n The number of samples to generate.
 #' @param network A 'network' object or list of 'network' objects.
 #' @param reference Either a vector or data.frame of counts from a reference
 #' gene expression profile. If a data.frame is provided, each column should
-#' correspond to a gene. If both 'reference' and 'params' are NULL, then parameters
-#' are estimated from the kidney dataset.
+#' correspond to a gene. If both \code{reference} and \code{params} are 
+#' \code{NULL}, then parameters are estimated from the 
+#' \code{\link{reference}} dataset.
 #' @param params A matrix of ZINB parameter values; each column should contain 
 #' the size, mu, and rho parameters for a gene.
-#' @param library_sizes A vector of library sizes. Used only if 'reference' is 
-#' NULL.
-#' @param adjust_library_size A boolean value. If TRUE, the library size of 
+#' @param library_sizes A vector of library sizes. Used only if \code{reference} is 
+#' \code{NULL}.
+#' @param adjust_library_size A boolean value. If \code{TRUE}, the library size of 
 #' generated counts are adjusted based on the reference library sizes. If both 
-#' 'reference' and 'library_size' is NULL, then no adjustment is made. 
+#' \code{reference} and \code{library_sizes} is \code{NULL}, then no adjustment is made. 
 #' By default, this adjustment is made if the necessary information is provided.
 #' @param verbose Boolean indicator for message output.
 #' @return A list containing the generated counts and the ZINB parameters used
@@ -143,8 +151,8 @@ gen_zinb <- function(n,
   }
   
   single_network <- TRUE
-  if(!(class(network) == "network")) {
-    if(is.list(network) && all(sapply(network, function(nw) class(nw) == "network"))) {
+  if(!is(network, "network")) {
+    if(is.list(network) && all(sapply(network, function(nw) is(nw, "network")))) {
       p <- network[[1]]$p
       if(length(network) > 1 && !all(sapply(network[-1], function(nw) nw$p == p))) {
         stop(paste0("'", deparse(substitute(network)), 
@@ -275,7 +283,7 @@ gen_zinb <- function(n,
 #' @param verbose Boolean indicator for message output.
 #' @return Returns a list containing a matrix of parameter estimates 'size', 
 #' 'mu', and 'rho' for each gene in the reference, and the reference dataset
-#' used.
+#' used. The parameter matrix can be used in \code{\link{gen_zinb}}.
 #' @export
 #' @examples
 #' # The internal reference dataset already contains ZINB parameter estimates,

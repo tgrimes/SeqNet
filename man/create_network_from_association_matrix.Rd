@@ -7,12 +7,14 @@
 create_network_from_association_matrix(association_matrix, ...)
 }
 \arguments{
-\item{association_matrix}{The association matrix for the network. This is converted
-to a single module structure with partial correlations specified by the
-nonzero values in the matrix.}
+\item{association_matrix}{The association matrix for the network. Since the
+association matrix only provides information on the global connections, the
+resulting 'network' object will consist of a single weighted module
+containing these connections. The edge weights, i.e. the partial correlations,
+will correspond to the nonzero values in the matrix.}
 
-\item{...}{Additional arguments passed to 
-create_module_from_association_matrix().}
+\item{...}{Additional arguments passed to
+\code{\link{create_module_from_association_matrix}}.}
 }
 \value{
 A network object.

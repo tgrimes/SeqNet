@@ -11,7 +11,7 @@ set_node_names(network, node_names)
 
 \item{node_names}{A vector of strings containing the names for each node
 in the network. If a numeric vector is provided, the values will be coerced
-into strings. If 'node_names' is NULL, then the names will default to 
+into strings. If 'node_names' is \code{NULL}, then the names will default to
 "1", "2", ..., "p".}
 }
 \value{

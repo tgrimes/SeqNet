@@ -7,13 +7,14 @@
 random_module(nodes, module_name = NULL, ...)
 }
 \arguments{
-\item{nodes}{A numeric vector indicating which nodes in the network 
+\item{nodes}{A numeric vector indicating which nodes in the network
 are contained in this module.}
 
-\item{module_name}{(optional) Character string specifying the name of the 
-module. If NULL, the module will be unnamed.}
+\item{module_name}{(optional) Character string specifying the name of the
+module. If \code{NULL}, the module will be unnamed.}
 
-\item{...}{Additional arguments passed to 'random_module_structure()'.}
+\item{...}{Additional arguments passed to
+\code{\link{random_module_structure}}.}
 }
 \value{
 A 'network_module' object.
@@ -23,4 +24,7 @@ Create a random module
 }
 \examples{
 module <- random_module(1:10)
+}
+\references{
+\insertRef{grimes21}{SeqNet}
 }

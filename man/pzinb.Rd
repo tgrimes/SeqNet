@@ -9,16 +9,19 @@ pzinb(q, size, mu, rho, lower.tail = TRUE, log.p = FALSE)
 \arguments{
 \item{q}{A vector of quantities.}
 
-\item{size}{The dispersion paramater used in dnbinom.}
+\item{size}{The dispersion paramater used in \code{\link[stats:NegBinomial]{dnbinom}}}
 
-\item{mu}{The distribution mean.}
+\item{mu}{The mean parameter used in \code{\link[stats:NegBinomial]{dnbinom}}.}
 
 \item{rho}{The zero-inflation parameter.}
 
-\item{lower.tail}{Logical; if TRUE, then probabilities are P(X <= x).
+\item{lower.tail}{Logical; if \code{TRUE}, then probabilities are P(X <= x).
 Otherwise, P(X > x).}
 
-\item{log.p}{Logical; if TRUE, then log(p) is returned.}
+\item{log.p}{Logical; if \code{TRUE}, then log(p) is returned.}
+}
+\value{
+The probabilities for the given \code{q} values.
 }
 \description{
 The Zero-Inflated Negative Binomial Distribution
