@@ -1101,9 +1101,9 @@ plot_network_sim <- function (network_1, network_2, compare_graph = NULL, ...) {
 #' genes <- colnames(rnaseq)
 #' plot_gene_pair(rnaseq, genes[1], genes[2])
 #' # Suppose we had multiple data frames.
-#' control <- rnaseq[1:100, 1:10]
-#' treatment1 <- rnaseq[101:200, 1:10]
-#' treatment2 <- rnaseq[201:250, 1:10]
+#' control <- rnaseq[1:50, 1:10]
+#' treatment1 <- rnaseq[51:100, 1:10]
+#' treatment2 <- rnaseq[101:150, 1:10]
 #' plot_gene_pair(list(ctrl = control, trt1 = treatment1, trt2 = treatment2),
 #'                genes[1], genes[2], method = NA)
 #' plot_gene_pair(list(ctrl = control, trt = treatment1),

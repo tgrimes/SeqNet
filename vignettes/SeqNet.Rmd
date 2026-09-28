@@ -1,0 +1,147 @@
+---
+title: "Introduction to SeqNet"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to SeqNet}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(SeqNet)
+set.seed(12345)
+```
+
+## Overview
+
+SeqNet generates random gene-gene association networks and simulates RNA-seq
+count data from them, as described in
+[Grimes and Datta (2021)](https://doi.org/10.18637/jss.v098.i12). A network
+is built out of overlapping modules that represent pathways, giving it the
+topological properties (hub genes, community structure) that are
+characteristic of real gene regulatory networks. Once a network exists,
+SeqNet can:
+
+* assign connection strengths so it defines a valid Gaussian graphical
+  model,
+* simulate RNA-seq counts whose gene-gene correlations follow that network,
+  either non-parametrically (matching a reference RNA-seq dataset) or
+  parametrically (zero-inflated negative binomial), and
+* perturb a network to create a second, differential network that can be used for benchmarking differential co-expression or differential network methods.
+
+This vignette walks through that workflow.
+
+## Building a random network
+
+`random_network()` creates a network of `p` nodes made up of a number of
+overlapping modules:
+
+```{r}
+nw <- random_network(p = 100, n_modules = 5)
+nw
+```
+
+The printed summary reports the number of nodes, edges, and modules, along
+with global network characteristics (e.g. average degree, clustering
+coefficient). The network can be visualized directly:
+
+```{r}
+g <- plot_network(nw)
+```
+
+`plot_network()` returns the layout it used (`g`), which can be reused so
+that the same network is always drawn with nodes in
+the same position. Modules can be highlighted on top of an existing layout:
+
+```{r}
+plot_modules(nw, g)
+```
+
+## Assigning connection strengths
+
+A freshly created network only specifies *which* genes are connected, not
+how strongly. `gen_partial_correlations()` assigns edge weights so that the
+network's association matrix is a valid (positive-definite) partial
+correlation matrix (i.e. a Gaussian graphical model):
+
+```{r}
+nw <- gen_partial_correlations(nw)
+is_weighted(nw)
+```
+
+`heatmap_network()` visualizes the resulting association matrix:
+
+```{r}
+heatmap_network(nw)
+```
+
+## Simulating RNA-seq data
+
+Two functions simulate expression data whose correlation structure follows
+the network. `gen_rnaseq()` uses a Gaussian copula: it first draws
+multivariate-normal data based on the network's partial correlations, then
+transforms each gene's marginal distribution to match a reference RNA-seq
+dataset (via the inverse CDF). If no reference is supplied, SeqNet uses a
+bundled reference dataset that is a subset of the TCGA breast invasive carcinoma cohort:
+
+```{r}
+x <- gen_rnaseq(n = 20, network = nw, verbose = FALSE)$x
+dim(x)
+```
+
+Alternatively, `gen_zinb()` simulates directly from a zero-inflated negative
+binomial distribution fit to each gene, rather than resampling from the
+empirical reference distribution:
+
+```{r}
+x_zinb <- gen_zinb(n = 20, network = nw, verbose = FALSE)$x
+dim(x_zinb)
+```
+
+Both approaches preserve the correlation structure implied by `nw`; they
+differ in how each gene's marginal (univariate) distribution is generated.
+
+## Differential networks
+
+`perturb_network()` creates a modified copy of a network by rewiring
+connections around one or more hub genes (and, optionally, additional random
+genes). This simulates the kind of localized rewiring seen between, for
+example, healthy and diseased tissue:
+
+```{r}
+nw_diff <- perturb_network(nw, n_hubs = 1, n_nodes = 5)
+plot_network_diff(nw, nw_diff, g)
+```
+
+The differential network plot colors edges that are unique to each network,
+making it easy to see where the two networks disagree.
+
+## Comparing expression of a gene pair
+
+When comparing simulated (or real) expression data across multiple groups,
+`plot_gene_pair()` plots the relationship between two genes, optionally
+faceted or colored by group:
+
+```{r}
+x1 <- gen_rnaseq(n = 20, network = nw, verbose = FALSE)$x
+x2 <- gen_rnaseq(n = 20, network = nw_diff, verbose = FALSE)$x
+genes <- colnames(x1)
+plot_gene_pair(list(network_1 = x1, network_2 = x2), genes[1], genes[2])
+```
+
+## Learning more
+
+Each function's help page (e.g. `?random_network`, `?gen_rnaseq`,
+`?perturb_network`) documents additional arguments for controlling module
+size and overlap, network size, and simulation parameters. See
+`citation("SeqNet")` for how to cite the package, and Grimes and Datta
+(2021) for the full methodology.
