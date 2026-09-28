@@ -39,7 +39,7 @@ not \code{network_2}, and the third colors edges that are in \code{network_2}
 but not \code{network_2}. Default is \code{c("black", "wheat", "red")}.}
 
 \item{generate_layout}{A function to generate the layout of a graph; used
-if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{igraph}
 for details. Other options include \code{\link[igraph:layout_as_star]{as_star}},
 \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among
 many others.}

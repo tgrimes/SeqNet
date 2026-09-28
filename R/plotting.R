@@ -12,7 +12,7 @@
 #' @param edge_scale Used for scaling of edges.
 #' @param node_color The color used for the nodes.
 #' @param generate_layout A function to generate the layout of a graph; used
-#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{igraph}
 #' for details. Other options include \code{\link[igraph:layout_as_star]{as_star}}, 
 #' \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among 
 #' many others.
@@ -248,7 +248,7 @@ plot_network <- function(network, compare_graph = NULL, as_subgraph = FALSE,
 #' @param group_color A vector of colors used for the modules.
 #' @param generate_layout A function to generate the layout of a graph; used
 #' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from 
-#' \pkg{\link{igraph}} for details. Other options include 
+#' \pkg{igraph} for details. Other options include
 #' \code{\link[igraph:layout_as_star]{as_star}}, \code{\link[igraph:layout_in_circle]{in_circle}}, and 
 #' \code{\link[igraph:layout_with_fr]{with_fr}}, among many others.
 #' @param include_vertex_labels If \code{TRUE}, the verticies will be labeled.
@@ -743,7 +743,7 @@ heatmap_network <- function(network, main = NULL,
 #' not \code{network_2}, and the third colors edges that are in \code{network_2} 
 #' but not \code{network_2}. Default is \code{c("black", "wheat", "red")}.
 #' @param generate_layout A function to generate the layout of a graph; used
-#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+#' if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{igraph}
 #' for details. Other options include \code{\link[igraph:layout_as_star]{as_star}}, 
 #' \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among 
 #' many others.

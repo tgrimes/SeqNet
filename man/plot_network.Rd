@@ -31,7 +31,7 @@ plot_network(
 \item{node_color}{The color used for the nodes.}
 
 \item{generate_layout}{A function to generate the layout of a graph; used
-if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{\link{igraph}}
+if coords is \code{NULL}. See \code{\link[igraph]{layout_}} from \pkg{igraph}
 for details. Other options include \code{\link[igraph:layout_as_star]{as_star}},
 \code{\link[igraph:layout_in_circle]{in_circle}}, and \code{\link[igraph:layout_with_fr]{with_fr}}, among
 many others.}

@@ -9,4 +9,5 @@ NULL
 #' rbinom rnbinom rnorm runif sd var pbeta
 #' @importFrom utils data write.table
 #' @importFrom methods is
+#' @importFrom Rdpack reprompt
 NULL
